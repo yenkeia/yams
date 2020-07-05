@@ -4,6 +4,8 @@ import (
 	"encoding/binary"
 	"math"
 	"reflect"
+
+	"github.com/yenkeia/yams/game/ut"
 )
 
 type coder struct {
@@ -72,6 +74,7 @@ func (self *encoder) uint64(x uint64) {
 	self.order.PutUint64(self.buf[0:8], x)
 	self.buf = self.buf[8:]
 }
+
 func (self *decoder) bytes() []byte {
 	l := self.uint16()
 	buf := make([]byte, l)
@@ -85,6 +88,19 @@ func (self *encoder) bytes(x []byte) {
 	l := len(x)
 	self.uint16(uint16(l))
 	copy(self.buf, []byte(x))
+	self.buf = self.buf[l:]
+}
+
+func (self *decoder) string() string {
+	i, s := ut.ReadString(self.buf, 0)
+	self.buf = self.buf[i:]
+	return s
+}
+
+func (self *encoder) string(s string) {
+	l := len([]byte(s))
+	self.uint8(uint8(l))
+	copy(self.buf, []byte(s))
 	self.buf = self.buf[l:]
 }
 
@@ -128,7 +144,7 @@ func (self *decoder) value(v reflect.Value) {
 			}
 		}
 	case reflect.String:
-		v.SetString(string(self.bytes()))
+		v.SetString(self.string())
 
 	case reflect.Slice:
 
@@ -137,7 +153,7 @@ func (self *decoder) value(v reflect.Value) {
 			v.SetBytes(self.bytes())
 
 		} else {
-			l := int(self.uint16())
+			l := int(self.uint32())
 			slice := reflect.MakeSlice(v.Type(), l, l)
 
 			for i := 0; i < l; i++ {
@@ -176,7 +192,7 @@ func (self *decoder) value(v reflect.Value) {
 		v.SetFloat(float64(math.Float32frombits(self.uint32())))
 	case reflect.Float64:
 		v.SetFloat(math.Float64frombits(self.uint64()))
-	case reflect.Interface:
+	// case reflect.Interface:
 
 	//case reflect.Ptr:
 	//
@@ -226,14 +242,14 @@ func (self *encoder) value(v reflect.Value) {
 
 		} else {
 			l := v.Len()
-			self.uint16(uint16(l))
+			self.uint32(uint32(l))
 			for i := 0; i < l; i++ {
 				self.value(v.Index(i))
 			}
 		}
 
 	case reflect.String:
-		self.bytes([]byte(v.String()))
+		self.string(v.String())
 
 	case reflect.Bool:
 		self.bool(v.Bool())
@@ -331,7 +347,7 @@ func dataSize(v reflect.Value, sf *reflect.StructField) int {
 
 	case reflect.Int:
 		panic("do not support int, use int32/int64 instead")
-		return 0
+		// return 0
 	default:
 
 		if sf != nil && sf.Tag.Get("binary") == "-" {
