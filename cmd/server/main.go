@@ -10,6 +10,7 @@ import (
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/timer"
 	"github.com/yenkeia/yams/game"
+	_ "github.com/yenkeia/yams/game/mircodec"
 	_ "github.com/yenkeia/yams/game/mirtcp"
 )
 
