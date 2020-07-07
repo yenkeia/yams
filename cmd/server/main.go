@@ -9,6 +9,7 @@ import (
 	_ "github.com/davyxu/cellnet/peer/tcp"
 	"github.com/davyxu/cellnet/proc"
 	"github.com/davyxu/cellnet/timer"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/yenkeia/yams/game"
 	_ "github.com/yenkeia/yams/game/mircodec"
 	_ "github.com/yenkeia/yams/game/mirtcp"

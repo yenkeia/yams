@@ -1,13 +1,30 @@
 package game
 
 import (
+	"fmt"
+
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/golog"
+	"github.com/jinzhu/gorm"
 	"github.com/yenkeia/yams/game/proto/client"
 	"github.com/yenkeia/yams/game/proto/server"
 )
 
-var log = golog.New("server")
+var (
+	log  *golog.Logger
+	db   *gorm.DB
+	conf *config
+)
+
+func init() {
+	conf = newConfig("../../configs/yams.yaml")
+	db, err := gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8", conf.Mysql.Username, conf.Mysql.Password, conf.Mysql.Host, conf.Mysql.Port, conf.Mysql.DB))
+	if err != nil {
+		panic(err)
+	}
+	log = golog.New("yams.game")
+	_ = db
+}
 
 // Environ 主游戏环境
 type Environ struct {
