@@ -38,28 +38,52 @@ func (env *Environ) HandleEvent(ev cellnet.Event) {
 	case *client.KeepAlive:
 		s.Send(&server.KeepAlive{Time: 0})
 	case *client.NewAccount:
-		// newAccount(s, msg)
+		newAccount(s, msg)
 	case *client.ChangePassword:
-		// changePassword(s, msg)
+		changePassword(s, msg)
 	case *client.Login:
-		// login(s, msg)
+		login(s, msg)
 	case *client.NewCharacter:
-		// newCharacter(s, msg)
+		newCharacter(s, msg)
 	case *client.DeleteCharacter:
-		// deleteCharacter(s, msg)
+		deleteCharacter(s, msg)
 	case *client.StartGame:
-		// startGame(s, msg)
+		startGame(s, msg)
 	case *client.LogOut:
-		// logOut(s, msg)
-
+		logout(s, msg)
 	default:
 		_ = msg
 
-		// p, ok := g.GetPlayer(s, GAME)
-		// if !ok {
-		// 	return
-		// }
+		// 验证登陆状态
 
 		// handleEvent(p, g, ev, s)
 	}
+}
+
+func newAccount(s cellnet.Session, msg *client.NewAccount) {
+
+}
+
+func changePassword(s cellnet.Session, msg *client.ChangePassword) {
+
+}
+
+func login(s cellnet.Session, msg *client.Login) {
+
+}
+
+func newCharacter(s cellnet.Session, msg *client.NewCharacter) {
+
+}
+
+func deleteCharacter(s cellnet.Session, msg *client.DeleteCharacter) {
+
+}
+
+func startGame(s cellnet.Session, msg *client.StartGame) {
+
+}
+
+func logout(s cellnet.Session, msg *client.LogOut) {
+
 }
