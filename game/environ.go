@@ -45,10 +45,10 @@ func (env *Environ) Update() {
 }
 
 // HandleEvent 处理客户端包
-func (env *Environ) HandleEvent(ev cellnet.Event) {
-	s := ev.Session()
+func (env *Environ) HandleEvent(e cellnet.Event) {
+	s := e.Session()
 
-	switch msg := ev.Message().(type) {
+	switch msg := e.Message().(type) {
 	case *cellnet.SessionAccepted: // 有新的连接
 		s.Send(&server.Connected{})
 	case *cellnet.SessionClosed: // 有连接断开
@@ -72,11 +72,11 @@ func (env *Environ) HandleEvent(ev cellnet.Event) {
 	case *client.LogOut:
 		logout(s, msg)
 	default:
-		_ = msg
-
-		// 验证登陆状态
-
-		// handleEvent(p, g, ev, s)
+		if !checkGameStage(s, GAME) {
+			return
+		}
+		p := sessionPlayer[s.ID()]
+		handleEvent(p, e, s)
 	}
 }
 
@@ -192,4 +192,64 @@ func startGame(s cellnet.Session, msg *client.StartGame) {
 
 func logout(s cellnet.Session, msg *client.LogOut) {
 
+}
+
+func handleEvent(p *player, e cellnet.Event, s cellnet.Session) {
+	switch msg := e.Message().(type) {
+	case *client.Turn:
+		p.Turn(msg)
+	case *client.Walk:
+		p.Walk(msg)
+	case *client.Run:
+		p.Run(msg)
+	case *client.Chat:
+		p.Chat(msg)
+	case *client.MoveItem:
+		p.MoveItem(msg)
+	case *client.StoreItem:
+		p.StoreItem(msg)
+	case *client.DepositRefineItem:
+		p.DepositRefineItem(msg)
+	case *client.RetrieveRefineItem:
+		p.RetrieveRefineItem(msg)
+	case *client.RefineCancel:
+		p.RefineCancel(msg)
+	case *client.RefineItem:
+		p.RefineItem(msg)
+	case *client.CheckRefine:
+		p.CheckRefine(msg)
+	case *client.ReplaceWedRing:
+		p.ReplaceWedRing(msg)
+	case *client.DepositTradeItem:
+		p.DepositTradeItem(msg)
+	case *client.RetrieveTradeItem:
+		p.RetrieveTradeItem(msg)
+	case *client.TakeBackItem:
+		p.TakeBackItem(msg)
+	case *client.MergeItem:
+		p.MergeItem(msg)
+	case *client.EquipItem:
+		p.EquipItem(msg)
+	case *client.RemoveItem:
+		p.RemoveItem(msg)
+	case *client.RemoveSlotItem:
+		p.RemoveSlotItem(msg)
+	case *client.SplitItem:
+		p.SplitItem(msg)
+	case *client.UseItem:
+		p.UseItem(msg)
+	case *client.DropItem:
+		p.DropItem(msg)
+	case *client.DropGold:
+		p.DropGold(msg)
+	case *client.PickUp:
+		p.PickUp(msg)
+	case *client.Inspect:
+		p.Inspect(msg)
+	// case *client.ChangeAMode:
+	// 	p.ChangeAMode(msg)
+	default:
+		log.Debugln("default:", msg)
+		//MessageQueue.Enqueue(string.Format("Invalid packet received. Index : {0}", p.Index));
+	}
 }

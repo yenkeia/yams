@@ -6,10 +6,10 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-type config Yaml
+type config Yams
 
-// Yaml 对应配置文件
-type Yaml struct {
+// Yams 对应配置文件 yams.yaml
+type Yams struct {
 	Mysql struct {
 		Host     string `yaml:"host"`
 		Port     string `yaml:"port"`
