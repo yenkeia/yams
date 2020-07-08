@@ -158,13 +158,18 @@ func newCharacter(s cellnet.Session, msg *client.NewCharacter, env *Environ) {
 	}
 
 	// c := new(orm.Character)
+	// TODO 判断角色名字是否重复
 
-	// res := new(server.NewCharacterSuccess)
-	// res.CharInfo.Index = uint32(c.ID)
-	// res.CharInfo.Name = name
-	// res.CharInfo.Class = class
-	// res.CharInfo.Gender = gender
-	// s.Send(res)
+	res := new(server.NewCharacterSuccess)
+	res.CharInfo = server.SelectInfo{
+		Index:      1, // TODO 顺序 uint32(c.ID)
+		Name:       msg.Name,
+		Level:      1,          // uint16
+		Class:      msg.Class,  // cm.MirClass
+		Gender:     msg.Gender, // cm.MirGender
+		LastAccess: 0,          // int6
+	}
+	s.Send(res)
 }
 
 func deleteCharacter(s cellnet.Session, msg *client.DeleteCharacter) {
@@ -187,7 +192,10 @@ func deleteCharacter(s cellnet.Session, msg *client.DeleteCharacter) {
 }
 
 func startGame(s cellnet.Session, msg *client.StartGame) {
-
+	if !checkGameStage(s, SELECT) {
+		return
+	}
+	// TODO
 }
 
 func logout(s cellnet.Session, msg *client.LogOut) {
