@@ -1,6 +1,8 @@
 package game
 
-import "github.com/yenkeia/yams/game/orm"
+import (
+	"github.com/yenkeia/yams/game/orm"
+)
 
 type mirMap struct {
 	width   int

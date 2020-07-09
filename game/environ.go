@@ -38,6 +38,34 @@ func NewEnviron(c *Config) *Environ {
 	return &Environ{}
 }
 
+func (env *Environ) initMaps() {
+	uppercaseNameRealNameMap := map[string]string{}
+	files := ut.GetFiles(conf.Assets+"/Maps/", []string{".map"})
+	for _, f := range files {
+		uppercaseNameRealNameMap[strings.ToUpper(filepath.Base(f))] = f
+	}
+	// FIXME 开发只加载部分地图
+	// allowarr := []int{1, 2, 3, 4, 6, 7, 8, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22, 24, 26, 27, 28, 29, 30, 31, 32, 25, 144, 384}
+	allowarr := []int{1}
+	allow := map[int]bool{}
+	for _, v := range allowarr {
+		allow[v] = true
+	}
+	env.maps = map[int]*mirMap{}
+	for _, mi := range data.mapInfos {
+		if _, ok := allow[mi.ID]; !ok {
+			continue
+		}
+		m := loadMap(uppercaseNameRealNameMap[strings.ToUpper(mi.Filename+".map")])
+		m.info = mi
+		m.info.Filename = strings.ToUpper(mi.Filename)
+		// if err := m.InitAll(); err != nil {
+		// 	panic(err)
+		// }
+		env.maps[mi.ID] = m
+	}
+}
+
 // Update 更新游戏状态
 func (env *Environ) Update() {
 	// log.Debugln("Update")
@@ -258,32 +286,5 @@ func handleEvent(p *player, e cellnet.Event, s cellnet.Session) {
 	default:
 		log.Debugln("default:", msg)
 		//MessageQueue.Enqueue(string.Format("Invalid packet received. Index : {0}", p.Index));
-	}
-}
-
-func (env *Environ) initMaps() {
-	uppercaseNameRealNameMap := map[string]string{}
-	files := ut.GetFiles(conf.Assets+"/Maps/", []string{".map"})
-	for _, f := range files {
-		uppercaseNameRealNameMap[strings.ToUpper(filepath.Base(f))] = f
-	}
-	// FIXME 开发只加载部分地图
-	allowarr := []int{1, 2, 3, 4, 6, 7, 8, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22, 24, 26, 27, 28, 29, 30, 31, 32, 25, 144, 384}
-	allow := map[int]bool{}
-	for _, v := range allowarr {
-		allow[v] = true
-	}
-	env.maps = map[int]*mirMap{}
-	for _, mi := range data.mapInfos {
-		if _, ok := allow[mi.ID]; !ok {
-			continue
-		}
-		m := loadMap(uppercaseNameRealNameMap[strings.ToUpper(mi.Filename+".map")])
-		m.info = mi
-		m.info.Filename = strings.ToUpper(mi.Filename)
-		// if err := m.InitAll(); err != nil {
-		// 	panic(err)
-		// }
-		env.maps[mi.ID] = m
 	}
 }
