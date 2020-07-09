@@ -8,9 +8,19 @@ type mirMap struct {
 }
 
 func newMirMap(width, height, version int) *mirMap {
-	return nil
+	return &mirMap{
+		width:   width,
+		height:  height,
+		version: version,
+		cells:   make([]*cell, width*height),
+	}
 }
 
 func (m *mirMap) setCellAttribute(x, y int, attr cellAttribute) {
-
+	c := new(cell)
+	c.attribute = attr
+	if attr == cellAttributeWalk {
+		c.objects = make([]mapObject, 0)
+	}
+	m.cells[x+y*m.width] = c
 }

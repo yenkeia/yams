@@ -1,6 +1,6 @@
 package game
 
 type cell struct {
-	attribut cellAttribute
-	objects  []mapObject
+	attribute cellAttribute
+	objects   []mapObject
 }
