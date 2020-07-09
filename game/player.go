@@ -3,9 +3,13 @@ package game
 import "github.com/yenkeia/yams/game/proto/client"
 
 type player struct {
-	mapObject
 	gameStage int
 	accountID int
+	objectID  int
+}
+
+func (p *player) id() int {
+	return p.objectID
 }
 
 func (p *player) Turn(msg *client.Turn)                             {}

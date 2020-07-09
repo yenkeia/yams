@@ -16,8 +16,7 @@ import (
 )
 
 func main() {
-
-	env := game.NewEnviron()
+	env := game.NewEnviron(game.NewConfig("../../configs/yams.yaml"))
 
 	queue := cellnet.NewEventQueue() // 这里用 cellnet 单线程模式。消息处理都在queue线程。无需再另开线程
 

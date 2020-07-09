@@ -14,20 +14,8 @@ import (
 var (
 	log           *golog.Logger
 	db            *gorm.DB
-	conf          *config
 	sessionPlayer map[int64]*player
 )
-
-func init() {
-	conf = newConfig("../../configs/yams.yaml")
-	db, err := gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8", conf.Mysql.Username, conf.Mysql.Password, conf.Mysql.Host, conf.Mysql.Port, conf.Mysql.DB))
-	defer db.Close()
-	if err != nil {
-		panic(err)
-	}
-	log = golog.New("yams.game")
-	sessionPlayer = make(map[int64]*player)
-}
 
 // Environ 主游戏环境
 type Environ struct {
@@ -35,7 +23,14 @@ type Environ struct {
 }
 
 // NewEnviron 初始化
-func NewEnviron() *Environ {
+func NewEnviron(conf *Config) *Environ {
+	db, err := gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8", conf.Mysql.Username, conf.Mysql.Password, conf.Mysql.Host, conf.Mysql.Port, conf.Mysql.DB))
+	defer db.Close()
+	if err != nil {
+		panic(err)
+	}
+	log = golog.New("yams.game")
+	sessionPlayer = make(map[int64]*player)
 	return &Environ{}
 }
 

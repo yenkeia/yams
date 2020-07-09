@@ -6,10 +6,8 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-type config Yams
-
-// Yams 对应配置文件 yams.yaml
-type Yams struct {
+// Config 对应配置文件 yams.yaml
+type Config struct {
 	Mysql struct {
 		Host     string `yaml:"host"`
 		Port     string `yaml:"port"`
@@ -19,8 +17,9 @@ type Yams struct {
 	}
 }
 
-func newConfig(path string) *config {
-	conf = new(config)
+// NewConfig ..
+func NewConfig(path string) (conf *Config) {
+	conf = new(Config)
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		panic(err)
@@ -29,5 +28,5 @@ func newConfig(path string) *config {
 	if err != nil {
 		panic(err)
 	}
-	return conf
+	return
 }
