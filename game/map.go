@@ -1,9 +1,12 @@
 package game
 
+import "github.com/yenkeia/yams/game/orm"
+
 type mirMap struct {
 	width   int
 	height  int
 	version int
+	info    *orm.MapInfo
 	cells   []*cell
 }
 

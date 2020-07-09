@@ -2,6 +2,8 @@ package game
 
 import (
 	"fmt"
+	"path/filepath"
+	"strings"
 
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/golog"
@@ -9,24 +11,30 @@ import (
 	"github.com/yenkeia/yams/game/orm"
 	"github.com/yenkeia/yams/game/proto/client"
 	"github.com/yenkeia/yams/game/proto/server"
+	"github.com/yenkeia/yams/game/ut"
 )
 
 var log = golog.New("yams.game")
 var sessionPlayer = make(map[int64]*player)
 var db *gorm.DB
+var data *gameData
+var conf *Config
 
 // Environ 主游戏环境
 type Environ struct {
 	Peer cellnet.GenericPeer
+	maps map[int]*mirMap // MapInfo.ID: Map
 }
 
 // NewEnviron 初始化
-func NewEnviron(conf *Config) *Environ {
+func NewEnviron(c *Config) *Environ {
+	conf = c
 	db, err := gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8", conf.Mysql.Username, conf.Mysql.Password, conf.Mysql.Host, conf.Mysql.Port, conf.Mysql.DB))
 	defer db.Close()
 	if err != nil {
 		panic(err)
 	}
+	data = newGameData()
 	return &Environ{}
 }
 
@@ -250,5 +258,32 @@ func handleEvent(p *player, e cellnet.Event, s cellnet.Session) {
 	default:
 		log.Debugln("default:", msg)
 		//MessageQueue.Enqueue(string.Format("Invalid packet received. Index : {0}", p.Index));
+	}
+}
+
+func (env *Environ) initMaps() {
+	uppercaseNameRealNameMap := map[string]string{}
+	files := ut.GetFiles(conf.Assets+"/Maps/", []string{".map"})
+	for _, f := range files {
+		uppercaseNameRealNameMap[strings.ToUpper(filepath.Base(f))] = f
+	}
+	// FIXME 开发只加载部分地图
+	allowarr := []int{1, 2, 3, 4, 6, 7, 8, 10, 11, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22, 24, 26, 27, 28, 29, 30, 31, 32, 25, 144, 384}
+	allow := map[int]bool{}
+	for _, v := range allowarr {
+		allow[v] = true
+	}
+	env.maps = map[int]*mirMap{}
+	for _, mi := range data.mapInfos {
+		if _, ok := allow[mi.ID]; !ok {
+			continue
+		}
+		m := loadMap(uppercaseNameRealNameMap[strings.ToUpper(mi.Filename+".map")])
+		m.info = mi
+		m.info.Filename = strings.ToUpper(mi.Filename)
+		// if err := m.InitAll(); err != nil {
+		// 	panic(err)
+		// }
+		env.maps[mi.ID] = m
 	}
 }

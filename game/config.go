@@ -8,7 +8,8 @@ import (
 
 // Config 对应配置文件 yams.yaml
 type Config struct {
-	Mysql struct {
+	Assets string `yaml:"assets"`
+	Mysql  struct {
 		Host     string `yaml:"host"`
 		Port     string `yaml:"port"`
 		DB       string `yaml:"db"`
