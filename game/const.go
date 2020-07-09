@@ -10,3 +10,11 @@ const (
 	// DISCONNECTED 应该是小退后的状态
 	DISCONNECTED
 )
+
+type cellAttribute int
+
+const (
+	cellAttributeWalk     cellAttribute = 0
+	cellAttributeHighWall cellAttribute = 1
+	cellAttributeLowWall  cellAttribute = 2
+)

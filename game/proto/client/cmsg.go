@@ -2,7 +2,7 @@ package client
 
 import (
 	_ "github.com/davyxu/cellnet/codec/binary"
-	"github.com/yenkeia/yams/game/cm"
+	"github.com/yenkeia/yams/game/proto/cm"
 )
 
 const (
