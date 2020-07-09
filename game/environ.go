@@ -11,11 +11,9 @@ import (
 	"github.com/yenkeia/yams/game/proto/server"
 )
 
-var (
-	log           *golog.Logger
-	db            *gorm.DB
-	sessionPlayer map[int64]*player
-)
+var log = golog.New("yams.game")
+var sessionPlayer = make(map[int64]*player)
+var db *gorm.DB
 
 // Environ 主游戏环境
 type Environ struct {
@@ -29,8 +27,6 @@ func NewEnviron(conf *Config) *Environ {
 	if err != nil {
 		panic(err)
 	}
-	log = golog.New("yams.game")
-	sessionPlayer = make(map[int64]*player)
 	return &Environ{}
 }
 
