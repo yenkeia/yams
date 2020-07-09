@@ -50,12 +50,15 @@ func detectMapVersion(input []byte) byte {
 	}
 	//shanda's 2012 format and one of shandas(wemades) older formats share same header info, only difference is the filesize
 	if (input[4] == 0x0F) && (input[18] == 0x0D) && (input[19] == 0x0A) {
-		W := int(input[0] + (input[1] << 8))
-		H := int(input[2] + (input[3] << 8))
-		if len(input) > (52 + (W * H * 14)) {
-			return 3
-		}
-		return 2
+		/*
+			W := int(input[0] + (input[1] << 8))
+			H := int(input[2] + (input[3] << 8))
+			if len(input) > (52 + (W * H * 14)) {
+				return 3
+			}
+			return 2
+		*/
+		panic("not support shanda's 2012 map format")
 	}
 	//3/4 heroes map format (myth/lifcos i guess)
 	if (input[0] == 0x0D) && (input[1] == 0x4C) && (input[7] == 0x20) && (input[11] == 0x6D) {
