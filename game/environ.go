@@ -27,8 +27,8 @@ const (
 
 var log = golog.New("yams.game")
 var sessionPlayer = make(map[int64]*player)
-var db *gorm.DB
-var data *mirData
+var accountDB *gorm.DB
+var dataDB *mirData
 var conf *Config
 
 // Environ 主游戏环境
@@ -40,12 +40,13 @@ type Environ struct {
 // NewEnviron 初始化
 func NewEnviron(c *Config) *Environ {
 	conf = c
-	db, err := gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8", conf.Mysql.Username, conf.Mysql.Password, conf.Mysql.Host, conf.Mysql.Port, conf.Mysql.DB))
-	defer db.Close()
+	adb, err := gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8", conf.Mysql.Username, conf.Mysql.Password, conf.Mysql.Host, conf.Mysql.Port, conf.Mysql.AccountDB))
+	accountDB = adb
+	defer adb.Close()
 	if err != nil {
 		panic(err)
 	}
-	data = newmirData()
+	dataDB = newmirData()
 	env := &Environ{}
 	env.initMaps()
 	return env
@@ -65,7 +66,7 @@ func (env *Environ) initMaps() {
 		allow[v] = true
 	}
 	env.maps = map[int]*mirMap{}
-	for _, mi := range data.mapInfos {
+	for _, mi := range dataDB.mapInfos {
 		if _, ok := allow[mi.ID]; !ok {
 			continue
 		}
@@ -144,11 +145,11 @@ func newAccount(s cellnet.Session, msg *client.NewAccount) {
 	}
 	res := uint8(0)
 	a := new(orm.Account)
-	db.Table("account").Where("username = ?", msg.UserName).Find(a)
+	accountDB.Table("account").Where("username = ?", msg.UserName).Find(a)
 	if a.ID == 0 {
 		a.Username = msg.AccountID
 		a.Password = msg.Password
-		db.Table("account").Create(a)
+		accountDB.Table("account").Create(a)
 		res = 8
 	}
 	s.Send(&server.NewAccount{Result: res})
@@ -160,10 +161,10 @@ func changePassword(s cellnet.Session, msg *client.ChangePassword) {
 	}
 	res := uint8(5)
 	a := new(orm.Account)
-	db.Table("account").Where("username = ? AND password = ?", msg.AccountID, msg.CurrentPassword).Find(a)
+	accountDB.Table("account").Where("username = ? AND password = ?", msg.AccountID, msg.CurrentPassword).Find(a)
 	if a.ID != 0 {
 		a.Password = msg.NewPassword
-		db.Table("account").Model(a).Updates(orm.Account{Password: msg.NewPassword})
+		accountDB.Table("account").Model(a).Updates(orm.Account{Password: msg.NewPassword})
 		res = 6
 	}
 	s.Send(&server.ChangePassword{Result: res})
@@ -174,7 +175,7 @@ func login(s cellnet.Session, msg *client.Login, env *Environ) {
 		return
 	}
 	a := new(orm.Account)
-	db.Table("account").Where("username = ? AND password = ?", msg.AccountID, msg.Password).Find(a)
+	accountDB.Table("account").Where("username = ? AND password = ?", msg.AccountID, msg.Password).Find(a)
 	if a.ID == 0 {
 		s.Send(&server.Login{Result: uint8(4)})
 		return
@@ -191,7 +192,7 @@ func newCharacter(s cellnet.Session, msg *client.NewCharacter, env *Environ) {
 	player := sessionPlayer[s.ID()]
 
 	ac := make([]orm.AccountCharacter, 3)
-	db.Table("account_character").Where("account_id = ?", player.accountID).Limit(3).Find(&ac)
+	accountDB.Table("account_character").Where("account_id = ?", player.accountID).Limit(3).Find(&ac)
 	if len(ac) >= 3 {
 		s.Send(&server.NewCharacter{Result: uint8(4)})
 		return
@@ -217,15 +218,15 @@ func deleteCharacter(s cellnet.Session, msg *client.DeleteCharacter) {
 		return
 	}
 	c := new(orm.Character)
-	db.Table("character").Where("id = ?", msg.CharacterIndex).Find(c)
+	accountDB.Table("character").Where("id = ?", msg.CharacterIndex).Find(c)
 	if c.ID == 0 {
 		res := new(server.DeleteCharacter)
 		res.Result = 4
 		s.Send(res)
 		return
 	}
-	db.Table("character").Delete(c)
-	db.Table("account_character").Where("character_id = ?", c.ID).Delete(orm.Character{})
+	accountDB.Table("character").Delete(c)
+	accountDB.Table("account_character").Where("character_id = ?", c.ID).Delete(orm.Character{})
 	res := new(server.DeleteCharacterSuccess)
 	res.CharacterIndex = msg.CharacterIndex
 	s.Send(res)

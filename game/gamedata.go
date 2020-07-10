@@ -12,7 +12,7 @@ type mirData struct {
 }
 
 func newmirData() *mirData {
-	name := "mirdata"
+	name := conf.Mysql.DataDB
 	db, err := gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8", conf.Mysql.Username, conf.Mysql.Password, conf.Mysql.Host, conf.Mysql.Port, name))
 	defer db.Close()
 	if err != nil {
