@@ -35,7 +35,9 @@ func NewEnviron(c *Config) *Environ {
 		panic(err)
 	}
 	data = newGameData()
-	return &Environ{}
+	env := &Environ{}
+	env.initMaps()
+	return env
 }
 
 func (env *Environ) initMaps() {
@@ -232,55 +234,55 @@ func logout(s cellnet.Session, msg *client.LogOut) {
 func handleEvent(p *player, e cellnet.Event, s cellnet.Session) {
 	switch msg := e.Message().(type) {
 	case *client.Turn:
-		p.Turn(msg)
+		p.turn(msg)
 	case *client.Walk:
-		p.Walk(msg)
+		p.walk(msg)
 	case *client.Run:
-		p.Run(msg)
+		p.run(msg)
 	case *client.Chat:
-		p.Chat(msg)
+		p.chat(msg)
 	case *client.MoveItem:
-		p.MoveItem(msg)
+		p.moveItem(msg)
 	case *client.StoreItem:
-		p.StoreItem(msg)
+		p.storeItem(msg)
 	case *client.DepositRefineItem:
-		p.DepositRefineItem(msg)
+		p.depositRefineItem(msg)
 	case *client.RetrieveRefineItem:
-		p.RetrieveRefineItem(msg)
+		p.retrieveRefineItem(msg)
 	case *client.RefineCancel:
-		p.RefineCancel(msg)
+		p.refineCancel(msg)
 	case *client.RefineItem:
-		p.RefineItem(msg)
+		p.refineItem(msg)
 	case *client.CheckRefine:
-		p.CheckRefine(msg)
+		p.checkRefine(msg)
 	case *client.ReplaceWedRing:
-		p.ReplaceWedRing(msg)
+		p.replaceWedRing(msg)
 	case *client.DepositTradeItem:
-		p.DepositTradeItem(msg)
+		p.depositTradeItem(msg)
 	case *client.RetrieveTradeItem:
-		p.RetrieveTradeItem(msg)
+		p.retrieveTradeItem(msg)
 	case *client.TakeBackItem:
-		p.TakeBackItem(msg)
+		p.takeBackItem(msg)
 	case *client.MergeItem:
-		p.MergeItem(msg)
+		p.mergeItem(msg)
 	case *client.EquipItem:
-		p.EquipItem(msg)
+		p.equipItem(msg)
 	case *client.RemoveItem:
-		p.RemoveItem(msg)
+		p.removeItem(msg)
 	case *client.RemoveSlotItem:
-		p.RemoveSlotItem(msg)
+		p.removeSlotItem(msg)
 	case *client.SplitItem:
-		p.SplitItem(msg)
+		p.splitItem(msg)
 	case *client.UseItem:
-		p.UseItem(msg)
+		p.useItem(msg)
 	case *client.DropItem:
-		p.DropItem(msg)
+		p.dropItem(msg)
 	case *client.DropGold:
-		p.DropGold(msg)
+		p.dropGold(msg)
 	case *client.PickUp:
-		p.PickUp(msg)
+		p.pickUp(msg)
 	case *client.Inspect:
-		p.Inspect(msg)
+		p.inspect(msg)
 	// case *client.ChangeAMode:
 	// 	p.ChangeAMode(msg)
 	default:
