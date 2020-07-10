@@ -28,7 +28,7 @@ const (
 var log = golog.New("yams.game")
 var sessionPlayer = make(map[int64]*player)
 var db *gorm.DB
-var data *gameData
+var data *mirData
 var conf *Config
 
 // Environ 主游戏环境
@@ -45,7 +45,7 @@ func NewEnviron(c *Config) *Environ {
 	if err != nil {
 		panic(err)
 	}
-	data = newGameData()
+	data = newmirData()
 	env := &Environ{}
 	env.initMaps()
 	return env
@@ -236,6 +236,29 @@ func startGame(s cellnet.Session, msg *client.StartGame) {
 		return
 	}
 	// TODO
+	p := sessionPlayer[s.ID()]
+	p.receiveChat("[欢迎进入游戏，如有任何建议、疑问欢迎交流。联系QQ群：32309474]", cm.ChatTypeHint)
+	// p.enqueueItemInfos()
+	// p.refreshStats()
+	// p.enqueueQuestInfo()
+	p.enqueue(&server.MapInformation{
+		FileName:     p.currentMap.info.Filename,
+		Title:        p.currentMap.info.Title,
+		MiniMap:      uint16(p.currentMap.info.MiniMap),
+		BigMap:       uint16(p.currentMap.info.BigMap),
+		Lights:       cm.LightSetting(p.currentMap.info.Light),
+		Lightning:    true,
+		MapDarkLight: 0,
+		Music:        uint16(p.currentMap.info.Music),
+	})
+	p.enqueue(&server.UserInformation{})
+	// p.enqueue(&server.TimeOfDay{Lights: env.Lights})
+	// p.enqueue(&server.ChangeAMode{Mode: p.AMode})
+	// p.enqueue(&server.ChangePMode{Mode: p.PMode})
+	// p.enqueue(&server.SwitchGroup{AllowGroup: p.AllowGroup})
+	// p.enqueueAreaObjects(nil, p.GetCell())
+	// p.enqueue(ServerMessage{}.NPCResponse([]string{}))
+	// p.broadcast(ServerMessage{}.ObjectPlayer(p))
 }
 
 func logout(s cellnet.Session, msg *client.LogOut) {

@@ -1,15 +1,38 @@
 package game
 
-import "github.com/yenkeia/yams/game/proto/client"
+import (
+	"github.com/davyxu/cellnet"
+	"github.com/yenkeia/yams/game/cm"
+	"github.com/yenkeia/yams/game/proto/client"
+	"github.com/yenkeia/yams/game/proto/server"
+)
 
 type player struct {
-	gameStage int
-	accountID int
-	objectID  int
+	session         *cellnet.Session
+	gameStage       int
+	accountID       int
+	objectID        int
+	name            string
+	nameColor       cm.Color
+	currentMap      *mirMap
+	currentLocation cm.Point
+	direction       cm.MirDirection
 }
 
 func (p *player) id() int {
 	return p.objectID
+}
+
+func (p *player) enqueue(msg interface{}) {
+	if msg == nil {
+		log.Errorln("warning: enqueue nil message")
+		return
+	}
+	(*p.session).Send(msg)
+}
+
+func (p *player) receiveChat(text string, typ cm.ChatType) {
+	p.enqueue(&server.Chat{Message: text, Type: typ})
 }
 
 func (p *player) turn(msg *client.Turn)                             {}
