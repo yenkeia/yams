@@ -5,7 +5,7 @@ import (
 
 	// 使用binary协议，因此匿名引用这个包，底层会自动注册
 	_ "github.com/davyxu/cellnet/codec/binary"
-	"github.com/yenkeia/yams/game/proto/cm"
+	"github.com/yenkeia/yams/game/cm"
 )
 
 const (

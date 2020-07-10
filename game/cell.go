@@ -1,6 +1,8 @@
 package game
 
+import "github.com/yenkeia/yams/game/cm"
+
 type cell struct {
-	attribute cellAttribute
+	attribute cm.CellAttribute
 	objects   []mapObject
 }

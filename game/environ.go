@@ -8,10 +8,21 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/golog"
 	"github.com/jinzhu/gorm"
+	"github.com/yenkeia/yams/game/cm"
 	"github.com/yenkeia/yams/game/orm"
 	"github.com/yenkeia/yams/game/proto/client"
 	"github.com/yenkeia/yams/game/proto/server"
-	"github.com/yenkeia/yams/game/ut"
+)
+
+const (
+	// LOGIN 客户端连接到服务器，正在输入账号密码的状态
+	LOGIN = iota
+	// SELECT 选角色状态
+	SELECT
+	// GAME 进入游戏状态
+	GAME
+	// DISCONNECTED 应该是小退后的状态
+	DISCONNECTED
 )
 
 var log = golog.New("yams.game")
@@ -42,7 +53,7 @@ func NewEnviron(c *Config) *Environ {
 
 func (env *Environ) initMaps() {
 	uppercaseNameRealNameMap := map[string]string{}
-	files := ut.GetFiles(conf.Assets+"/Maps/", []string{".map"})
+	files := cm.GetFiles(conf.Assets+"/Maps/", []string{".map"})
 	for _, f := range files {
 		uppercaseNameRealNameMap[strings.ToUpper(filepath.Base(f))] = f
 	}

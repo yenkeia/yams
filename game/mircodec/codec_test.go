@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/yenkeia/yams/game/cm"
 	"github.com/yenkeia/yams/game/proto/client"
-	"github.com/yenkeia/yams/game/ut"
 )
 
 func TestCodec(t *testing.T) {
@@ -20,7 +20,7 @@ func TestCodec(t *testing.T) {
 	e.uint32(uint32(321))
 	fmt.Println(buf)
 
-	fmt.Println(ut.StringToBytes("123"))
+	fmt.Println(cm.StringToBytes("123"))
 
 	// e.int32(int32(123))
 	// fmt.Println(buf)

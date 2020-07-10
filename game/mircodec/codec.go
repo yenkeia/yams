@@ -5,7 +5,7 @@ import (
 	"math"
 	"reflect"
 
-	"github.com/yenkeia/yams/game/ut"
+	"github.com/yenkeia/yams/game/cm"
 )
 
 type coder struct {
@@ -92,7 +92,7 @@ func (self *encoder) bytes(x []byte) {
 }
 
 func (self *decoder) string() string {
-	i, s := ut.ReadString(self.buf, 0)
+	i, s := cm.ReadString(self.buf, 0)
 	self.buf = self.buf[i:]
 	return s
 }

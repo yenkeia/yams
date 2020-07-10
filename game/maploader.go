@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/yenkeia/yams/game/ut"
+	"github.com/yenkeia/yams/game/cm"
 )
 
 func loadMap(filepath string) *mirMap {
@@ -69,9 +69,9 @@ func detectMapVersion(input []byte) byte {
 
 func getMapV0(bytes []byte) *mirMap {
 	offset := 0
-	w := ut.BytesToUint16(bytes[offset:])
+	w := cm.BytesToUint16(bytes[offset:])
 	offset += 2
-	h := ut.BytesToUint16(bytes[offset:])
+	h := cm.BytesToUint16(bytes[offset:])
 	width := int(w)
 	height := int(h)
 
@@ -81,23 +81,23 @@ func getMapV0(bytes []byte) *mirMap {
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
 
-			cellAttr := cellAttributeWalk
+			cellAttr := cm.CellAttributeWalk
 
-			if (ut.BytesToUint16(bytes[offset:]) & 0x8000) != 0 {
+			if (cm.BytesToUint16(bytes[offset:]) & 0x8000) != 0 {
 				// cell = HighWallCell //Can Fire Over.
-				cellAttr = cellAttributeHighWall
+				cellAttr = cm.CellAttributeHighWall
 			}
 
 			offset += 2
-			if (ut.BytesToUint16(bytes[offset:]) & 0x8000) != 0 {
+			if (cm.BytesToUint16(bytes[offset:]) & 0x8000) != 0 {
 				// cell = LowWallCell //Can't Fire Over.
-				cellAttr = cellAttributeLowWall
+				cellAttr = cm.CellAttributeLowWall
 			}
 
 			offset += 2
-			if (ut.BytesToUint16(bytes[offset:]) & 0x8000) != 0 {
+			if (cm.BytesToUint16(bytes[offset:]) & 0x8000) != 0 {
 				// cell = HighWallCell //No Floor Tile.
-				cellAttr = cellAttributeHighWall
+				cellAttr = cm.CellAttributeHighWall
 			}
 
 			m.setCellAttribute(x, y, cellAttr)
@@ -121,11 +121,11 @@ func getMapV0(bytes []byte) *mirMap {
 
 func getMapV1(bytes []byte) *mirMap {
 	offset := 21
-	w := ut.BytesToUint16(bytes[offset:])
+	w := cm.BytesToUint16(bytes[offset:])
 	offset += 2
-	xor := ut.BytesToUint16(bytes[offset:])
+	xor := cm.BytesToUint16(bytes[offset:])
 	offset += 2
-	h := ut.BytesToUint16(bytes[offset:])
+	h := cm.BytesToUint16(bytes[offset:])
 	width := int(w ^ xor)
 	height := int(h ^ xor)
 
@@ -135,15 +135,15 @@ func getMapV1(bytes []byte) *mirMap {
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
 
-			cellAttr := cellAttributeWalk
+			cellAttr := cm.CellAttributeWalk
 
-			if (ut.BytesToUint32(bytes[offset:])^0xAA38AA38)&0x20000000 != 0 {
-				cellAttr = cellAttributeHighWall
+			if (cm.BytesToUint32(bytes[offset:])^0xAA38AA38)&0x20000000 != 0 {
+				cellAttr = cm.CellAttributeHighWall
 			}
 
 			offset += 6
-			if ((ut.BytesToUint16(bytes[offset:]) ^ xor) & 0x8000) != 0 {
-				cellAttr = cellAttributeLowWall
+			if ((cm.BytesToUint16(bytes[offset:]) ^ xor) & 0x8000) != 0 {
+				cellAttr = cm.CellAttributeLowWall
 			}
 
 			m.setCellAttribute(x, y, cellAttr)
@@ -167,9 +167,9 @@ func getMapV1(bytes []byte) *mirMap {
 
 func getMapV3(bytes []byte) *mirMap {
 	offset := 0
-	w := ut.BytesToUint16(bytes[offset:])
+	w := cm.BytesToUint16(bytes[offset:])
 	offset += 2
-	h := ut.BytesToUint16(bytes[offset:])
+	h := cm.BytesToUint16(bytes[offset:])
 	width := int(w)
 	height := int(h)
 
@@ -179,20 +179,20 @@ func getMapV3(bytes []byte) *mirMap {
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
 
-			cellAttr := cellAttributeWalk
+			cellAttr := cm.CellAttributeWalk
 
-			if (ut.BytesToUint16(bytes[offset:]) & 0x8000) != 0 {
-				cellAttr = cellAttributeHighWall
+			if (cm.BytesToUint16(bytes[offset:]) & 0x8000) != 0 {
+				cellAttr = cm.CellAttributeHighWall
 			}
 
 			offset += 2
-			if (ut.BytesToUint16(bytes[offset:]) & 0x8000) != 0 {
-				cellAttr = cellAttributeLowWall
+			if (cm.BytesToUint16(bytes[offset:]) & 0x8000) != 0 {
+				cellAttr = cm.CellAttributeLowWall
 			}
 
 			offset += 2
-			if (ut.BytesToUint16(bytes[offset:]) & 0x8000) != 0 {
-				cellAttr = cellAttributeHighWall
+			if (cm.BytesToUint16(bytes[offset:]) & 0x8000) != 0 {
+				cellAttr = cm.CellAttributeHighWall
 			}
 
 			m.setCellAttribute(x, y, cellAttr)
@@ -218,9 +218,9 @@ func getMapV3(bytes []byte) *mirMap {
 
 func getMapV5(bytes []byte) *mirMap {
 	offset := 22
-	w := ut.BytesToUint16(bytes[offset:])
+	w := cm.BytesToUint16(bytes[offset:])
 	offset += 2
-	h := ut.BytesToUint16(bytes[offset:])
+	h := cm.BytesToUint16(bytes[offset:])
 	width := int(w)
 	height := int(h)
 
@@ -231,12 +231,12 @@ func getMapV5(bytes []byte) *mirMap {
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
 
-			cellAttr := cellAttributeWalk
+			cellAttr := cm.CellAttributeWalk
 
 			if (bytes[offset] & 0x01) != 1 {
-				cellAttr = cellAttributeHighWall
+				cellAttr = cm.CellAttributeHighWall
 			} else if (bytes[offset] & 0x02) != 2 {
-				cellAttr = cellAttributeLowWall
+				cellAttr = cm.CellAttributeLowWall
 			}
 
 			m.setCellAttribute(x, y, cellAttr)

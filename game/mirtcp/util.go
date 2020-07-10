@@ -10,7 +10,7 @@ import (
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/cellnet/codec"
 	"github.com/davyxu/golog"
-	"github.com/yenkeia/yams/game/ut"
+	"github.com/yenkeia/yams/game/cm"
 )
 
 var (
@@ -76,7 +76,7 @@ func ClientRecvLTVPacket(reader io.Reader, maxPacketSize int) (msg interface{}, 
 	_, err = io.ReadFull(reader, body)
 
 	allBytes := append(sizeBuffer, body...)
-	packetName := GetPacketName("server", int(ut.BytesToUint16(body[:2])))
+	packetName := GetPacketName("server", int(cm.BytesToUint16(body[:2])))
 
 	// 发生错误时返回
 	if err != nil {
@@ -149,7 +149,7 @@ func ClientSendLTVPacket(writer io.Writer, ctx cellnet.ContextSet, data interfac
 	// 将数据写入Socket
 	err := WriteFull(writer, pkt)
 
-	packetName := GetPacketName("client", int(ut.BytesToUint16(pkt[2:4])))
+	packetName := GetPacketName("client", int(cm.BytesToUint16(pkt[2:4])))
 	log.Debugln("---> 客户端发送 (" + packetName + ") " + strconv.Itoa(len(pkt)) + "字节: " + String(pkt))
 
 	// Codec中使用内存池时的释放位置
@@ -213,7 +213,7 @@ func ServerRecvLTVPacket(reader io.Reader, maxPacketSize int) (msg interface{}, 
 		skip["client.TURN"] = true
 	*/
 	printBytes := true
-	packetName := GetPacketName("client", int(ut.BytesToUint16(body[:2])))
+	packetName := GetPacketName("client", int(cm.BytesToUint16(body[:2])))
 	if !skip[packetName] {
 		str := "<--- 服务端收到 (" + packetName + ") " + strconv.Itoa(len(allBytes))
 		if printBytes {
@@ -305,7 +305,7 @@ func ServerSendLTVPacket(writer io.Writer, ctx cellnet.ContextSet, data interfac
 		// skip["server.OBJECT_STRUCK"] = true
 	*/
 	printBytes := true
-	packetName := GetPacketName("server", int(ut.BytesToUint16(pkt[2:4])))
+	packetName := GetPacketName("server", int(cm.BytesToUint16(pkt[2:4])))
 	if !skip[packetName] {
 		str := "---> 服务端发送 (" + packetName + ") " + strconv.Itoa(len(pkt))
 		if printBytes {
