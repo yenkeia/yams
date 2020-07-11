@@ -30,3 +30,7 @@ func (m *mirMap) setCellAttribute(x, y int, attr cm.CellAttribute) {
 	}
 	m.cells[x+y*m.width] = c
 }
+
+func (m *mirMap) update() {
+
+}

@@ -505,6 +505,7 @@ type UserInformation struct {
 	HasExpandedStorage        bool
 	ExpandedStorageExpiryTime int64
 	ClientMagics              []*ClientMagic
+	IntelligentCreatureBytes  []byte // FIXME 剩下的不做，直接填字节数组
 }
 
 func (msg *UserInformation) String() string {

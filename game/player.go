@@ -17,6 +17,23 @@ type player struct {
 	currentMap      *mirMap
 	currentLocation cm.Point
 	direction       cm.MirDirection
+	hp              int
+	mp              int
+	level           int
+	experience      int
+	maxExperience   int
+	guildName       string
+	guildRankName   string
+	class           cm.MirClass
+	gender          cm.MirGender
+	hair            int
+	light           int
+	gold            int
+	inventory       *bag // 46
+	equipment       *bag // 14
+	questInventory  *bag // 40
+	storage         *bag // 80
+	trade           *bag // 10	交易框的索引是从上到下的，背包是从左到右
 }
 
 func (p *player) id() int {
