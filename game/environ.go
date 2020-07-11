@@ -256,32 +256,31 @@ func startGame(s cellnet.Session, msg *client.StartGame) {
 		Music:        uint16(p.currentMap.info.Music),
 	})
 	p.enqueue(&server.UserInformation{
-		ObjectID:                  uint32(p.objectID),      // uint32
-		RealID:                    uint32(p.objectID),      // uint32
-		Name:                      p.name,                  // string
-		GuildName:                 p.guildName,             // string
-		GuildRank:                 p.guildRankName,         // string
-		NameColor:                 cm.ColorWhite.ToInt32(), // int32
-		Class:                     p.class,                 // cm.MirClass
-		Gender:                    p.gender,                // cm.MirGender
-		Level:                     uint16(p.level),         // uint16
-		Location:                  p.currentLocation,       // cm.Point
-		Direction:                 p.direction,             // cm.MirDirection
-		Hair:                      uint8(p.hair),           // uint8
-		HP:                        uint16(p.hp),            // uint16
-		MP:                        uint16(p.mp),            // uint16
-		Experience:                int64(p.experience),     // int64
-		MaxExperience:             int64(p.maxExperience),  // int64
-		LevelEffect:               cm.LevelEffectsNone,     // cm.LevelEffects
-		Inventory:                 nil,                     // p.inventory.items,       // []*UserItem
-		Equipment:                 nil,                     // p.equipment.items,       // []*UserItem
-		QuestInventory:            nil,                     // p.questInventory.items,  // []*UserItem
-		Gold:                      uint32(p.gold),          // uint32
-		Credit:                    0,                       // uint32
-		HasExpandedStorage:        false,                   // bool
-		ExpandedStorageExpiryTime: 0,                       // int64
-		ClientMagics:              nil,                     // FIXME []*ClientMagic
-		IntelligentCreatureBytes:  []byte{},                // FIXME
+		ObjectID:                  uint32(p.objectID),
+		RealID:                    uint32(p.objectID),
+		Name:                      p.name,
+		GuildName:                 p.guildName,
+		GuildRank:                 p.guildRankName,
+		NameColor:                 cm.ColorWhite.ToInt32(),
+		Class:                     p.class,
+		Gender:                    p.gender,
+		Level:                     uint16(p.level),
+		Location:                  p.currentLocation,
+		Direction:                 p.direction,
+		Hair:                      uint8(p.hair),
+		HP:                        uint16(p.hp),
+		MP:                        uint16(p.mp),
+		Experience:                int64(p.experience),
+		MaxExperience:             int64(p.maxExperience),
+		LevelEffect:               cm.LevelEffectsNone,
+		Inventory:                 p.inventory.convertItems(),
+		Equipment:                 p.equipment.convertItems(),
+		QuestInventory:            p.questInventory.convertItems(),
+		Gold:                      uint32(p.gold),
+		Credit:                    0,
+		HasExpandedStorage:        false,
+		ExpandedStorageExpiryTime: 0,
+		ClientMagics:              nil, // FIXME []*ClientMagic
 	})
 	// p.enqueue(&server.TimeOfDay{Lights: env.Lights})
 	// p.enqueue(&server.ChangeAMode{Mode: p.AMode})
