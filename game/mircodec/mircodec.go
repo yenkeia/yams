@@ -101,30 +101,240 @@ func encode(msgObj interface{}) (data interface{}, err error) {
 	return buf, nil
 }
 
+type wrapper struct {
+	buf []byte
+}
+
+func (w *wrapper) Write(obj interface{}) {
+	data, err := encode(obj)
+	if err != nil {
+		panic(err)
+	}
+	bytes := data.([]byte)
+	w.buf = append(w.buf, bytes...)
+}
+
 func encodeUserInformation(msg *server.UserInformation) (data interface{}, err error) {
-	return nil, nil
+	ui := msg
+
+	writer := &wrapper{buf: make([]byte, 0)}
+	writer.Write(ui.ObjectID)
+	writer.Write(ui.RealID)
+	writer.Write(ui.Name)
+	writer.Write(ui.GuildName)
+	writer.Write(ui.GuildRank)
+	writer.Write(ui.NameColor)
+	writer.Write(ui.Class)
+	writer.Write(ui.Gender)
+	writer.Write(ui.Level)
+	writer.Write(ui.Location.X)
+	writer.Write(ui.Location.Y)
+	writer.Write(ui.Direction)
+	writer.Write(ui.Hair)
+	writer.Write(ui.HP)
+	writer.Write(ui.MP)
+	writer.Write(ui.Experience)
+	writer.Write(ui.MaxExperience)
+	writer.Write(ui.LevelEffect)
+
+	// Inventory
+	hasInventory := true
+	if ui.Inventory == nil || len(ui.Inventory) == 0 {
+		hasInventory = false
+	}
+	writer.Write(hasInventory)
+	if hasInventory {
+		l := len(ui.Inventory)
+		//l := 46
+		writer.Write(int32(l))
+		for i := 0; i < l; i++ {
+			hasUserItem := !isNull(ui.Inventory[i])
+			writer.Write(hasUserItem)
+			if !hasUserItem {
+				continue
+			}
+			writer.Write(ui.Inventory[i])
+		}
+	}
+
+	// Equipment
+	hasEquipment := true
+	if ui.Equipment == nil || len(ui.Equipment) == 0 {
+		hasEquipment = false
+	}
+	writer.Write(hasEquipment)
+	if hasEquipment {
+		l := len(ui.Equipment)
+		//l := 14
+		writer.Write(int32(l))
+		for i := 0; i < l; i++ {
+			hasUserItem := !isNull(ui.Equipment[i])
+			writer.Write(hasUserItem)
+			if !hasUserItem {
+				continue
+			}
+			writer.Write(ui.Equipment[i])
+		}
+	}
+
+	// QuestInventory
+	hasQuestInventory := true
+	if ui.QuestInventory == nil || len(ui.QuestInventory) == 0 {
+		hasQuestInventory = false
+	}
+	writer.Write(hasQuestInventory)
+	if hasQuestInventory {
+		l := len(ui.QuestInventory)
+		//l := 40
+		writer.Write(int32(l))
+		for i := 0; i < l; i++ {
+			hasUserItem := !isNull(ui.QuestInventory[i])
+			writer.Write(hasUserItem)
+			if !hasUserItem {
+				continue
+			}
+			writer.Write(ui.QuestInventory[i])
+		}
+	}
+	writer.Write(ui.Gold)
+	writer.Write(ui.Credit)
+	writer.Write(ui.HasExpandedStorage)
+	writer.Write(ui.ExpandedStorageExpiryTime)
+
+	count := len(ui.ClientMagics)
+	writer.Write(int32(count))
+	for i := range ui.ClientMagics {
+		writer.Write(ui.ClientMagics[i])
+	}
+	return writer.buf, nil
 }
 
 func encodeSplitItem(msg *server.SplitItem) (data interface{}, err error) {
-	return nil, nil
+	writer := &wrapper{buf: make([]byte, 0)}
+	if msg.Item != nil {
+		writer.Write(true)
+		writer.Write(msg.Item)
+	} else {
+		writer.Write(false)
+	}
+	writer.Write(msg.Grid)
+	return writer.buf, nil
 }
 
 func encodePlayerInspect(msg *server.PlayerInspect) (data interface{}, err error) {
-	return nil, nil
+	pi := msg
+	writer := &wrapper{buf: make([]byte, 0)}
+	writer.Write(pi.Name)
+	writer.Write(pi.GuildName)
+	writer.Write(pi.GuildRank)
+	// Equipment
+	l := len(pi.Equipment)
+	if l != 14 {
+		panic("equipment != 14")
+	}
+	//l := 14
+	writer.Write(int32(l))
+	for i := 0; i < l; i++ {
+		hasUserItem := !isNull(pi.Equipment[i])
+		writer.Write(hasUserItem)
+		if !hasUserItem {
+			continue
+		}
+		writer.Write(pi.Equipment[i])
+	}
+
+	writer.Write(pi.Class)
+	writer.Write(pi.Gender)
+	writer.Write(pi.Hair)
+	writer.Write(pi.Level)
+	writer.Write(pi.LoverName)
+	return writer.buf, nil
 }
 
 func encodeObjectPlayer(msg *server.ObjectPlayer) (data interface{}, err error) {
-	return nil, nil
+	op := msg
+	writer := &wrapper{buf: make([]byte, 0)}
+	writer.Write(op.ObjectID)
+	writer.Write(op.Name)
+	writer.Write(op.GuildName)
+	writer.Write(op.GuildRankName)
+	writer.Write(op.NameColor)
+	writer.Write(op.Class)
+	writer.Write(op.Gender)
+	writer.Write(op.Level)
+	writer.Write(op.Location.X)
+	writer.Write(op.Location.Y)
+	writer.Write(op.Direction)
+	writer.Write(op.Hair)
+	writer.Write(op.Light)
+	writer.Write(op.Weapon)
+	writer.Write(op.WeaponEffect)
+	writer.Write(op.Armour)
+	writer.Write(op.Poison)
+	writer.Write(op.Dead)
+	writer.Write(op.Hidden)
+	writer.Write(op.Effect)
+	writer.Write(op.WingEffect)
+	writer.Write(op.Extra)
+	writer.Write(op.MountType)
+	writer.Write(op.RidingMount)
+	writer.Write(op.Fishing)
+	writer.Write(op.TransformType)
+	writer.Write(op.ElementOrbEffect)
+	writer.Write(op.ElementOrbLvl)
+	writer.Write(op.ElementOrbMax)
+	bc := len(op.Buffs)
+	writer.Write(bc)
+	for i := range op.Buffs {
+		b := op.Buffs[i]
+		writer.Write(b)
+	}
+	writer.Write(op.LevelEffects)
+	return writer.buf, nil
 }
 
 func encodeObjectNPC(msg *server.ObjectNPC) (data interface{}, err error) {
-	return nil, nil
+	on := msg
+	writer := &wrapper{buf: make([]byte, 0)}
+	writer.Write(on.ObjectID)
+	writer.Write(on.Name)
+	writer.Write(on.NameColor)
+	writer.Write(on.Image)
+	writer.Write(on.Color)
+	writer.Write(on.Location.X)
+	writer.Write(on.Location.Y)
+	writer.Write(uint8(on.Direction))
+	qc := len(on.QuestIDs)
+	writer.Write(qc)
+	for i := range on.QuestIDs {
+		writer.Write(on.QuestIDs[i])
+	}
+	return writer.buf, nil
 }
 
 func encodeNPCResponse(msg *server.NPCResponse) (data interface{}, err error) {
-	return nil, nil
+	res := msg
+	writer := &wrapper{buf: make([]byte, 0)}
+	count := len(res.Page)
+	writer.Write(count)
+	for i := 0; i < count; i++ {
+		writer.Write(res.Page[i])
+	}
+	return writer.buf, nil
 }
 
 func encodeTradeItem(msg *server.TradeItem) (data interface{}, err error) {
-	return nil, nil
+	writer := &wrapper{buf: make([]byte, 0)}
+	length := len(msg.TradeItems)
+	writer.Write(length)
+	for i := 0; i < length; i++ {
+		ui := msg.TradeItems[i]
+		if ui == nil {
+			writer.Write(false)
+		} else {
+			writer.Write(true)
+			writer.Write(ui)
+		}
+	}
+	return writer.buf, nil
 }
