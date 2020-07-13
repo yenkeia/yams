@@ -183,8 +183,31 @@ func login(s cellnet.Session, msg *client.Login, env *Environ) {
 		s.Send(&server.Login{Result: uint8(4)})
 		return
 	}
+
+	player := sessionPlayer[s.ID()]
+
+	ac := make([]orm.AccountCharacter, 3)
+	accountDB.Table("account_character").Where("account_id = ?", player.accountID).Limit(3).Find(&ac)
+	ids := make([]int, 3)
+	for _, c := range ac {
+		ids = append(ids, c.ID)
+	}
+	cs := make([]orm.Character, 3)
+	accountDB.Table("character").Where("id in (?)", ids).Find(&cs)
+	si := make([]server.SelectInfo, len(cs))
+	for i, c := range cs {
+		s := new(server.SelectInfo)
+		s.Index = uint32(c.ID)
+		s.Name = c.Name
+		s.Level = uint16(c.Level)
+		s.Class = cm.MirClass(c.Class)
+		s.Gender = cm.MirGender(c.Gender)
+		s.LastAccess = 0
+		si[i] = *s
+	}
+
 	res := new(server.LoginSuccess)
-	res.Characters = nil // TODO 查询角色
+	res.Characters = si
 	s.Send(res)
 }
 
