@@ -206,6 +206,9 @@ func encodeUserInformation(msg *server.UserInformation) (data interface{}, err e
 	for i := range ui.ClientMagics {
 		writer.Write(ui.ClientMagics[i])
 	}
+
+	// FIXME IntelligentCreature 直接填充字节数组, 功能不做
+
 	return writer.buf, nil
 }
 

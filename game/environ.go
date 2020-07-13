@@ -30,6 +30,7 @@ var sessionPlayer = make(map[int64]*player)
 var accountDB *gorm.DB
 var dataDB *mirData
 var conf *Config
+var env *Environ
 
 // Environ 主游戏环境
 type Environ struct {
@@ -47,9 +48,10 @@ func NewEnviron(c *Config) *Environ {
 		panic(err)
 	}
 	dataDB = newmirData()
-	env := &Environ{}
-	env.initMaps()
-	return env
+	e := &Environ{}
+	e.initMaps()
+	env = e
+	return e
 }
 
 func (env *Environ) initMaps() {
