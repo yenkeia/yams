@@ -42,7 +42,7 @@ func NewEnviron(c *Config) *Environ {
 	conf = c
 	adb, err := gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8", conf.Mysql.Username, conf.Mysql.Password, conf.Mysql.Host, conf.Mysql.Port, conf.Mysql.AccountDB))
 	accountDB = adb
-	defer adb.Close()
+	// defer accountDB.Close()	Close 之后对数据库的操作无效且不报错..
 	if err != nil {
 		panic(err)
 	}
@@ -200,18 +200,45 @@ func newCharacter(s cellnet.Session, msg *client.NewCharacter, env *Environ) {
 		s.Send(&server.NewCharacter{Result: uint8(4)})
 		return
 	}
-
-	// c := new(orm.Character)
 	// TODO 判断角色名字是否重复
+
+	c := &orm.Character{
+		Name:             msg.Name,
+		Level:            28,
+		Class:            int(msg.Class),
+		Gender:           int(msg.Gender),
+		Hair:             1,
+		CurrentMapID:     1,
+		CurrentLocationX: 288,
+		CurrentLocationY: 616,
+		BindMapID:        1,
+		BindLocationX:    288,
+		BindLocationY:    616,
+		Direction:        0,
+		HP:               123,
+		MP:               12,
+		Experience:       321,
+		AttackMode:       1,
+		PetMode:          1,
+		Gold:             30000,
+		AllowGroup:       true,
+	}
+	accountDB.Table("character").Create(c)
+
+	ac2 := &orm.AccountCharacter{
+		AccountID:   player.accountID,
+		CharacterID: c.ID,
+	}
+	accountDB.Table("account_character").Create(ac2)
 
 	res := new(server.NewCharacterSuccess)
 	res.CharInfo = server.SelectInfo{
-		Index:      1, // TODO 顺序 uint32(c.ID)
+		Index:      uint32(c.ID), // 顺序
 		Name:       msg.Name,
-		Level:      1,          // uint16
-		Class:      msg.Class,  // cm.MirClass
-		Gender:     msg.Gender, // cm.MirGender
-		LastAccess: 0,          // int6
+		Level:      uint16(c.Level),
+		Class:      msg.Class,
+		Gender:     msg.Gender,
+		LastAccess: 0, // int6	最后登陆时间
 	}
 	s.Send(res)
 }
