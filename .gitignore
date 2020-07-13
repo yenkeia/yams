@@ -3,6 +3,7 @@ __debug_bin
 vendor
 .vscode
 cmd/server/server
+cmd/client/client
 
 # Windows image file caches
 Thumbs.db

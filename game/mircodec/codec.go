@@ -316,7 +316,7 @@ func dataSize(v reflect.Value, sf *reflect.StructField) int {
 	case reflect.Slice:
 		l := v.Len()
 		elemSize := int(v.Type().Elem().Size())
-		return l*elemSize + 2
+		return l*elemSize + 4 // 2
 
 	case reflect.String:
 		t := v.Len()

@@ -185,12 +185,13 @@ func login(s cellnet.Session, msg *client.Login, env *Environ) {
 	}
 
 	player := sessionPlayer[s.ID()]
+	player.gameStage = SELECT
 
 	ac := make([]orm.AccountCharacter, 3)
 	accountDB.Table("account_character").Where("account_id = ?", player.accountID).Limit(3).Find(&ac)
-	ids := make([]int, 3)
+	ids := make([]int, 0)
 	for _, c := range ac {
-		ids = append(ids, c.ID)
+		ids = append(ids, c.CharacterID)
 	}
 	cs := make([]orm.Character, 3)
 	accountDB.Table("character").Where("id in (?)", ids).Find(&cs)
