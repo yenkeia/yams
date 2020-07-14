@@ -203,7 +203,7 @@ func (self *decoder) value(v reflect.Value) {
 	//	v.Set(valuePtr)
 
 	default:
-		panic("encode: unsupport kind: " + v.Kind().String())
+		panic("decode: unsupport kind: " + v.Kind().String())
 	}
 }
 

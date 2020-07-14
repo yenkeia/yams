@@ -36,6 +36,10 @@ type Point struct {
 	Y uint32
 }
 
+func NewPoint(x, y int) Point {
+	return Point{uint32(x), uint32(y)}
+}
+
 type MirGender uint8
 
 const (

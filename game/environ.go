@@ -187,6 +187,7 @@ func login(s cellnet.Session, msg *client.Login, env *Environ) {
 	}
 
 	player := sessionPlayer[s.ID()]
+	player.session = &s
 	player.gameStage = SELECT
 
 	ac := make([]orm.AccountCharacter, 3)
@@ -292,8 +293,23 @@ func startGame(s cellnet.Session, msg *client.StartGame) {
 	if !checkGameStage(s, SELECT) {
 		return
 	}
-	// TODO
 	p := sessionPlayer[s.ID()]
+	c := new(orm.Character)
+	accountDB.Table("character").Where("id = ?", msg.CharacterIndex).First(c)
+	if c.ID == 0 {
+		return
+	}
+	ac := new(orm.AccountCharacter)
+	accountDB.Table("account_character").Where("account_id = ? and character_id = ?", p.accountID, c.ID).Find(&ac)
+	if ac.ID == 0 {
+		s.Send(&server.StartGame{Result: 2, Resolution: 1024})
+		return
+	}
+	s.Send(&server.SetConcentration{ObjectID: uint32(p.objectID), Enabled: false, Interrupted: false})
+	s.Send(&server.StartGame{Result: 4, Resolution: 1024})
+
+	p.updateInfo(c)
+
 	p.receiveChat("[欢迎进入游戏，如有任何建议、疑问欢迎交流。联系QQ群：32309474]", cm.ChatTypeHint)
 	// p.enqueueItemInfos()
 	// p.refreshStats()

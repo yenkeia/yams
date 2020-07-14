@@ -207,7 +207,8 @@ func encodeUserInformation(msg *server.UserInformation) (data interface{}, err e
 		writer.Write(ui.ClientMagics[i])
 	}
 
-	// FIXME IntelligentCreature 直接填充字节数组, 功能不做
+	// IntelligentCreature 直接填充字节数组, 功能不做
+	writer.Write([]byte{0, 0, 0, 0, 99, 0})
 
 	return writer.buf, nil
 }
