@@ -36,3 +36,15 @@ CREATE TABLE IF NOT EXISTS `map_info` (
 );
 
 INSERT INTO map_info VALUES(1,'0','比奇省',101,135,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'',0,0);
+
+CREATE TABLE `npc_info` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `map_id` int(11) DEFAULT NULL,
+  `file_name` varchar(200) DEFAULT NULL,
+  `name` varchar(200) DEFAULT NULL,
+  `location_x` int(11) DEFAULT NULL,
+  `location_y` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE = InnoDB AUTO_INCREMENT = 294 DEFAULT CHARSET = utf8;
+
+INSERT INTO npc_info VALUES(1,1,'比奇省/边境村/边境传送员.txt','边境传送员',287,615);

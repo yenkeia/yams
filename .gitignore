@@ -1,3 +1,4 @@
+*.swp
 configs/yams.yaml
 __debug_bin
 vendor

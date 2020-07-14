@@ -102,3 +102,13 @@ type ItemInfo struct {
 	IsToolTip      bool
 	ToolTip        string
 }
+
+// NPCInfo ...
+type NPCInfo struct {
+	ID        int `gorm:"primary_key"`
+	MapID     int
+	Filename  string `gorm:"Column:file_name"`
+	Name      string
+	LocationX int `gorm:"Column:location_x"`
+	LocationY int `gorm:"Column:location_y"`
+}
