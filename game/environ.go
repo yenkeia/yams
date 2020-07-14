@@ -351,10 +351,10 @@ func startGame(s cellnet.Session, msg *client.StartGame) {
 		ExpandedStorageExpiryTime: 0,
 		ClientMagics:              nil, // FIXME []*ClientMagic
 	})
-	// p.enqueue(&server.TimeOfDay{Lights: env.Lights})
-	// p.enqueue(&server.ChangeAMode{Mode: p.AMode})
-	// p.enqueue(&server.ChangePMode{Mode: p.PMode})
-	// p.enqueue(&server.SwitchGroup{AllowGroup: p.AllowGroup})
+	p.enqueue(&server.TimeOfDay{Lights: cm.LightSettingDay})
+	p.enqueue(&server.ChangeAMode{Mode: p.attackMode})
+	p.enqueue(&server.ChangePMode{Mode: p.petMode})
+	p.enqueue(&server.SwitchGroup{AllowGroup: p.allowGroup})
 	// p.enqueueAreaObjects(nil, p.GetCell())
 	// p.enqueue(ServerMessage{}.NPCResponse([]string{}))
 	// p.broadcast(ServerMessage{}.ObjectPlayer(p))

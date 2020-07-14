@@ -37,6 +37,9 @@ type player struct {
 	questInventory  *bag // 40
 	storage         *bag // 80
 	trade           *bag // 10	交易框的索引是从上到下的，背包是从左到右
+	attackMode      cm.AttackMode
+	petMode         cm.PetMode
+	allowGroup      bool
 }
 
 func (p *player) id() int {
@@ -83,6 +86,9 @@ func (p *player) updateInfo(c *orm.Character) {
 	p.questInventory = &bag{items: make([]*orm.UserItem, 40)} // 40
 	p.storage = &bag{items: make([]*orm.UserItem, 80)}        // 80
 	p.trade = &bag{items: make([]*orm.UserItem, 10)}          // 10	交易框的索引是从上到下的，背包是从左到右
+	p.attackMode = cm.AttackModeAll
+	p.petMode = cm.PetModeBoth
+	p.allowGroup = true
 }
 
 func (p *player) turn(msg *client.Turn)                             {}

@@ -320,7 +320,7 @@ func dataSize(v reflect.Value, sf *reflect.StructField) int {
 
 	case reflect.String:
 		t := v.Len()
-		return t + 2
+		return t + 1
 	case reflect.Bool,
 		reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
 		reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
