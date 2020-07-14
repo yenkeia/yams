@@ -40,6 +40,34 @@ func NewPoint(x, y int) Point {
 	return Point{uint32(x), uint32(y)}
 }
 
+func (p Point) NextPoint(direction MirDirection, step uint32) Point {
+	x := p.X
+	y := p.Y
+	switch direction {
+	case MirDirectionUp:
+		y = y - step
+	case MirDirectionUpRight:
+		x = x + step
+		y = y - step
+	case MirDirectionRight:
+		x = x + step
+	case MirDirectionDownRight:
+		x = x + step
+		y = y + step
+	case MirDirectionDown:
+		y = y + step
+	case MirDirectionDownLeft:
+		x = x - step
+		y = y + step
+	case MirDirectionLeft:
+		x = x - step
+	case MirDirectionUpLeft:
+		x = x - step
+		y = y - step
+	}
+	return Point{X: x, Y: y}
+}
+
 type MirGender uint8
 
 const (

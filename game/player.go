@@ -104,9 +104,23 @@ func (p *player) updateInfo(c *orm.Character) {
 	*/
 }
 
-func (p *player) turn(msg *client.Turn)                             {}
-func (p *player) walk(msg *client.Walk)                             {}
-func (p *player) run(msg *client.Run)                               {}
+func (p *player) turn(msg *client.Turn) {
+	p.direction = msg.Direction
+	p.enqueue(&server.UserLocation{Location: p.currentLocation, Direction: p.direction})
+}
+
+func (p *player) walk(msg *client.Walk) {
+	p.direction = msg.Direction
+	p.currentLocation = p.currentLocation.NextPoint(msg.Direction, 1)
+	p.enqueue(&server.UserLocation{Location: p.currentLocation, Direction: p.direction})
+}
+
+func (p *player) run(msg *client.Run) {
+	p.direction = msg.Direction
+	p.currentLocation = p.currentLocation.NextPoint(msg.Direction, 2)
+	p.enqueue(&server.UserLocation{Location: p.currentLocation, Direction: p.direction})
+}
+
 func (p *player) chat(msg *client.Chat)                             {}
 func (p *player) moveItem(msg *client.MoveItem)                     {}
 func (p *player) storeItem(msg *client.StoreItem)                   {}
