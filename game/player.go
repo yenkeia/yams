@@ -22,6 +22,8 @@ type player struct {
 	direction       cm.MirDirection
 	hp              int
 	mp              int
+	maxHP           int
+	maxMP           int
 	level           int
 	experience      int
 	maxExperience   int
@@ -89,6 +91,17 @@ func (p *player) updateInfo(c *orm.Character) {
 	p.attackMode = cm.AttackModeAll
 	p.petMode = cm.PetModeBoth
 	p.allowGroup = true
+	/* TODO
+	switch p.class {
+	case cm.MirClassWarrior:
+		p.maxHP = int(14.0 + (float32(p.level)/baseStats.HpGain+baseStats.HpGainRate+float32(p.level)/20.0)*float32(p.level))
+		p.maxMP = int(11.0 + (float32(p.level) * 3.5) + (float32(p.level) * baseStats.MpGainRate))
+	case cm.MirClassWizard:
+		p.maxMP = int(13.0 + (float32(p.level/5.0+2.0) * 2.2 * float32(p.level)) + (float32(p.level) * baseStats.MpGainRate))
+	case cm.MirClassTaoist:
+		p.maxMP = int((13 + float32(p.level)/8.0*2.2*float32(p.level)) + (float32(p.level) * baseStats.MpGainRate))
+	}
+	*/
 }
 
 func (p *player) turn(msg *client.Turn)                             {}
