@@ -34,9 +34,10 @@ var env *Environ
 
 // Environ 主游戏环境
 type Environ struct {
-	Peer cellnet.GenericPeer
-	maps map[int]*mirMap // MapInfo.ID: mirMap
-	npcs map[int]*npc    // NPCInfo.ID: npc
+	Peer  cellnet.GenericPeer
+	maps  map[int]*mirMap // MapInfo.ID: mirMap
+	npcs  map[int]*npc    // NPCInfo.ID: npc
+	items map[int]*item   // ItemInfo.ID: item
 }
 
 // NewEnviron 初始化
@@ -52,6 +53,7 @@ func NewEnviron(c *Config) *Environ {
 	e := &Environ{}
 	e.initMaps()
 	e.initNPCs()
+	e.initItems()
 	env = e
 	return e
 }
@@ -88,6 +90,13 @@ func (env *Environ) initNPCs() {
 	env.npcs = map[int]*npc{}
 	for _, ni := range dataDB.npcInfos {
 		env.npcs[ni.ID] = newNPC(ni)
+	}
+}
+
+func (env *Environ) initItems() {
+	env.items = map[int]*item{}
+	for _, ii := range dataDB.itemInfos {
+		env.items[ii.ID] = newItem(ii)
 	}
 }
 

@@ -8,8 +8,9 @@ import (
 )
 
 type mirData struct {
-	mapInfos []*orm.MapInfo
-	npcInfos []*orm.NPCInfo
+	mapInfos  []*orm.MapInfo
+	npcInfos  []*orm.NPCInfo
+	itemInfos []*orm.ItemInfo
 }
 
 func newmirData() *mirData {
@@ -22,5 +23,6 @@ func newmirData() *mirData {
 	mirData := new(mirData)
 	db.Table("map_info").Find(&mirData.mapInfos)
 	db.Table("npc_info").Find(&mirData.npcInfos)
+	db.Table("item_info").Find(&mirData.itemInfos)
 	return mirData
 }
