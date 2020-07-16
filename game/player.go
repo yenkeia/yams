@@ -56,6 +56,31 @@ func (p *player) enqueue(msg interface{}) {
 	(*p.session).Send(msg)
 }
 
+// TODO
+func (p *player) enqueueItemInfos() {
+
+}
+
+// TODO
+func (p *player) enqueueQuestInfo() {
+
+}
+
+// TODO
+func (p *player) enqueueAreaObjects(points ...cm.Point) {
+
+}
+
+// TODO
+func (p *player) broadcast(msg interface{}) {
+
+}
+
+// TODO
+func (p *player) broadcastObjectPlayer() {
+
+}
+
 func (p *player) receiveChat(text string, typ cm.ChatType) {
 	p.enqueue(&server.Chat{Message: text, Type: typ})
 }
@@ -102,6 +127,11 @@ func (p *player) updateInfo(c *orm.Character) {
 		p.maxMP = int((13 + float32(p.level)/8.0*2.2*float32(p.level)) + (float32(p.level) * baseStats.MpGainRate))
 	}
 	*/
+}
+
+// TODO
+func (p *player) refreshStats() {
+
 }
 
 func (p *player) turn(msg *client.Turn) {
