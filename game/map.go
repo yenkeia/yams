@@ -26,7 +26,7 @@ func (m *mirMap) setCellAttribute(x, y int, attr cm.CellAttribute) {
 	c := new(cell)
 	c.attribute = attr
 	if attr == cm.CellAttributeWalk {
-		c.objects = make([]mapObject, 0)
+		c.objects = make([]interface{}, 0)
 	}
 	m.cells[x+y*m.width] = c
 }

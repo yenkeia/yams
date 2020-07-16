@@ -4,5 +4,5 @@ import "github.com/yenkeia/yams/game/cm"
 
 type cell struct {
 	attribute cm.CellAttribute
-	objects   []mapObject
+	objects   []interface{}
 }
