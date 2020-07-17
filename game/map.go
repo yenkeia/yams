@@ -34,3 +34,15 @@ func (m *mirMap) setCellAttribute(x, y int, attr cm.CellAttribute) {
 func (m *mirMap) update() {
 
 }
+
+func (m *mirMap) addObject(obj interface{}) (err error) {
+	return
+}
+
+func (m *mirMap) deleteObject(obj interface{}) (err error) {
+	return
+}
+
+func (m *mirMap) updateObject(obj interface{}, pos cm.Point) (err error) {
+	return
+}

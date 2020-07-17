@@ -376,6 +376,7 @@ func startGame(s cellnet.Session, msg *client.StartGame) {
 	p.enqueue(&server.NPCResponse{Page: []string{}})
 	p.enqueueAreaObjects(p.currentLocation)
 	p.broadcastObjectPlayer()
+	p.currentMap.addObject(p)
 }
 
 func logout(s cellnet.Session, msg *client.LogOut) {
