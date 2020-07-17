@@ -88,7 +88,7 @@ func (p *player) receiveChat(text string, typ cm.ChatType) {
 // FIXME
 func (p *player) updateInfo(c *orm.Character) {
 	p.gameStage = GAME
-	p.objectID = 123 // TODO
+	p.objectID = env.newObjectID()
 	p.name = c.Name
 	p.direction = cm.MirDirection(c.Direction)
 	p.currentMap = env.maps[1] // TODO

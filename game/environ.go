@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/golog"
@@ -34,10 +35,11 @@ var env *Environ
 
 // Environ 主游戏环境
 type Environ struct {
-	Peer  cellnet.GenericPeer
-	maps  map[int]*mirMap // MapInfo.ID: mirMap
-	npcs  map[int]*npc    // NPCInfo.ID: npc
-	items map[int]*item   // ItemInfo.ID: item
+	Peer     cellnet.GenericPeer
+	maps     map[int]*mirMap // MapInfo.ID: mirMap
+	npcs     map[int]*npc    // NPCInfo.ID: npc
+	items    map[int]*item   // ItemInfo.ID: item
+	objectID uint32
 }
 
 // NewEnviron 初始化
@@ -51,11 +53,17 @@ func NewEnviron(c *Config) *Environ {
 	}
 	dataDB = newmirData()
 	e := &Environ{}
+	e.objectID = 1
 	e.initMaps()
 	e.initNPCs()
 	e.initItems()
 	env = e
 	return e
+}
+
+func (env *Environ) newObjectID() int {
+	atomic.AddUint32(&env.objectID, 1)
+	return int(env.objectID)
 }
 
 func (env *Environ) initMaps() {
