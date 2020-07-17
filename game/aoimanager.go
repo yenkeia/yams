@@ -140,3 +140,17 @@ func (m *aoiManager) String() string {
 
 	return s
 }
+
+func (m *aoiManager) addObject(obj mapObject) {
+	pos := obj.getPosition()
+	objID := obj.getObjectID()
+	grid := m.getGridByPoint(pos)
+	grid.add(objID)
+}
+
+func (m *aoiManager) deleteObject(obj mapObject) {
+	pos := obj.getPosition()
+	objID := obj.getObjectID()
+	grid := m.getGridByPoint(pos)
+	grid.remove(objID)
+}

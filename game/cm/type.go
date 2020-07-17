@@ -1,5 +1,7 @@
 package cm
 
+import "fmt"
+
 type Color struct {
 	R uint8
 	G uint8
@@ -66,6 +68,10 @@ func (p Point) NextPoint(direction MirDirection, step uint32) Point {
 		y = y - step
 	}
 	return Point{X: x, Y: y}
+}
+
+func (p Point) String() string {
+	return fmt.Sprintf("%d,%d", p.X, p.Y)
 }
 
 type MirGender uint8

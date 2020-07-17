@@ -44,8 +44,12 @@ type player struct {
 	allowGroup      bool
 }
 
-func (p *player) id() int {
+func (p *player) getObjectID() int {
 	return p.objectID
+}
+
+func (p *player) getPosition() cm.Point {
+	return p.currentLocation
 }
 
 func (p *player) enqueue(msg interface{}) {

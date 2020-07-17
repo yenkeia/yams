@@ -1,9 +1,16 @@
 package game
 
 import (
+	"fmt"
+
 	"github.com/yenkeia/yams/game/cm"
 	"github.com/yenkeia/yams/game/orm"
 )
+
+type mapObject interface {
+	getObjectID() int
+	getPosition() cm.Point
+}
 
 type mirMap struct {
 	width   int
@@ -28,7 +35,7 @@ func (m *mirMap) setCellAttribute(x, y int, attr cm.CellAttribute) {
 	c := new(cell)
 	c.attribute = attr
 	if attr == cm.CellAttributeWalk {
-		c.objects = make([]interface{}, 0)
+		c.objects = make([]mapObject, 0)
 	}
 	m.cells[x+y*m.width] = c
 }
@@ -37,14 +44,44 @@ func (m *mirMap) update() {
 
 }
 
-func (m *mirMap) addObject(obj interface{}) (err error) {
+func (m *mirMap) inMap(pos cm.Point) bool {
+	x := int(pos.X)
+	y := int(pos.Y)
+	return x >= 0 && x < m.width && y >= 0 && y < m.height
+}
+
+func (m *mirMap) getCell(pos cm.Point) *cell {
+	x := int(pos.X)
+	y := int(pos.Y)
+	if m.inMap(pos) {
+		return m.cells[x+y*m.width]
+	}
+	return nil
+}
+
+func (m *mirMap) addObject(obj mapObject) (err error) {
+	pos := obj.getPosition()
+	c := m.getCell(pos)
+	if c == nil {
+		return fmt.Errorf("pos: %s is not walkable", obj.getPosition())
+	}
+	c.addObject(obj)
+	m.aoi.addObject(obj)
 	return
 }
 
-func (m *mirMap) deleteObject(obj interface{}) (err error) {
+func (m *mirMap) deleteObject(obj mapObject) (err error) {
+	pos := obj.getPosition()
+	c := m.getCell(pos)
+	if c == nil {
+		return fmt.Errorf("pos: %s is not walkable", obj.getPosition())
+	}
+	c.deleteObject(obj)
+	m.aoi.deleteObject(obj)
 	return
 }
 
-func (m *mirMap) updateObject(obj interface{}, pos cm.Point) (err error) {
+// TODO 更新对象在地图中的位置
+func (m *mirMap) updateObject(obj mapObject, pos cm.Point) (err error) {
 	return
 }
