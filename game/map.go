@@ -11,6 +11,7 @@ type mirMap struct {
 	version int
 	info    *orm.MapInfo
 	cells   []*cell
+	aoi     *aoiManager
 }
 
 func newMirMap(width, height, version int) *mirMap {
@@ -19,6 +20,7 @@ func newMirMap(width, height, version int) *mirMap {
 		height:  height,
 		version: version,
 		cells:   make([]*cell, width*height),
+		aoi:     newAOIManager(width, height),
 	}
 }
 

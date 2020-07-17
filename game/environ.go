@@ -39,6 +39,7 @@ type Environ struct {
 	maps     map[int]*mirMap // MapInfo.ID: mirMap
 	npcs     map[int]*npc    // NPCInfo.ID: npc
 	items    map[int]*item   // ItemInfo.ID: item
+	players  map[int]*player // player.objectID: player
 	objectID uint32
 }
 
@@ -57,6 +58,7 @@ func NewEnviron(c *Config) *Environ {
 	e.initMaps()
 	e.initNPCs()
 	e.initItems()
+	e.players = make(map[int]*player)
 	env = e
 	return e
 }
