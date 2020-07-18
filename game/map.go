@@ -1,6 +1,7 @@
 package game
 
 import (
+	"container/list"
 	"fmt"
 
 	"github.com/yenkeia/yams/game/cm"
@@ -35,7 +36,7 @@ func (m *mirMap) setCellAttribute(x, y int, attr cm.CellAttribute) {
 	c := new(cell)
 	c.attribute = attr
 	if attr == cm.CellAttributeWalk {
-		c.objects = make([]mapObject, 0)
+		c.objects = list.New()
 	}
 	m.cells[x+y*m.width] = c
 }
