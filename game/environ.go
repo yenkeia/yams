@@ -37,8 +37,7 @@ var env *Environ
 type Environ struct {
 	Peer     cellnet.GenericPeer
 	maps     map[int]*mirMap // MapInfo.ID: mirMap
-	npcs     map[int]*npc    // NPCInfo.ID: npc
-	items    map[int]*item   // ItemInfo.ID: item
+	npcs     map[int]*npc    // npc.objectID: npc
 	players  map[int]*player // player.objectID: player
 	objectID uint32
 }
@@ -58,7 +57,6 @@ func NewEnviron(c *Config) *Environ {
 	e.objectID = 1
 	e.initMaps()
 	e.initNPCs()
-	e.initItems()
 	e.players = make(map[int]*player)
 	return e
 }
@@ -100,17 +98,26 @@ func (env *Environ) initNPCs() {
 	env.npcs = map[int]*npc{}
 	for _, ni := range dataDB.npcInfos {
 		n := newNPC(ni)
-		env.npcs[ni.ID] = n
+		n.objectID = env.newObjectID()
+		env.npcs[n.objectID] = n
 		m := env.maps[n.info.MapID]
 		m.addObject(n)
 	}
 }
 
-func (env *Environ) initItems() {
-	env.items = map[int]*item{}
-	for _, ii := range dataDB.itemInfos {
-		env.items[ii.ID] = newItem(ii)
+func (env *Environ) getMapObjects(ids []int) []mapObject {
+	objs := make([]mapObject, 0)
+	for _, id := range ids {
+		if p, ok := env.players[id]; ok {
+			objs = append(objs, p)
+			continue
+		}
+		if n, ok := env.npcs[id]; ok {
+			objs = append(objs, n)
+			continue
+		}
 	}
+	return objs
 }
 
 // Update 更新游戏状态
@@ -391,7 +398,7 @@ func startGame(s cellnet.Session, msg *client.StartGame) {
 	p.enqueue(&server.ChangePMode{Mode: p.petMode})
 	p.enqueue(&server.SwitchGroup{AllowGroup: p.allowGroup})
 	p.enqueue(&server.NPCResponse{Page: []string{}})
-	p.enqueueAreaObjects(p.currentLocation)
+	p.enqueueAreaObjects(nil, p.currentMap.aoi.getGridByPoint(p.currentLocation))
 	p.broadcastObjectPlayer()
 
 	// 加入到游戏环境
