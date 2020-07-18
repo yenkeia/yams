@@ -76,6 +76,11 @@ func (p *player) enqueueAreaObjects(points ...cm.Point) {
 }
 
 // TODO
+func (p *player) enqueueObjectPlayer(o *player) {
+
+}
+
+// TODO
 func (p *player) broadcast(msg interface{}) {
 
 }

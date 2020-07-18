@@ -59,40 +59,40 @@ func _newAOIManager(minX, maxX, cntsX, minY, maxY, cntsY int) *aoiManager {
 	return aoiMgr
 }
 
-func (m *aoiManager) getGridByPoint(pos cm.Point) *aoiGrid {
+func (aoi *aoiManager) getGridByPoint(pos cm.Point) *aoiGrid {
 	x := int(pos.X)
-	xx := x / m.gridWidth()
+	xx := x / aoi.gridWidth()
 	y := int(pos.Y)
-	yy := y / m.gridHeight()
-	gid := yy*m.cntsX + xx
-	return m.grids[gid]
+	yy := y / aoi.gridHeight()
+	gid := yy*aoi.cntsX + xx
+	return aoi.grids[gid]
 }
 
-func (m *aoiManager) getSurroundGridsByPoint(pos cm.Point) (grids []*aoiGrid) {
-	g := m.getGridByPoint(pos)
-	return m.getSurroundGridsByGid(g.gID)
+func (aoi *aoiManager) getSurroundGridsByPoint(pos cm.Point) (grids []*aoiGrid) {
+	g := aoi.getGridByPoint(pos)
+	return aoi.getSurroundGridsByGid(g.gID)
 }
 
 //根据格子的gID得到当前周边的九宫格信息
-func (m *aoiManager) getSurroundGridsByGid(gID int) (grids []*aoiGrid) {
+func (aoi *aoiManager) getSurroundGridsByGid(gID int) (grids []*aoiGrid) {
 	//判断gID是否存在
-	if _, ok := m.grids[gID]; !ok {
+	if _, ok := aoi.grids[gID]; !ok {
 		return
 	}
 
 	//将当前gid添加到九宫格中
-	grids = append(grids, m.grids[gID])
+	grids = append(grids, aoi.grids[gID])
 
 	//根据gid得到当前格子所在的X轴编号
-	idx := gID % m.cntsX
+	idx := gID % aoi.cntsX
 
 	//判断当前idx左边是否还有格子
 	if idx > 0 {
-		grids = append(grids, m.grids[gID-1])
+		grids = append(grids, aoi.grids[gID-1])
 	}
 	//判断当前的idx右边是否还有格子
-	if idx < m.cntsX-1 {
-		grids = append(grids, m.grids[gID+1])
+	if idx < aoi.cntsX-1 {
+		grids = append(grids, aoi.grids[gID+1])
 	}
 
 	//将x轴当前的格子都取出，进行遍历，再分别得到每个格子的上下是否有格子
@@ -106,51 +106,51 @@ func (m *aoiManager) getSurroundGridsByGid(gID int) (grids []*aoiGrid) {
 	//遍历x轴格子
 	for _, v := range gidsX {
 		//计算该格子处于第几列
-		idy := v / m.cntsX
+		idy := v / aoi.cntsX
 
 		//判断当前的idy上边是否还有格子
 		if idy > 0 {
-			grids = append(grids, m.grids[v-m.cntsX])
+			grids = append(grids, aoi.grids[v-aoi.cntsX])
 		}
 		//判断当前的idy下边是否还有格子
-		if idy < m.cntsY-1 {
-			grids = append(grids, m.grids[v+m.cntsX])
+		if idy < aoi.cntsY-1 {
+			grids = append(grids, aoi.grids[v+aoi.cntsX])
 		}
 	}
 	return
 }
 
 //得到每个格子在x轴方向的宽度
-func (m *aoiManager) gridWidth() int {
-	return (m.maxX - m.minX) / m.cntsX
+func (aoi *aoiManager) gridWidth() int {
+	return (aoi.maxX - aoi.minX) / aoi.cntsX
 }
 
 //得到每个格子在x轴方向的长度
-func (m *aoiManager) gridHeight() int {
-	return (m.maxY - m.minY) / m.cntsY
+func (aoi *aoiManager) gridHeight() int {
+	return (aoi.maxY - aoi.minY) / aoi.cntsY
 }
 
 //打印信息方法
-func (m *aoiManager) String() string {
+func (aoi *aoiManager) String() string {
 	s := fmt.Sprintf("AOIManagr:\nminX:%d, maxX:%d, cntsX:%d, minY:%d, maxY:%d, cntsY:%d\n Grids in AOI Manager:\n",
-		m.minX, m.maxX, m.cntsX, m.minY, m.maxY, m.cntsY)
-	for _, grid := range m.grids {
+		aoi.minX, aoi.maxX, aoi.cntsX, aoi.minY, aoi.maxY, aoi.cntsY)
+	for _, grid := range aoi.grids {
 		s += fmt.Sprintln(grid)
 	}
 
 	return s
 }
 
-func (m *aoiManager) addObject(obj mapObject) {
+func (aoi *aoiManager) addObject(obj mapObject) {
 	pos := obj.getPosition()
 	objID := obj.getObjectID()
-	grid := m.getGridByPoint(pos)
+	grid := aoi.getGridByPoint(pos)
 	grid.add(objID)
 }
 
-func (m *aoiManager) deleteObject(obj mapObject) {
+func (aoi *aoiManager) deleteObject(obj mapObject) {
 	pos := obj.getPosition()
 	objID := obj.getObjectID()
-	grid := m.getGridByPoint(pos)
+	grid := aoi.getGridByPoint(pos)
 	grid.remove(objID)
 }
