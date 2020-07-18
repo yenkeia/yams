@@ -126,7 +126,8 @@ func (env *Environ) HandleEvent(e cellnet.Event) {
 	case *cellnet.SessionAccepted: // 有新的连接
 		s.Send(&server.Connected{})
 	case *cellnet.SessionClosed: // 有连接断开
-		// sessionClosed(s, msg)
+		logout(s, nil)
+		sessionPlayer[s.ID()] = nil
 	case *client.ClientVersion:
 		clientVersion(s, msg)
 	case *client.KeepAlive:
@@ -203,23 +204,9 @@ func changePassword(s cellnet.Session, msg *client.ChangePassword) {
 	s.Send(&server.ChangePassword{Result: res})
 }
 
-func login(s cellnet.Session, msg *client.Login, env *Environ) {
-	if !checkGameStage(s, LOGIN) {
-		return
-	}
-	a := new(orm.Account)
-	accountDB.Table("account").Where("username = ? AND password = ?", msg.AccountID, msg.Password).Find(a)
-	if a.ID == 0 {
-		s.Send(&server.Login{Result: uint8(4)})
-		return
-	}
-
-	player := sessionPlayer[s.ID()]
-	player.session = &s
-	player.gameStage = SELECT
-
+func getAccountCharacters(accountID int) []server.SelectInfo {
 	ac := make([]orm.AccountCharacter, 3)
-	accountDB.Table("account_character").Where("account_id = ?", player.accountID).Limit(3).Find(&ac)
+	accountDB.Table("account_character").Where("account_id = ?", accountID).Limit(3).Find(&ac)
 	ids := make([]int, 0)
 	for _, c := range ac {
 		ids = append(ids, c.CharacterID)
@@ -237,9 +224,26 @@ func login(s cellnet.Session, msg *client.Login, env *Environ) {
 		s.LastAccess = 0
 		si[i] = *s
 	}
+	return si
+}
+
+func login(s cellnet.Session, msg *client.Login, env *Environ) {
+	if !checkGameStage(s, LOGIN) {
+		return
+	}
+	a := new(orm.Account)
+	accountDB.Table("account").Where("username = ? AND password = ?", msg.AccountID, msg.Password).Find(a)
+	if a.ID == 0 {
+		s.Send(&server.Login{Result: uint8(4)})
+		return
+	}
+
+	player := sessionPlayer[s.ID()]
+	player.session = &s
+	player.gameStage = SELECT
 
 	res := new(server.LoginSuccess)
-	res.Characters = si
+	res.Characters = getAccountCharacters(player.accountID)
 	s.Send(res)
 }
 
@@ -386,11 +390,25 @@ func startGame(s cellnet.Session, msg *client.StartGame) {
 	p.enqueue(&server.NPCResponse{Page: []string{}})
 	p.enqueueAreaObjects(p.currentLocation)
 	p.broadcastObjectPlayer()
+
+	// 加入到游戏环境
+	env.players[p.objectID] = p
 	p.currentMap.addObject(p)
 }
 
 func logout(s cellnet.Session, msg *client.LogOut) {
+	if p, ok := sessionPlayer[s.ID()]; ok {
+		if p.gameStage != GAME {
+			return
+		}
+		p.gameStage = SELECT
+		p.broadcast(&server.ObjectRemove{ObjectID: uint32(p.getObjectID())})
+		s.Send(&server.LogOutSuccess{Characters: getAccountCharacters(p.accountID)})
 
+		// 从游戏环境删除
+		env.players[p.objectID] = nil
+		p.currentMap.deleteObject(p)
+	}
 }
 
 func handleEvent(p *player, e cellnet.Event, s cellnet.Session) {

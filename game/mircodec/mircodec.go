@@ -288,7 +288,7 @@ func encodeObjectPlayer(msg *server.ObjectPlayer) (data interface{}, err error) 
 	writer.Write(op.ElementOrbLvl)
 	writer.Write(op.ElementOrbMax)
 	bc := len(op.Buffs)
-	writer.Write(bc)
+	writer.Write(int32(bc))
 	for i := range op.Buffs {
 		b := op.Buffs[i]
 		writer.Write(b)
@@ -309,7 +309,7 @@ func encodeObjectNPC(msg *server.ObjectNPC) (data interface{}, err error) {
 	writer.Write(on.Location.Y)
 	writer.Write(uint8(on.Direction))
 	qc := len(on.QuestIDs)
-	writer.Write(qc)
+	writer.Write(int32(qc))
 	for i := range on.QuestIDs {
 		writer.Write(on.QuestIDs[i])
 	}
@@ -320,7 +320,7 @@ func encodeNPCResponse(msg *server.NPCResponse) (data interface{}, err error) {
 	res := msg
 	writer := &wrapper{buf: make([]byte, 0)}
 	count := len(res.Page)
-	writer.Write(count)
+	writer.Write(int32(count))
 	for i := 0; i < count; i++ {
 		writer.Write(res.Page[i])
 	}
@@ -330,7 +330,7 @@ func encodeNPCResponse(msg *server.NPCResponse) (data interface{}, err error) {
 func encodeTradeItem(msg *server.TradeItem) (data interface{}, err error) {
 	writer := &wrapper{buf: make([]byte, 0)}
 	length := len(msg.TradeItems)
-	writer.Write(length)
+	writer.Write(int32(length))
 	for i := 0; i < length; i++ {
 		ui := msg.TradeItems[i]
 		if ui == nil {
