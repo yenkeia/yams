@@ -6,7 +6,6 @@ import (
 
 	"github.com/yenkeia/yams/game/cm"
 	"github.com/yenkeia/yams/game/orm"
-	"github.com/yenkeia/yams/game/proto/server"
 )
 
 type mapObject interface {
@@ -97,57 +96,9 @@ func (m *mirMap) updateObject(obj mapObject, pos2 cm.Point) (err error) {
 	if g1.gID == g2.gID {
 		return
 	}
-	grids1 := m.aoi.getSurroundGridsByGid(g1.gID)
-	grids2 := m.aoi.getSurroundGridsByGid(g2.gID)
-	same := make([]*aoiGrid, 0)
-	for i := range grids1 {
-		for j := range grids2 {
-			if grids1[i].gID == grids2[j].gID {
-				same = append(same, grids1[i])
-			}
-		}
-	}
-	// grids1 - same
-	oldGrids := make([]*aoiGrid, 0)
-	for i := range grids1 {
-		for j := range same {
-			if grids1[i].gID == same[j].gID {
-				continue
-			}
-			oldGrids = append(oldGrids, grids1[i])
-		}
-	}
-	// grids2 - same
-	newGrids := make([]*aoiGrid, 0)
-	for i := range grids2 {
-		for j := range same {
-			if grids2[i].gID == same[j].gID {
-				continue
-			}
-			newGrids = append(newGrids, grids2[i])
-		}
-	}
-	for i := range oldGrids {
-		ids := oldGrids[i].getObjectIDs()
-		for _, id := range ids {
-			if p, ok := env.players[id]; ok {
-				switch obj.(type) {
-				case *player:
-					p.enqueue(&server.ObjectRemove{ObjectID: uint32(obj.getObjectID())})
-				}
-			}
-		}
-	}
-	for i := range newGrids {
-		ids := newGrids[i].getObjectIDs()
-		for _, id := range ids {
-			if p, ok := env.players[id]; ok {
-				switch o := obj.(type) {
-				case *player:
-					p.enqueueObjectPlayer(o)
-				}
-			}
-		}
+	switch o := obj.(type) {
+	case *player:
+		o.enqueueAreaObjects(g1, g2)
 	}
 	return
 }

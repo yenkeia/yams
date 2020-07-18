@@ -70,13 +70,65 @@ func (p *player) enqueueQuestInfo() {
 
 }
 
-// TODO
-func (p *player) enqueueAreaObjects(points ...cm.Point) {
-
+func (p *player) enqueueAreaObjects(g1, g2 *aoiGrid) {
+	area1 := make([]*aoiGrid, 0)
+	if g1 != nil {
+		area1 = p.currentMap.aoi.getSurroundGridsByGid(g1.gID)
+	}
+	area2 := p.currentMap.aoi.getSurroundGridsByGid(g2.gID)
+	send := make(map[int]bool)
+	for x := range area2 {
+		send[area2[x].gID] = true
+		for y := range area1 {
+			if area1[y].gID == area2[x].gID {
+				send[area2[x].gID] = false
+			}
+		}
+	}
+	for x := range area2 {
+		if send[area2[x].gID] {
+			objs := env.getMapObjects(area2[x].getObjectIDs())
+			for _, obj := range objs {
+				p.enqueueMapObject(obj)
+			}
+		}
+	}
+	drop := make(map[int]bool)
+	for x := range area1 {
+		drop[area1[x].gID] = true
+		for y := range area2 {
+			if area1[x].gID == area2[y].gID {
+				drop[area2[y].gID] = false
+			}
+		}
+	}
+	for x := range area1 {
+		if drop[area1[x].gID] {
+			objs := env.getMapObjects(area1[x].getObjectIDs())
+			for _, obj := range objs {
+				p.enqueue(&server.ObjectRemove{ObjectID: uint32(obj.getObjectID())})
+			}
+		}
+	}
 }
 
 // TODO
-func (p *player) enqueueObjectPlayer(o *player) {
+func (p *player) enqueueMapObject(obj mapObject) {
+	switch o := obj.(type) {
+	case *player:
+		p.enqueue(&server.ObjectPlayer{}) // TODO
+	case *npc:
+		p.enqueue(&server.ObjectNPC{
+			ObjectID:  uint32(o.objectID),
+			Name:      o.name,
+			NameColor: cm.ColorWhite.ToInt32(),
+			Image:     uint16(o.info.Image),
+			Color:     0,
+			Location:  o.getPosition(),
+			Direction: cm.MirDirectionDown, // TODO random
+			QuestIDs:  make([]int32, 0),
+		})
+	}
 
 }
 

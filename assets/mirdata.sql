@@ -42,12 +42,13 @@ CREATE TABLE `npc_info` (
   `map_id` int(11) DEFAULT NULL,
   `file_name` varchar(200) DEFAULT NULL,
   `name` varchar(200) DEFAULT NULL,
+  `image` int(11) DEFAULT NULL,
   `location_x` int(11) DEFAULT NULL,
   `location_y` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 294 DEFAULT CHARSET = utf8;
 
-INSERT INTO npc_info VALUES(1,1,'比奇省/边境村/边境传送员.txt','边境传送员',287,615);
+INSERT INTO npc_info VALUES(1,1,'比奇省/边境村/边境传送员.txt','边境传送员',15,287,615);
 
 CREATE TABLE `item_info` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,

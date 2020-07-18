@@ -13,7 +13,6 @@ type npc struct {
 
 func newNPC(ni *orm.NPCInfo) *npc {
 	n := new(npc)
-	n.objectID = env.newObjectID()
 	n.name = ni.Name
 	n.info = ni
 	return n

@@ -109,6 +109,7 @@ type NPCInfo struct {
 	MapID     int
 	Filename  string `gorm:"Column:file_name"`
 	Name      string
+	Image     int
 	LocationX int `gorm:"Column:location_x"`
 	LocationY int `gorm:"Column:location_y"`
 }
