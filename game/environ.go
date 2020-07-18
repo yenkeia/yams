@@ -54,12 +54,12 @@ func NewEnviron(c *Config) *Environ {
 	}
 	dataDB = newmirData()
 	e := &Environ{}
+	env = e
 	e.objectID = 1
 	e.initMaps()
 	e.initNPCs()
 	e.initItems()
 	e.players = make(map[int]*player)
-	env = e
 	return e
 }
 
@@ -99,7 +99,10 @@ func (env *Environ) initMaps() {
 func (env *Environ) initNPCs() {
 	env.npcs = map[int]*npc{}
 	for _, ni := range dataDB.npcInfos {
-		env.npcs[ni.ID] = newNPC(ni)
+		n := newNPC(ni)
+		env.npcs[ni.ID] = n
+		m := env.maps[n.info.MapID]
+		m.addObject(n)
 	}
 }
 
