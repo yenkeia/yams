@@ -113,3 +113,36 @@ type NPCInfo struct {
 	LocationX int `gorm:"Column:location_x"`
 	LocationY int `gorm:"Column:location_y"`
 }
+
+// MonsterInfo ..
+type MonsterInfo struct {
+	ID          int `gorm:"primary_key"`
+	Name        string
+	Image       int
+	AI          int `gorm:"Column:ai"`
+	Effect      int
+	Level       int
+	ViewRange   int
+	CoolEye     int
+	HP          int `gorm:"Column:hp"`
+	MinAC       int
+	MaxAC       int
+	MinMAC      int
+	MaxMAC      int
+	MinDC       int
+	MaxDC       int
+	MinMC       int
+	MaxMC       int
+	MinSC       int
+	MaxSC       int
+	Accuracy    int
+	Agility     int
+	Light       int
+	AttackSpeed int
+	MoveSpeed   int
+	Experience  int
+	CanPush     int
+	CanTame     int
+	AutoRev     int
+	Undead      int
+}
