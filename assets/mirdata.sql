@@ -1,38 +1,38 @@
 CREATE DATABASE mirdata CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS `map_info` (
-    `id` INT UNSIGNED AUTO_INCREMENT,
-    `file_name` varchar(100) default NULL,
-    `title` varchar(100) default NULL,
-    `mini_map` integer default NULL,
-    `big_map` integer default NULL,
-    `music` integer default NULL,
-    `light` integer default NULL,
-    `map_dark_light` integer default NULL,
-    `mine_index` integer default NULL,
-    `no_teleport` integer default NULL,
-    `no_reconnect` integer default NULL,
-    `no_random` integer default NULL,
-    `no_escape` integer default NULL,
-    `no_recall` integer default NULL,
-    `no_drug` integer default NULL,
-    `no_position` integer default NULL,
-    `no_fight` integer default NULL,
-    `no_throw_item` integer default NULL,
-    `no_drop_player` integer default NULL,
-    `no_drop_monster` integer default NULL,
-    `no_names` integer default NULL,
-    `no_mount` integer default NULL,
-    `need_bridle` integer default NULL,
-    `fight` integer default NULL,
-    `fire` integer default NULL,
-    `lightning` integer default NULL,
-    `no_town_teleport` integer default NULL,
-    `no_reincarnation` integer default NULL,
-    `no_reconnect_map` varchar(100) default NULL,
-    `fire_damage` integer default NULL,
-    `lightning_damage` integer default NULL,
-    PRIMARY KEY (`id`)
+  `id` INT UNSIGNED AUTO_INCREMENT,
+  `file_name` varchar(100) default NULL,
+  `title` varchar(100) default NULL,
+  `mini_map` integer default NULL,
+  `big_map` integer default NULL,
+  `music` integer default NULL,
+  `light` integer default NULL,
+  `map_dark_light` integer default NULL,
+  `mine_index` integer default NULL,
+  `no_teleport` integer default NULL,
+  `no_reconnect` integer default NULL,
+  `no_random` integer default NULL,
+  `no_escape` integer default NULL,
+  `no_recall` integer default NULL,
+  `no_drug` integer default NULL,
+  `no_position` integer default NULL,
+  `no_fight` integer default NULL,
+  `no_throw_item` integer default NULL,
+  `no_drop_player` integer default NULL,
+  `no_drop_monster` integer default NULL,
+  `no_names` integer default NULL,
+  `no_mount` integer default NULL,
+  `need_bridle` integer default NULL,
+  `fight` integer default NULL,
+  `fire` integer default NULL,
+  `lightning` integer default NULL,
+  `no_town_teleport` integer default NULL,
+  `no_reincarnation` integer default NULL,
+  `no_reconnect_map` varchar(100) default NULL,
+  `fire_damage` integer default NULL,
+  `lightning_damage` integer default NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 INSERT INTO map_info VALUES(1,'0','比奇省',101,135,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'',0,0);
@@ -162,3 +162,17 @@ INSERT INTO monster_info VALUES(8,'蛤蟆',8,0,0,12,7,0,20,0,0,0,0,0,5,0,0,0,0,6
 INSERT INTO monster_info VALUES(9,'稻草人',5,0,0,10,7,0,25,0,0,0,0,1,2,0,0,0,0,5,8,0,2500,1500,15,1,1,1,0);
 INSERT INTO monster_info VALUES(10,'多钩猫',6,0,0,13,7,0,30,0,0,0,0,2,4,0,0,0,0,5,7,0,2500,1500,23,1,1,1,0);
 INSERT INTO monster_info VALUES(11,'钉耙猫',7,0,0,13,7,0,32,0,0,0,0,2,4,0,0,0,0,5,8,0,2500,1800,27,1,1,1,0);
+
+CREATE TABLE `respawn_info` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `map_id` int(11) DEFAULT NULL,
+  `monster_id` int(11) DEFAULT NULL,
+  `location_x` int(11) DEFAULT NULL,
+  `location_y` int(11) DEFAULT NULL,
+  `count` int(11) DEFAULT NULL,
+  `spread` int(11) DEFAULT NULL,
+  `interval` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
+INSERT INTO respawn_info VALUES(1,1,1,288,611,1,1,1);

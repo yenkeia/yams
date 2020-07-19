@@ -12,6 +12,7 @@ type mirData struct {
 	npcInfos     []*orm.NPCInfo
 	itemInfos    []*orm.ItemInfo
 	monsterInfos []*orm.MonsterInfo
+	respawnInfos []*orm.RespawnInfo
 }
 
 func newmirData() *mirData {
@@ -26,5 +27,6 @@ func newmirData() *mirData {
 	db.Table("npc_info").Find(&mirData.npcInfos)
 	db.Table("item_info").Find(&mirData.itemInfos)
 	db.Table("monster_info").Find(&mirData.monsterInfos)
+	db.Table("respawn_info").Find(&mirData.respawnInfos)
 	return mirData
 }

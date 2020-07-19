@@ -146,3 +146,15 @@ type MonsterInfo struct {
 	AutoRev     int
 	Undead      int
 }
+
+// RespawnInfo 刷新信息
+type RespawnInfo struct {
+	ID        int `gorm:"primary_key"`
+	MapID     int // 地图 ID
+	MonsterID int // MonsterInfo.ID
+	LocationX int
+	LocationY int
+	Count     int // 数量
+	Spread    int // 范围
+	Interval  int // 刷新时间（分钟
+}
