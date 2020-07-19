@@ -89,6 +89,9 @@ func (p *player) enqueueAreaObjects(g1, g2 *aoiGrid) {
 		if send[area2[x].gID] {
 			objs := env.getMapObjects(area2[x].getObjectIDs())
 			for _, obj := range objs {
+				if obj.getObjectID() == p.objectID {
+					continue
+				}
 				p.enqueueMapObject(obj)
 			}
 		}
@@ -106,6 +109,9 @@ func (p *player) enqueueAreaObjects(g1, g2 *aoiGrid) {
 		if drop[area1[x].gID] {
 			objs := env.getMapObjects(area1[x].getObjectIDs())
 			for _, obj := range objs {
+				if obj.getObjectID() == p.objectID {
+					continue
+				}
 				p.enqueue(&server.ObjectRemove{ObjectID: uint32(obj.getObjectID())})
 			}
 		}
@@ -202,12 +208,14 @@ func (p *player) turn(msg *client.Turn) {
 
 func (p *player) walk(msg *client.Walk) {
 	p.direction = msg.Direction
+	p.currentMap.updateObject(p, p.currentLocation.NextPoint(msg.Direction, 1))
 	p.currentLocation = p.currentLocation.NextPoint(msg.Direction, 1)
 	p.enqueue(&server.UserLocation{Location: p.currentLocation, Direction: p.direction})
 }
 
 func (p *player) run(msg *client.Run) {
 	p.direction = msg.Direction
+	p.currentMap.updateObject(p, p.currentLocation.NextPoint(msg.Direction, 2))
 	p.currentLocation = p.currentLocation.NextPoint(msg.Direction, 2)
 	p.enqueue(&server.UserLocation{Location: p.currentLocation, Direction: p.direction})
 }
