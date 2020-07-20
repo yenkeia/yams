@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync/atomic"
+	"time"
 
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/golog"
@@ -141,11 +142,14 @@ func (env *Environ) getMapObjects(ids []int) []mapObject {
 }
 
 // Update 更新游戏状态
-func (env *Environ) Update() {
+func (env *Environ) Update(now time.Time) {
 	// log.Debugln("Update")
-	// for _, m := range env.maps {
-	// 	m.update()
-	// }
+	for _, m := range env.maps {
+		m.update(now)
+	}
+	for _, n := range env.npcs {
+		n.update(now)
+	}
 }
 
 // HandleEvent 处理客户端包

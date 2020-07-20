@@ -3,6 +3,7 @@ package game
 import (
 	"container/list"
 	"fmt"
+	"time"
 
 	"github.com/yenkeia/yams/game/cm"
 	"github.com/yenkeia/yams/game/orm"
@@ -41,8 +42,20 @@ func (m *mirMap) setCellAttribute(x, y int, attr cm.CellAttribute) {
 	m.cells[x+y*m.width] = c
 }
 
-func (m *mirMap) update() {
+func (m *mirMap) update(now time.Time) {
 
+}
+
+func (m *mirMap) broadcast(pos cm.Point, msg interface{}) {
+	aoiGrids := m.aoi.getSurroundGridsByPoint(pos)
+	for _, g := range aoiGrids {
+		objs := env.getMapObjects(g.getObjectIDs())
+		for _, o := range objs {
+			if p, ok := env.players[o.getObjectID()]; ok {
+				p.enqueue(msg)
+			}
+		}
+	}
 }
 
 func (m *mirMap) inMap(pos cm.Point) bool {

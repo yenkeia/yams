@@ -131,7 +131,7 @@ func (p *player) enqueueMapObject(obj mapObject) {
 			Image:     uint16(o.info.Image),
 			Color:     0,
 			Location:  o.getPosition(),
-			Direction: cm.MirDirectionDown, // TODO random
+			Direction: o.direction,
 			QuestIDs:  make([]int32, 0),
 		})
 	case *monster:

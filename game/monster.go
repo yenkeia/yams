@@ -42,15 +42,7 @@ func (m *monster) getPosition() cm.Point {
 
 func (m *monster) broadcast(msg interface{}) {
 	mp := env.maps[m.mapID]
-	aoiGrids := mp.aoi.getSurroundGridsByPoint(m.location)
-	for _, g := range aoiGrids {
-		objs := env.getMapObjects(g.getObjectIDs())
-		for _, o := range objs {
-			if p, ok := env.players[o.getObjectID()]; ok {
-				p.enqueue(msg)
-			}
-		}
-	}
+	mp.broadcast(m.location, msg)
 }
 
 func (m *monster) broadcastInfo() {

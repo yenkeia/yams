@@ -283,9 +283,9 @@ func ServerSendLTVPacket(writer io.Writer, ctx cellnet.ContextSet, data interfac
 
 	skip := make(map[string]bool)
 	skip["server.KEEP_ALIVE"] = true
-	skip["server.OBJECT_TURN"] = true
-	skip["server.OBJECT_WALK"] = true
-	skip["server.OBJECT_RUN"] = true
+	// skip["server.OBJECT_TURN"] = true
+	// skip["server.OBJECT_WALK"] = true
+	// skip["server.OBJECT_RUN"] = true
 	// skip["server.OBJECT_REMOVE"] = true
 	// skip["server.OBJECT_MONSTER"] = true
 	// skip["server.HEALTH_CHANGED"] = true

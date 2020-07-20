@@ -24,7 +24,7 @@ func main() {
 	proc.BindProcessorHandler(p, "mir.server.tcp", env.HandleEvent)
 
 	timer.NewLoop(queue, time.Second/time.Duration(60), func(*timer.Loop) {
-		env.Update()
+		env.Update(time.Now())
 	}, nil).Start()
 
 	env.Peer = p
