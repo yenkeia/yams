@@ -35,11 +35,13 @@ var env *Environ
 
 // Environ 主游戏环境
 type Environ struct {
-	Peer     cellnet.GenericPeer
-	maps     map[int]*mirMap // MapInfo.ID: mirMap
-	npcs     map[int]*npc    // npc.objectID: npc
-	players  map[int]*player // player.objectID: player
 	objectID uint32
+	Peer     cellnet.GenericPeer
+	respawns []*respawn       // 刷怪信息
+	maps     map[int]*mirMap  // MapInfo.ID: mirMap
+	npcs     map[int]*npc     // npc.objectID: npc
+	players  map[int]*player  // player.objectID: player
+	monsters map[int]*monster // monster.objectID: monster
 }
 
 // NewEnviron 初始化
@@ -55,9 +57,11 @@ func NewEnviron(c *Config) *Environ {
 	e := &Environ{}
 	env = e
 	e.objectID = 1
-	e.initMaps()
-	e.initNPCs()
 	e.players = make(map[int]*player)
+	e.monsters = make(map[int]*monster)
+	e.initMap()
+	e.initNPC()
+	e.initRespawn() // 怪物刷新
 	return e
 }
 
@@ -66,7 +70,7 @@ func (env *Environ) newObjectID() int {
 	return int(env.objectID)
 }
 
-func (env *Environ) initMaps() {
+func (env *Environ) initMap() {
 	uppercaseNameRealNameMap := map[string]string{}
 	files := cm.GetFiles(conf.Assets+"/Maps/", []string{".map"})
 	for _, f := range files {
@@ -94,7 +98,7 @@ func (env *Environ) initMaps() {
 	}
 }
 
-func (env *Environ) initNPCs() {
+func (env *Environ) initNPC() {
 	env.npcs = map[int]*npc{}
 	for _, ni := range dataDB.npcInfos {
 		n := newNPC(ni)
@@ -102,6 +106,18 @@ func (env *Environ) initNPCs() {
 		env.npcs[n.objectID] = n
 		m := env.maps[n.info.MapID]
 		m.addObject(n)
+	}
+}
+
+func (env *Environ) initRespawn() {
+	env.respawns = make([]*respawn, len(dataDB.respawnInfos))
+	for i, ri := range dataDB.respawnInfos {
+		env.respawns[i] = newRespawn(ri)
+	}
+	for _, r := range env.respawns {
+		for i := 0; i < r.info.Count; i++ {
+			r.spawn()
+		}
 	}
 }
 
@@ -114,6 +130,10 @@ func (env *Environ) getMapObjects(ids []int) []mapObject {
 		}
 		if n, ok := env.npcs[id]; ok {
 			objs = append(objs, n)
+			continue
+		}
+		if m, ok := env.monsters[id]; ok {
+			objs = append(objs, m)
 			continue
 		}
 	}

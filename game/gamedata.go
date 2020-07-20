@@ -30,3 +30,12 @@ func newmirData() *mirData {
 	db.Table("respawn_info").Find(&mirData.respawnInfos)
 	return mirData
 }
+
+func (data *mirData) getMonsterInfo(id int) *orm.MonsterInfo {
+	for _, mi := range data.monsterInfos {
+		if mi.ID == id {
+			return mi
+		}
+	}
+	return nil
+}

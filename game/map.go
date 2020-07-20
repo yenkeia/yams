@@ -99,6 +99,15 @@ func (m *mirMap) updateObject(obj mapObject, pos2 cm.Point) (err error) {
 	switch o := obj.(type) {
 	case *player:
 		o.enqueueAreaObjects(g1, g2)
+	case *monster:
+		o.broadcastInfo()
 	}
 	return
+}
+
+// TODO
+func (m *mirMap) canSpawnMonster(pos cm.Point) bool {
+	// 判断是否 cell walkable
+	// 判断是否已经有 player npc monster
+	return true
 }

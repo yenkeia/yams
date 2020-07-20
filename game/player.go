@@ -134,6 +134,26 @@ func (p *player) enqueueMapObject(obj mapObject) {
 			Direction: cm.MirDirectionDown, // TODO random
 			QuestIDs:  make([]int32, 0),
 		})
+	case *monster:
+		p.enqueue(&server.ObjectMonster{
+			ObjectID:          uint32(o.objectID),
+			Name:              o.info.Name,
+			NameColor:         cm.ColorWhite.ToInt32(),
+			Location:          o.location,
+			Image:             cm.Monster(o.info.Image),
+			Direction:         o.direction,
+			Effect:            uint8(o.info.Effect),
+			AI:                uint8(o.info.AI),
+			Light:             uint8(o.info.Light),
+			Dead:              o.isDead,
+			Skeleton:          o.isSkeleton,
+			Poison:            o.poison,
+			Hidden:            o.isHidden,
+			ShockTime:         0,     // TODO
+			BindingShotCenter: false, // TODO
+			Extra:             false, // TODO
+			ExtraByte:         0,     // TODO
+		})
 	}
 
 }

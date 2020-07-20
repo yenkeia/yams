@@ -1,6 +1,7 @@
 package cm
 
 import (
+	"math/rand"
 	"os"
 	"path"
 	"path/filepath"
@@ -28,4 +29,20 @@ func GetFiles(dir string, allow []string) []string {
 		return nil
 	})
 	return ret
+}
+
+// RandomInt 随机 [low, high]
+func RandomInt(low int, high int) int {
+	if low == high {
+		return low
+	}
+	if low > high || high == 0 {
+		return 0
+	}
+	return rand.Intn(high-low+1) + low
+}
+
+// RandomDirection ...
+func RandomDirection() MirDirection {
+	return MirDirection(RandomInt(0, MirDirectionCount))
 }
