@@ -1,11 +1,14 @@
 package game
 
-import "github.com/yenkeia/yams/game/cm"
+import (
+	"github.com/yenkeia/yams/game/cm"
+	"github.com/yenkeia/yams/game/orm"
+)
 
 type item struct {
 	baseObject
-	gold int
-	ui   *userItem
+	gold     int
+	userItem *orm.UserItem
 }
 
 // TODO
@@ -15,6 +18,11 @@ func newItem() *item {
 
 // TODO
 func newItemGold() *item {
+	return nil
+}
+
+// TODO
+func newUserItem() *orm.UserItem {
 	return nil
 }
 
