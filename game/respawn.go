@@ -21,7 +21,7 @@ func (r *respawn) spawn() {
 		if !mp.canSpawnMonster(cm.NewPoint(x, y)) {
 			continue
 		}
-		m := newMonster(mp.info.ID, cm.NewPoint(x, y), dataDB.getMonsterInfo(r.info.MonsterID))
+		m := newMonster(mp.info.ID, cm.NewPoint(x, y), gdb.getMonsterInfo(r.info.MonsterID))
 
 		// TODO 从 env 中删除
 		env.monsters[m.objectID] = m

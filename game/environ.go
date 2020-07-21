@@ -1,7 +1,6 @@
 package game
 
 import (
-	"fmt"
 	"path/filepath"
 	"strings"
 	"sync/atomic"
@@ -9,7 +8,6 @@ import (
 
 	"github.com/davyxu/cellnet"
 	"github.com/davyxu/golog"
-	"github.com/jinzhu/gorm"
 	"github.com/yenkeia/yams/game/cm"
 	"github.com/yenkeia/yams/game/orm"
 	"github.com/yenkeia/yams/game/proto/client"
@@ -29,8 +27,8 @@ const (
 
 var log = golog.New("yams.game")
 var sessionPlayer = make(map[int64]*player)
-var accountDB *gorm.DB
-var dataDB *mirData
+var pdb *playerDatabase
+var gdb *gameDatabase
 var conf *Config
 var env *Environ
 
@@ -48,13 +46,8 @@ type Environ struct {
 // NewEnviron 初始化
 func NewEnviron(c *Config) *Environ {
 	conf = c
-	adb, err := gorm.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8", conf.Mysql.Username, conf.Mysql.Password, conf.Mysql.Host, conf.Mysql.Port, conf.Mysql.AccountDB))
-	accountDB = adb
-	// defer accountDB.Close()	Close 之后对数据库的操作无效且不报错..
-	if err != nil {
-		panic(err)
-	}
-	dataDB = newmirData()
+	pdb = newPlayerDatabase()
+	gdb = newGameDatabase()
 	e := &Environ{}
 	env = e
 	e.objectID = 1
@@ -85,7 +78,7 @@ func (env *Environ) initMap() {
 		allow[v] = true
 	}
 	env.maps = map[int]*mirMap{}
-	for _, mi := range dataDB.mapInfos {
+	for _, mi := range gdb.mapInfos {
 		if _, ok := allow[mi.ID]; !ok {
 			continue
 		}
@@ -101,7 +94,7 @@ func (env *Environ) initMap() {
 
 func (env *Environ) initNPC() {
 	env.npcs = map[int]*npc{}
-	for _, ni := range dataDB.npcInfos {
+	for _, ni := range gdb.npcInfos {
 		n := newNPC(ni)
 		n.objectID = env.newObjectID()
 		env.npcs[n.objectID] = n
@@ -111,8 +104,8 @@ func (env *Environ) initNPC() {
 }
 
 func (env *Environ) initRespawn() {
-	env.respawns = make([]*respawn, len(dataDB.respawnInfos))
-	for i, ri := range dataDB.respawnInfos {
+	env.respawns = make([]*respawn, len(gdb.respawnInfos))
+	for i, ri := range gdb.respawnInfos {
 		env.respawns[i] = newRespawn(ri)
 	}
 	for _, r := range env.respawns {
@@ -211,13 +204,14 @@ func newAccount(s cellnet.Session, msg *client.NewAccount) {
 	if !checkGameStage(s, LOGIN) {
 		return
 	}
+	db := pdb.db
 	res := uint8(0)
 	a := new(orm.Account)
-	accountDB.Table("account").Where("username = ?", msg.UserName).Find(a)
+	db.Table("account").Where("username = ?", msg.UserName).Find(a)
 	if a.ID == 0 {
 		a.Username = msg.AccountID
 		a.Password = msg.Password
-		accountDB.Table("account").Create(a)
+		db.Table("account").Create(a)
 		res = 8
 	}
 	s.Send(&server.NewAccount{Result: res})
@@ -227,26 +221,28 @@ func changePassword(s cellnet.Session, msg *client.ChangePassword) {
 	if !checkGameStage(s, LOGIN) {
 		return
 	}
+	db := pdb.db
 	res := uint8(5)
 	a := new(orm.Account)
-	accountDB.Table("account").Where("username = ? AND password = ?", msg.AccountID, msg.CurrentPassword).Find(a)
+	db.Table("account").Where("username = ? AND password = ?", msg.AccountID, msg.CurrentPassword).Find(a)
 	if a.ID != 0 {
 		a.Password = msg.NewPassword
-		accountDB.Table("account").Model(a).Updates(orm.Account{Password: msg.NewPassword})
+		db.Table("account").Model(a).Updates(orm.Account{Password: msg.NewPassword})
 		res = 6
 	}
 	s.Send(&server.ChangePassword{Result: res})
 }
 
 func getAccountCharacters(accountID int) []server.SelectInfo {
+	db := pdb.db
 	ac := make([]orm.AccountCharacter, 3)
-	accountDB.Table("account_character").Where("account_id = ?", accountID).Limit(3).Find(&ac)
+	db.Table("account_character").Where("account_id = ?", accountID).Limit(3).Find(&ac)
 	ids := make([]int, 0)
 	for _, c := range ac {
 		ids = append(ids, c.CharacterID)
 	}
 	cs := make([]orm.Character, 3)
-	accountDB.Table("character").Where("id in (?)", ids).Find(&cs)
+	db.Table("character").Where("id in (?)", ids).Find(&cs)
 	si := make([]server.SelectInfo, len(cs))
 	for i, c := range cs {
 		s := new(server.SelectInfo)
@@ -265,8 +261,9 @@ func login(s cellnet.Session, msg *client.Login, env *Environ) {
 	if !checkGameStage(s, LOGIN) {
 		return
 	}
+	db := pdb.db
 	a := new(orm.Account)
-	accountDB.Table("account").Where("username = ? AND password = ?", msg.AccountID, msg.Password).Find(a)
+	db.Table("account").Where("username = ? AND password = ?", msg.AccountID, msg.Password).Find(a)
 	if a.ID == 0 {
 		s.Send(&server.Login{Result: uint8(4)})
 		return
@@ -285,10 +282,10 @@ func newCharacter(s cellnet.Session, msg *client.NewCharacter, env *Environ) {
 	if !checkGameStage(s, SELECT) {
 		return
 	}
+	db := pdb.db
 	player := sessionPlayer[s.ID()]
-
 	ac := make([]orm.AccountCharacter, 3)
-	accountDB.Table("account_character").Where("account_id = ?", player.accountID).Limit(3).Find(&ac)
+	db.Table("account_character").Where("account_id = ?", player.accountID).Limit(3).Find(&ac)
 	if len(ac) >= 3 {
 		s.Send(&server.NewCharacter{Result: uint8(4)})
 		return
@@ -316,13 +313,13 @@ func newCharacter(s cellnet.Session, msg *client.NewCharacter, env *Environ) {
 		Gold:             30000,
 		AllowGroup:       true,
 	}
-	accountDB.Table("character").Create(c)
+	db.Table("character").Create(c)
 
 	ac2 := &orm.AccountCharacter{
 		AccountID:   player.accountID,
 		CharacterID: c.ID,
 	}
-	accountDB.Table("account_character").Create(ac2)
+	db.Table("account_character").Create(ac2)
 
 	res := new(server.NewCharacterSuccess)
 	res.CharInfo = server.SelectInfo{
@@ -340,16 +337,17 @@ func deleteCharacter(s cellnet.Session, msg *client.DeleteCharacter) {
 	if !checkGameStage(s, SELECT) {
 		return
 	}
+	db := pdb.db
 	c := new(orm.Character)
-	accountDB.Table("character").Where("id = ?", msg.CharacterIndex).Find(c)
+	db.Table("character").Where("id = ?", msg.CharacterIndex).Find(c)
 	if c.ID == 0 {
 		res := new(server.DeleteCharacter)
 		res.Result = 4
 		s.Send(res)
 		return
 	}
-	accountDB.Table("character").Delete(c)
-	accountDB.Table("account_character").Where("character_id = ?", c.ID).Delete(orm.Character{})
+	db.Table("character").Delete(c)
+	db.Table("account_character").Where("character_id = ?", c.ID).Delete(orm.Character{})
 	res := new(server.DeleteCharacterSuccess)
 	res.CharacterIndex = msg.CharacterIndex
 	s.Send(res)
@@ -359,14 +357,15 @@ func startGame(s cellnet.Session, msg *client.StartGame) {
 	if !checkGameStage(s, SELECT) {
 		return
 	}
+	db := pdb.db
 	p := sessionPlayer[s.ID()]
 	c := new(orm.Character)
-	accountDB.Table("character").Where("id = ?", msg.CharacterIndex).First(c)
+	db.Table("character").Where("id = ?", msg.CharacterIndex).First(c)
 	if c.ID == 0 {
 		return
 	}
 	ac := new(orm.AccountCharacter)
-	accountDB.Table("account_character").Where("account_id = ? and character_id = ?", p.accountID, c.ID).Find(&ac)
+	db.Table("account_character").Where("account_id = ? and character_id = ?", p.accountID, c.ID).Find(&ac)
 	if ac.ID == 0 {
 		s.Send(&server.StartGame{Result: 2, Resolution: 1024})
 		return

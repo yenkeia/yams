@@ -10,12 +10,12 @@ import (
 type Config struct {
 	Assets string `yaml:"assets"`
 	Mysql  struct {
-		Host      string `yaml:"host"`
-		Port      string `yaml:"port"`
-		DataDB    string `yaml:"dataDB"`
-		AccountDB string `yaml:"accountDB"`
-		Username  string `yaml:"username"`
-		Password  string `yaml:"password"`
+		Host           string `yaml:"host"`
+		Port           string `yaml:"port"`
+		GameDatabase   string `yaml:"gameDatabase"`
+		PlayerDatabase string `yaml:"playerDatabase"`
+		Username       string `yaml:"username"`
+		Password       string `yaml:"password"`
 	}
 }
 

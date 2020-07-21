@@ -1,4 +1,6 @@
-CREATE DATABASE mirdata CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE DATABASE gamedatabase CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+USE gamedatabase;
 
 CREATE TABLE IF NOT EXISTS `map_info` (
   `id` INT UNSIGNED AUTO_INCREMENT,

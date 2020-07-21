@@ -1,4 +1,6 @@
-CREATE DATABASE miraccount CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE DATABASE playerdatabase CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+USE playerdatabase;
 
 CREATE TABLE IF NOT EXISTS `account`(
     `id` INT UNSIGNED AUTO_INCREMENT,
