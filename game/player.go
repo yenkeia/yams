@@ -11,7 +11,8 @@ import (
 type player struct {
 	session         *cellnet.Session
 	gameStage       int
-	accountID       int
+	accountID       int // account.ID
+	characterID     int // character.ID 保存数据库用
 	objectID        int
 	name            string
 	nameColor       cm.Color
@@ -176,13 +177,14 @@ func (p *player) receiveChat(text string, typ cm.ChatType) {
 func (p *player) updateInfo(c *orm.Character) {
 	p.gameStage = GAME
 	p.objectID = env.newObjectID()
+	p.characterID = c.ID
 	p.name = c.Name
 	p.direction = cm.MirDirection(c.Direction)
-	p.currentMap = env.maps[1] // TODO
+	p.currentMap = env.maps[c.CurrentMapID]
 	p.currentLocation = cm.NewPoint(int(c.CurrentLocationX), int(c.CurrentLocationY))
 	p.bindLocation = cm.NewPoint(c.BindLocationX, c.BindLocationY)
 	p.bindMap = env.maps[c.BindMapID]
-	p.direction = cm.MirDirectionUp
+	p.direction = cm.MirDirection(c.Direction)
 	p.hp = c.HP
 	p.mp = c.MP
 	p.level = c.Level

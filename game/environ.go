@@ -438,8 +438,10 @@ func logout(s cellnet.Session, msg *client.LogOut) {
 		p.broadcast(&server.ObjectRemove{ObjectID: uint32(p.getObjectID())})
 		s.Send(&server.LogOutSuccess{Characters: getAccountCharacters(p.accountID)})
 
+		pdb.syncPosition(p)
+
 		// 从游戏环境删除
-		env.players[p.objectID] = nil
+		delete(env.players, p.objectID)
 		p.currentMap.deleteObject(p)
 	}
 }

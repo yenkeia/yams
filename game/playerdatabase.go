@@ -21,3 +21,14 @@ func newPlayerDatabase() *playerDatabase {
 	pdb.db = db
 	return pdb
 }
+
+func (d *playerDatabase) setCharacterAttr(p *player, attr string, value interface{}) {
+	d.db.Table("character").Where("id = ?", p.characterID).Update(attr, value)
+}
+
+func (d *playerDatabase) syncPosition(p *player) {
+	d.setCharacterAttr(p, "current_map_id", p.currentMap.info.ID)
+	d.setCharacterAttr(p, "direction", p.direction)
+	d.setCharacterAttr(p, "current_location_x", p.currentLocation.X)
+	d.setCharacterAttr(p, "current_location_y", p.currentLocation.Y)
+}
