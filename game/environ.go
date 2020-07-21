@@ -422,7 +422,7 @@ func startGame(s cellnet.Session, msg *client.StartGame) {
 	p.enqueue(&server.SwitchGroup{AllowGroup: p.allowGroup})
 	p.enqueue(&server.NPCResponse{Page: []string{}})
 	p.enqueueAreaObjects(nil, p.currentMap.aoi.getGridByPoint(p.currentLocation))
-	p.broadcastObjectPlayer()
+	p.broadcast(p.getObjectPlayer())
 
 	// 加入到游戏环境
 	env.players[p.objectID] = p

@@ -120,10 +120,46 @@ func (p *player) enqueueAreaObjects(g1, g2 *aoiGrid) {
 }
 
 // TODO
+func (p *player) getObjectPlayer() *server.ObjectPlayer {
+	return &server.ObjectPlayer{
+		ObjectID:         uint32(p.objectID),      // uint32
+		Name:             p.name,                  // string
+		GuildName:        "",                      // string
+		GuildRankName:    "",                      // string
+		NameColor:        cm.ColorWhite.ToInt32(), // int32 // = Color.FromArgb(reader.ReadInt32());
+		Class:            p.class,                 // cm.MirClass
+		Gender:           p.gender,                // cm.MirGender
+		Level:            uint16(p.level),         // uint16
+		Location:         p.currentLocation,       // cm.Point
+		Direction:        p.direction,             // cm.MirDirection
+		Hair:             uint8(p.hair),           // uint8
+		Light:            uint8(p.light),          // uint8
+		Weapon:           0,                       // int16
+		WeaponEffect:     0,                       // int16
+		Armour:           0,                       // int16
+		Poison:           0,                       // cm.PoisonType // = (PoisonType)reader.ReadUInt16()
+		Dead:             false,                   // bool
+		Hidden:           false,                   // bool
+		Effect:           0,                       // cm.SpellEffect // = (SpellEffect)reader.ReadByte()
+		WingEffect:       0,                       // uint8
+		Extra:            false,                   // bool
+		MountType:        0,                       // int16
+		RidingMount:      false,                   // bool
+		Fishing:          false,                   // bool
+		TransformType:    0,                       // int16
+		ElementOrbEffect: 0,                       // uint32
+		ElementOrbLvl:    0,                       // uint32
+		ElementOrbMax:    0,                       // uint32
+		Buffs:            make([]cm.BuffType, 0),  // []cm.BuffType
+		LevelEffects:     0,                       // cm.LevelEffects
+	}
+}
+
+// TODO
 func (p *player) enqueueMapObject(obj mapObject) {
 	switch o := obj.(type) {
 	case *player:
-		p.enqueue(&server.ObjectPlayer{}) // TODO
+		p.enqueue(o.getObjectPlayer())
 	case *npc:
 		p.enqueue(&server.ObjectNPC{
 			ObjectID:  uint32(o.objectID),
@@ -159,14 +195,9 @@ func (p *player) enqueueMapObject(obj mapObject) {
 
 }
 
-// TODO
 func (p *player) broadcast(msg interface{}) {
-
-}
-
-// TODO
-func (p *player) broadcastObjectPlayer() {
-
+	mp := env.maps[p.currentMap.info.ID]
+	mp.broadcast(p.currentLocation, msg)
 }
 
 func (p *player) receiveChat(text string, typ cm.ChatType) {
@@ -242,7 +273,16 @@ func (p *player) run(msg *client.Run) {
 	p.enqueue(&server.UserLocation{Location: p.currentLocation, Direction: p.direction})
 }
 
-func (p *player) chat(msg *client.Chat)                             {}
+func (p *player) chat(msg *client.Chat) {
+	res := &server.ObjectChat{
+		ObjectID: uint32(p.objectID),
+		Text:     p.name + ":" + msg.Message,
+		Type:     cm.ChatTypeNormal,
+	}
+	p.enqueue(res)
+	p.broadcast(res)
+}
+
 func (p *player) moveItem(msg *client.MoveItem)                     {}
 func (p *player) storeItem(msg *client.StoreItem)                   {}
 func (p *player) depositRefineItem(msg *client.DepositRefineItem)   {}
