@@ -9,20 +9,20 @@ import (
 )
 
 type npc struct {
-	info      *orm.NPCInfo
-	objectID  int
-	name      string
-	turnTime  time.Time
-	direction cm.MirDirection
-	location  cm.Point
+	baseObject
+	info     *orm.NPCInfo
+	turnTime time.Time
 }
 
-func newNPC(ni *orm.NPCInfo) *npc {
+func newNPC(info *orm.NPCInfo) *npc {
 	n := new(npc)
-	n.name = ni.Name
-	n.info = ni
+	n.objectID = env.newObjectID()
+	n.name = info.Name
+	n.nameColor = cm.ColorWhite
+	n.mapID = info.MapID
+	n.location = cm.NewPoint(info.LocationX, info.LocationY)
 	n.direction = cm.MirDirection(cm.RandomInt(0, 1))
-	n.location = cm.NewPoint(n.info.LocationX, n.info.LocationY)
+	n.info = info
 	n.turnTime = time.Now()
 	return n
 }

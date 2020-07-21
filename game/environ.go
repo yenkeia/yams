@@ -379,15 +379,16 @@ func startGame(s cellnet.Session, msg *client.StartGame) {
 	p.enqueueItemInfos()
 	p.refreshStats()
 	p.enqueueQuestInfo()
+	mp := env.maps[p.mapID]
 	p.enqueue(&server.MapInformation{
-		FileName:     p.currentMap.info.Filename,
-		Title:        p.currentMap.info.Title,
-		MiniMap:      uint16(p.currentMap.info.MiniMap),
-		BigMap:       uint16(p.currentMap.info.BigMap),
-		Lights:       cm.LightSetting(p.currentMap.info.Light),
+		FileName:     mp.info.Filename,
+		Title:        mp.info.Title,
+		MiniMap:      uint16(mp.info.MiniMap),
+		BigMap:       uint16(mp.info.BigMap),
+		Lights:       cm.LightSetting(mp.info.Light),
 		Lightning:    true,
 		MapDarkLight: 0,
-		Music:        uint16(p.currentMap.info.Music),
+		Music:        uint16(mp.info.Music),
 	})
 	p.enqueue(&server.UserInformation{
 		ObjectID:                  uint32(p.objectID),
@@ -399,7 +400,7 @@ func startGame(s cellnet.Session, msg *client.StartGame) {
 		Class:                     p.class,
 		Gender:                    p.gender,
 		Level:                     uint16(p.level),
-		Location:                  p.currentLocation,
+		Location:                  p.location,
 		Direction:                 p.direction,
 		Hair:                      uint8(p.hair),
 		HP:                        uint16(p.hp),
@@ -421,12 +422,12 @@ func startGame(s cellnet.Session, msg *client.StartGame) {
 	p.enqueue(&server.ChangePMode{Mode: p.petMode})
 	p.enqueue(&server.SwitchGroup{AllowGroup: p.allowGroup})
 	p.enqueue(&server.NPCResponse{Page: []string{}})
-	p.enqueueAreaObjects(nil, p.currentMap.aoi.getGridByPoint(p.currentLocation))
+	p.enqueueAreaObjects(nil, mp.aoi.getGridByPoint(p.location))
 	p.broadcast(p.getObjectPlayer())
 
 	// 加入到游戏环境
 	env.players[p.objectID] = p
-	p.currentMap.addObject(p)
+	mp.addObject(p)
 }
 
 func logout(s cellnet.Session, msg *client.LogOut) {
@@ -442,7 +443,7 @@ func logout(s cellnet.Session, msg *client.LogOut) {
 
 		// 从游戏环境删除
 		delete(env.players, p.objectID)
-		p.currentMap.deleteObject(p)
+		env.maps[p.mapID].deleteObject(p)
 	}
 }
 

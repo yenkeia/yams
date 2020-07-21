@@ -9,40 +9,35 @@ import (
 )
 
 type player struct {
-	session         *cellnet.Session
-	gameStage       int
-	accountID       int // account.ID
-	characterID     int // character.ID 保存数据库用
-	objectID        int
-	name            string
-	nameColor       cm.Color
-	currentMap      *mirMap
-	currentLocation cm.Point
-	bindLocation    cm.Point
-	bindMap         *mirMap
-	direction       cm.MirDirection
-	hp              int
-	mp              int
-	maxHP           int
-	maxMP           int
-	level           int
-	experience      int
-	maxExperience   int
-	guildName       string
-	guildRankName   string
-	class           cm.MirClass
-	gender          cm.MirGender
-	hair            int
-	light           int
-	gold            int
-	inventory       *bag // 46
-	equipment       *bag // 14
-	questInventory  *bag // 40
-	storage         *bag // 80
-	trade           *bag // 10	交易框的索引是从上到下的，背包是从左到右
-	attackMode      cm.AttackMode
-	petMode         cm.PetMode
-	allowGroup      bool
+	baseObject
+	session        *cellnet.Session
+	gameStage      int
+	accountID      int // account.ID
+	characterID    int // character.ID 保存数据库用
+	bindLocation   cm.Point
+	bindMapID      int
+	hp             int
+	mp             int
+	maxHP          int
+	maxMP          int
+	level          int
+	experience     int
+	maxExperience  int
+	guildName      string
+	guildRankName  string
+	class          cm.MirClass
+	gender         cm.MirGender
+	hair           int
+	light          int
+	gold           int
+	inventory      *bag // 46
+	equipment      *bag // 14
+	questInventory *bag // 40
+	storage        *bag // 80
+	trade          *bag // 10	交易框的索引是从上到下的，背包是从左到右
+	attackMode     cm.AttackMode
+	petMode        cm.PetMode
+	allowGroup     bool
 }
 
 func (p *player) getObjectID() int {
@@ -50,7 +45,7 @@ func (p *player) getObjectID() int {
 }
 
 func (p *player) getPosition() cm.Point {
-	return p.currentLocation
+	return p.location
 }
 
 func (p *player) enqueue(msg interface{}) {
@@ -73,10 +68,11 @@ func (p *player) enqueueQuestInfo() {
 
 func (p *player) enqueueAreaObjects(g1, g2 *aoiGrid) {
 	area1 := make([]*aoiGrid, 0)
+	mp := env.maps[p.mapID]
 	if g1 != nil {
-		area1 = p.currentMap.aoi.getSurroundGridsByGid(g1.gID)
+		area1 = mp.aoi.getSurroundGridsByGid(g1.gID)
 	}
-	area2 := p.currentMap.aoi.getSurroundGridsByGid(g2.gID)
+	area2 := mp.aoi.getSurroundGridsByGid(g2.gID)
 	send := make(map[int]bool)
 	for x := range area2 {
 		send[area2[x].gID] = true
@@ -130,7 +126,7 @@ func (p *player) getObjectPlayer() *server.ObjectPlayer {
 		Class:            p.class,                 // cm.MirClass
 		Gender:           p.gender,                // cm.MirGender
 		Level:            uint16(p.level),         // uint16
-		Location:         p.currentLocation,       // cm.Point
+		Location:         p.location,              // cm.Point
 		Direction:        p.direction,             // cm.MirDirection
 		Hair:             uint8(p.hair),           // uint8
 		Light:            uint8(p.light),          // uint8
@@ -196,8 +192,7 @@ func (p *player) enqueueMapObject(obj mapObject) {
 }
 
 func (p *player) broadcast(msg interface{}) {
-	mp := env.maps[p.currentMap.info.ID]
-	mp.broadcast(p.currentLocation, msg)
+	env.maps[p.mapID].broadcast(p.location, msg)
 }
 
 func (p *player) receiveChat(text string, typ cm.ChatType) {
@@ -211,10 +206,10 @@ func (p *player) updateInfo(c *orm.Character) {
 	p.characterID = c.ID
 	p.name = c.Name
 	p.direction = cm.MirDirection(c.Direction)
-	p.currentMap = env.maps[c.CurrentMapID]
-	p.currentLocation = cm.NewPoint(int(c.CurrentLocationX), int(c.CurrentLocationY))
+	p.mapID = c.CurrentMapID
+	p.location = cm.NewPoint(int(c.CurrentLocationX), int(c.CurrentLocationY))
 	p.bindLocation = cm.NewPoint(c.BindLocationX, c.BindLocationY)
-	p.bindMap = env.maps[c.BindMapID]
+	p.bindMapID = c.BindMapID
 	p.direction = cm.MirDirection(c.Direction)
 	p.hp = c.HP
 	p.mp = c.MP
@@ -256,21 +251,23 @@ func (p *player) refreshStats() {
 
 func (p *player) turn(msg *client.Turn) {
 	p.direction = msg.Direction
-	p.enqueue(&server.UserLocation{Location: p.currentLocation, Direction: p.direction})
+	p.enqueue(&server.UserLocation{Location: p.location, Direction: p.direction})
 }
 
 func (p *player) walk(msg *client.Walk) {
+	mp := env.maps[p.mapID]
 	p.direction = msg.Direction
-	p.currentMap.updateObject(p, p.currentLocation.NextPoint(msg.Direction, 1))
-	p.currentLocation = p.currentLocation.NextPoint(msg.Direction, 1)
-	p.enqueue(&server.UserLocation{Location: p.currentLocation, Direction: p.direction})
+	mp.updateObject(p, p.location.NextPoint(msg.Direction, 1))
+	p.location = p.location.NextPoint(msg.Direction, 1)
+	p.enqueue(&server.UserLocation{Location: p.location, Direction: p.direction})
 }
 
 func (p *player) run(msg *client.Run) {
+	mp := env.maps[p.mapID]
 	p.direction = msg.Direction
-	p.currentMap.updateObject(p, p.currentLocation.NextPoint(msg.Direction, 2))
-	p.currentLocation = p.currentLocation.NextPoint(msg.Direction, 2)
-	p.enqueue(&server.UserLocation{Location: p.currentLocation, Direction: p.direction})
+	mp.updateObject(p, p.location.NextPoint(msg.Direction, 2))
+	p.location = p.location.NextPoint(msg.Direction, 2)
+	p.enqueue(&server.UserLocation{Location: p.location, Direction: p.direction})
 }
 
 func (p *player) chat(msg *client.Chat) {

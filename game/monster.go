@@ -7,11 +7,8 @@ import (
 )
 
 type monster struct {
+	baseObject
 	info       *orm.MonsterInfo
-	objectID   int
-	mapID      int
-	location   cm.Point
-	direction  cm.MirDirection
 	isDead     bool
 	isSkeleton bool
 	poison     cm.PoisonType
@@ -19,17 +16,20 @@ type monster struct {
 }
 
 func newMonster(mapID int, location cm.Point, info *orm.MonsterInfo) *monster {
-	return &monster{
+	m := &monster{
 		info:       info,
-		objectID:   env.newObjectID(),
-		mapID:      mapID,
-		location:   location,
-		direction:  cm.RandomDirection(),
 		isDead:     false,
 		isSkeleton: false,
 		poison:     cm.PoisonTypeNone,
 		isHidden:   false,
 	}
+	m.objectID = env.newObjectID()
+	m.name = info.Name
+	m.nameColor = cm.ColorWhite
+	m.mapID = mapID
+	m.location = location
+	m.direction = cm.RandomDirection()
+	return m
 }
 
 func (m *monster) getObjectID() int {

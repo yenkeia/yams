@@ -27,8 +27,8 @@ func (d *playerDatabase) setCharacterAttr(p *player, attr string, value interfac
 }
 
 func (d *playerDatabase) syncPosition(p *player) {
-	d.setCharacterAttr(p, "current_map_id", p.currentMap.info.ID)
+	d.setCharacterAttr(p, "current_map_id", p.mapID)
 	d.setCharacterAttr(p, "direction", p.direction)
-	d.setCharacterAttr(p, "current_location_x", p.currentLocation.X)
-	d.setCharacterAttr(p, "current_location_y", p.currentLocation.Y)
+	d.setCharacterAttr(p, "current_location_x", p.location.X)
+	d.setCharacterAttr(p, "current_location_y", p.location.Y)
 }
