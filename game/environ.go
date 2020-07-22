@@ -499,8 +499,202 @@ func handleEvent(p *player, e cellnet.Event, s cellnet.Session) {
 		p.pickUp(msg)
 	case *client.Inspect:
 		p.inspect(msg)
-	// case *client.ChangeAMode:
-	// 	p.ChangeAMode(msg)
+	case *client.ChangeAMode:
+		p.changeAMode(msg)
+	case *client.ChangePMode:
+		p.changePMode(msg)
+	case *client.ChangeTrade:
+		p.changeTrade(msg)
+	case *client.Attack:
+		p.attack(msg)
+	case *client.RangeAttack:
+		p.rangeAttack(msg)
+	case *client.Harvest:
+		p.harvest(msg)
+	case *client.CallNPC:
+		p.callNPC(msg)
+	case *client.TalkMonsterNPC:
+		p.talkMonsterNPC(msg)
+	case *client.BuyItem:
+		p.buyItem(msg)
+	case *client.CraftItem:
+		p.craftItem(msg)
+	case *client.SellItem:
+		p.sellItem(msg)
+	case *client.RepairItem:
+		p.repairItem(msg)
+	case *client.BuyItemBack:
+		p.buyItemBack(msg)
+	case *client.SRepairItem:
+		p.sRepairItem(msg)
+	case *client.MagicKey:
+		p.magicKey(msg)
+	case *client.Magic:
+		p.magic(msg)
+	case *client.SwitchGroup:
+		p.switchGroup(msg)
+	case *client.AddMember:
+		p.addMember(msg)
+	case *client.DelMember:
+		p.delMember(msg)
+	case *client.GroupInvite:
+		p.groupInvite(msg)
+	case *client.TownRevive:
+		p.townRevive(msg)
+	case *client.SpellToggle:
+		p.spellToggle(msg)
+	case *client.ConsignItem:
+		p.consignItem(msg)
+	case *client.MarketSearch:
+		p.marketSearch(msg)
+	case *client.MarketRefresh:
+		p.marketRefresh(msg)
+	case *client.MarketPage:
+		p.marketPage(msg)
+	case *client.MarketBuy:
+		p.marketBuy(msg)
+	case *client.MarketGetBack:
+		p.marketGetBack(msg)
+	case *client.RequestUserName:
+		p.requestUserName(msg)
+	case *client.RequestChatItem:
+		p.requestChatItem(msg)
+	case *client.EditGuildMember:
+		p.editGuildMember(msg)
+	case *client.EditGuildNotice:
+		p.editGuildNotice(msg)
+	case *client.GuildInvite:
+		p.guildInvite(msg)
+	case *client.RequestGuildInfo:
+		p.requestGuildInfo(msg)
+	case *client.GuildNameReturn:
+		p.guildNameReturn(msg)
+	case *client.GuildStorageGoldChange:
+		p.guildStorageGoldChange(msg)
+	case *client.GuildStorageItemChange:
+		p.guildStorageItemChange(msg)
+	case *client.GuildWarReturn:
+		p.guildWarReturn(msg)
+	case *client.MarriageRequest:
+		p.marriageRequest(msg)
+	case *client.MarriageReply:
+		p.marriageReply(msg)
+	case *client.ChangeMarriage:
+		p.changeMarriage(msg)
+	case *client.DivorceRequest:
+		p.divorceRequest(msg)
+	case *client.DivorceReply:
+		p.divorceReply(msg)
+	case *client.AddMentor:
+		p.addMentor(msg)
+	case *client.MentorReply:
+		p.mentorReply(msg)
+	case *client.AllowMentor:
+		p.allowMentor(msg)
+	case *client.CancelMentor:
+		p.cancelMentor(msg)
+	case *client.TradeRequest:
+		p.tradeRequest(msg)
+	case *client.TradeGold:
+		p.tradeGold(msg)
+	case *client.TradeReply:
+		p.tradeReply(msg)
+	case *client.TradeConfirm:
+		p.tradeConfirm(msg)
+	case *client.TradeCancel:
+		p.tradeCancel(msg)
+	case *client.EquipSlotItem:
+		p.equipSlotItem(msg)
+	case *client.FishingCast:
+		p.fishingCast(msg)
+	case *client.FishingChangeAutocast:
+		p.fishingChangeAutocast(msg)
+	case *client.AcceptQuest:
+		p.acceptQuest(msg)
+	case *client.FinishQuest:
+		p.finishQuest(msg)
+	case *client.AbandonQuest:
+		p.abandonQuest(msg)
+	case *client.ShareQuest:
+		p.shareQuest(msg)
+	case *client.AcceptReincarnation:
+		p.acceptReincarnation(msg)
+	case *client.CancelReincarnation:
+		p.cancelReincarnation(msg)
+	case *client.CombineItem:
+		p.combineItem(msg)
+	case *client.SetConcentration:
+		p.setConcentration(msg)
+	case *client.AwakeningNeedMaterials:
+		p.awakeningNeedMaterials(msg)
+	case *client.AwakeningLockedItem:
+		p.awakeningLockedItem(msg)
+	case *client.Awakening:
+		p.awakening(msg)
+	case *client.DisassembleItem:
+		p.disassembleItem(msg)
+	case *client.DowngradeAwakening:
+		p.downgradeAwakening(msg)
+	case *client.ResetAddedItem:
+		p.resetAddedItem(msg)
+	case *client.SendMail:
+		p.sendMail(msg)
+	case *client.ReadMail:
+		p.readMail(msg)
+	case *client.CollectParcel:
+		p.collectParcel(msg)
+	case *client.DeleteMail:
+		p.deleteMail(msg)
+	case *client.LockMail:
+		p.lockMail(msg)
+	case *client.MailLockedItem:
+		p.mailLockedItem(msg)
+	case *client.MailCost:
+		p.mailCost(msg)
+	case *client.UpdateIntelligentCreature:
+		p.updateIntelligentCreature(msg)
+	case *client.IntelligentCreaturePickup:
+		p.intelligentCreaturePickup(msg)
+	case *client.AddFriend:
+		p.addFriend(msg)
+	case *client.RemoveFriend:
+		p.removeFriend(msg)
+	case *client.RefreshFriends:
+		p.refreshFriends(msg)
+	case *client.AddMemo:
+		p.addMemo(msg)
+	case *client.GuildBuffUpdate:
+		p.guildBuffUpdate(msg)
+	case *client.GameshopBuy:
+		p.gameshopBuy(msg)
+	case *client.NPCConfirmInput:
+		p.npcConfirmInput(msg)
+	case *client.ReportIssue:
+		p.reportIssue(msg)
+	case *client.GetRanking:
+		p.getRanking(msg)
+	case *client.Opendoor:
+		p.opendoor(msg)
+	case *client.GetRentedItems:
+		p.getRentedItems(msg)
+	case *client.ItemRentalRequest:
+		p.itemRentalRequest(msg)
+	case *client.ItemRentalFee:
+		p.itemRentalFee(msg)
+	case *client.ItemRentalPeriod:
+		p.itemRentalPeriod(msg)
+	case *client.DepositRentalItem:
+		p.depositRentalItem(msg)
+	case *client.RetrieveRentalItem:
+		p.retrieveRentalItem(msg)
+	case *client.CancelItemRental:
+		p.cancelItemRental(msg)
+	case *client.ItemRentalLockFee:
+		p.itemRentalLockFee(msg)
+	case *client.ItemRentalLockItem:
+		p.itemRentalLockItem(msg)
+	case *client.ConfirmItemRental:
+		p.confirmItemRental(msg)
 	default:
 		log.Debugln("default:", msg)
 		//MessageQueue.Enqueue(string.Format("Invalid packet received. Index : {0}", p.Index));
