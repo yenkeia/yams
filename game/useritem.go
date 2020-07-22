@@ -10,6 +10,7 @@ import (
 // server.UserItem 是只用来和客户端交互用的
 type userItem struct {
 	info        *orm.ItemInfo
+	id          int // 保存 orm.UserItem.ID
 	objectID    int
 	currentDura int
 	maxDura     int
@@ -39,6 +40,7 @@ func newUserItem(info *orm.ItemInfo) *userItem {
 func newUserItemFromORM(ui *orm.UserItem) *userItem {
 	return &userItem{
 		info:        gdb.itemInfoMap[ui.ItemID],
+		id:          ui.ID,
 		objectID:    env.newObjectID(),
 		currentDura: ui.CurrentDura,
 		maxDura:     ui.MaxDura,
