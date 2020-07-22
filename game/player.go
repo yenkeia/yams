@@ -10,34 +10,35 @@ import (
 
 type player struct {
 	baseObject
-	session        *cellnet.Session
-	gameStage      int
-	accountID      int // account.ID
-	characterID    int // character.ID 保存数据库用
-	bindLocation   cm.Point
-	bindMapID      int
-	hp             int
-	mp             int
-	maxHP          int
-	maxMP          int
-	level          int
-	experience     int
-	maxExperience  int
-	guildName      string
-	guildRankName  string
-	class          cm.MirClass
-	gender         cm.MirGender
-	hair           int
-	light          int
-	gold           int
-	inventory      *bag // 46
-	equipment      *bag // 14
-	questInventory *bag // 40
-	storage        *bag // 80
-	trade          *bag // 10	交易框的索引是从上到下的，背包是从左到右
-	attackMode     cm.AttackMode
-	petMode        cm.PetMode
-	allowGroup     bool
+	session           *cellnet.Session
+	gameStage         int
+	accountID         int // account.ID
+	characterID       int // character.ID 保存数据库用
+	bindLocation      cm.Point
+	bindMapID         int
+	hp                int
+	mp                int
+	maxHP             int
+	maxMP             int
+	level             int
+	experience        int
+	maxExperience     int
+	guildName         string
+	guildRankName     string
+	class             cm.MirClass
+	gender            cm.MirGender
+	hair              int
+	light             int
+	gold              int
+	inventory         *bag // 46
+	equipment         *bag // 14
+	questInventory    *bag // 40
+	storage           *bag // 80
+	trade             *bag // 10	交易框的索引是从上到下的，背包是从左到右
+	attackMode        cm.AttackMode
+	petMode           cm.PetMode
+	allowGroup        bool
+	sendedItemInfoIDs []int
 }
 
 func (p *player) getObjectID() int {
@@ -56,9 +57,40 @@ func (p *player) enqueue(msg interface{}) {
 	(*p.session).Send(msg)
 }
 
-// TODO
-func (p *player) enqueueItemInfos() {
+func (p *player) enqueueItemInfo(itemID int) {
+	for _, id := range p.sendedItemInfoIDs {
+		if id == itemID {
+			return
+		}
+	}
+	item := gdb.itemInfoMap[itemID]
+	if item == nil {
+		return
+	}
+	p.enqueue(&server.NewItemInfo{Info: item.ToServerItemInfo()})
+	p.sendedItemInfoIDs = append(p.sendedItemInfoIDs, itemID)
+}
 
+func (p *player) enqueueItemInfos() {
+	itemInfos := make([]*orm.ItemInfo, 0)
+	for _, v := range p.inventory.items {
+		if v != nil {
+			itemInfos = append(itemInfos, gdb.itemInfoMap[v.info.ID])
+		}
+	}
+	for _, v := range p.equipment.items {
+		if v != nil {
+			itemInfos = append(itemInfos, gdb.itemInfoMap[v.info.ID])
+		}
+	}
+	for _, v := range p.questInventory.items {
+		if v != nil {
+			itemInfos = append(itemInfos, gdb.itemInfoMap[v.info.ID])
+		}
+	}
+	for i := range itemInfos {
+		p.enqueueItemInfo(itemInfos[i].ID)
+	}
 }
 
 // TODO
@@ -223,14 +255,15 @@ func (p *player) updateInfo(c *orm.Character) {
 	p.hair = c.Hair
 	p.light = 1 // TODO
 	p.gold = c.Gold
-	p.inventory = &bag{items: make([]*orm.UserItem, 46)}      // 46
-	p.equipment = &bag{items: make([]*orm.UserItem, 14)}      // 14
-	p.questInventory = &bag{items: make([]*orm.UserItem, 40)} // 40
-	p.storage = &bag{items: make([]*orm.UserItem, 80)}        // 80
-	p.trade = &bag{items: make([]*orm.UserItem, 10)}          // 10	交易框的索引是从上到下的，背包是从左到右
+	p.inventory = bagLoadFromDB(c.ID, cm.UserItemTypeInventory, 46)           // 46
+	p.equipment = bagLoadFromDB(c.ID, cm.UserItemTypeEquipment, 14)           // 14
+	p.questInventory = bagLoadFromDB(c.ID, cm.UserItemTypeQuestInventory, 40) // 40
+	p.storage = bagLoadFromDB(c.ID, cm.UserItemTypeStorage, 80)               // 80
+	p.trade = bagLoadFromDB(c.ID, cm.UserItemTypeTrade, 10)                   // 10	交易框的索引是从上到下的，背包是从左到右
 	p.attackMode = cm.AttackModeAll
 	p.petMode = cm.PetModeBoth
 	p.allowGroup = true
+	p.sendedItemInfoIDs = make([]int, 0)
 	/* TODO
 	switch p.class {
 	case cm.MirClassWarrior:

@@ -1,6 +1,9 @@
 package orm
 
-import "github.com/yenkeia/yams/game/cm"
+import (
+	"github.com/yenkeia/yams/game/cm"
+	"github.com/yenkeia/yams/game/proto/server"
+)
 
 // MapInfo 记录地图信息
 type MapInfo struct {
@@ -101,6 +104,74 @@ type ItemInfo struct {
 	CanAwakening   bool
 	IsToolTip      bool
 	ToolTip        string
+}
+
+// ToServerItemInfo 直接从数据库使用的 orm.ItemInfo 转换成和客户端沟通使用的 server.ItemInfo
+func (info *ItemInfo) ToServerItemInfo() *server.ItemInfo {
+	return &server.ItemInfo{
+		ID:             int32(info.ID),             // int32 `gorm:"primary_key"`
+		Name:           info.Name,                  // string
+		Type:           info.Type,                  // cm.ItemType
+		Grade:          info.Grade,                 // cm.ItemGrade
+		RequiredType:   info.RequiredType,          // cm.RequiredType
+		RequiredClass:  info.RequiredClass,         // cm.RequiredClass
+		RequiredGender: info.RequiredGender,        // cm.RequiredGender
+		ItemSet:        info.ItemSet,               // cm.ItemSet
+		Shape:          int16(info.Shape),          // int16
+		Weight:         uint8(info.Weight),         // uint8
+		Light:          uint8(info.Light),          // uint8
+		RequiredAmount: uint8(info.RequiredAmount), // uint8
+		Image:          uint16(info.Image),         // uint16
+		Durability:     uint16(info.Durability),    // uint16
+		StackSize:      uint32(info.StackSize),     // uint32
+		Price:          uint32(info.Price),         // uint32
+		MinAC:          uint8(info.MinAC),          // uint8
+		MaxAC:          uint8(info.MaxAC),          // uint8
+		MinMAC:         uint8(info.MinMAC),         // uint8
+		MaxMAC:         uint8(info.MaxMAC),         // uint8
+		MinDC:          uint8(info.MinDC),          // uint8
+		MaxDC:          uint8(info.MaxDC),          // uint8
+		MinMC:          uint8(info.MinMC),          // uint8
+		MaxMC:          uint8(info.MaxMC),          // uint8
+		MinSC:          uint8(info.MinSC),          // uint8
+		MaxSC:          uint8(info.MaxSC),          // uint8
+		HP:             uint16(info.HP),            // uint16
+		MP:             uint16(info.MP),            // uint16
+		Accuracy:       uint8(info.Accuracy),       // uint8
+		Agility:        uint8(info.Agility),        // uint8
+		Luck:           int8(info.Luck),            // int8
+		AttackSpeed:    int8(info.AttackSpeed),     // int8
+		StartItem:      info.StartItem,             // bool
+		BagWeight:      uint8(info.BagWeight),      // uint8
+		HandWeight:     uint8(info.HandWeight),     // uint8
+		WearWeight:     uint8(info.WearWeight),     // uint8
+		Effect:         uint8(info.Effect),         // uint8
+		Strong:         uint8(info.Strong),         // uint8
+		MagicResist:    uint8(info.MagicResist),    // uint8
+		PoisonResist:   uint8(info.PoisonResist),   // uint8
+		HealthRecovery: uint8(info.HealthRecovery), // uint8
+		SpellRecovery:  uint8(info.SpellRecovery),  // uint8
+		PoisonRecovery: uint8(info.PoisonRecovery), // uint8
+		HpRate:         uint8(info.HpRate),         // uint8 // C# HRate
+		MpRate:         uint8(info.MpRate),         // uint8 // C# MRate
+		CriticalRate:   uint8(info.CriticalRate),   // uint8
+		CriticalDamage: uint8(info.CriticalDamage), // uint8
+		Bools:          uint8(info.Bools),          // uint8
+		MaxAcRate:      uint8(info.MaxAcRate),      // uint8
+		MaxMacRate:     uint8(info.MaxMacRate),     // uint8
+		Holy:           uint8(info.Holy),           // uint8
+		Freezing:       uint8(info.Freezing),       // uint8
+		PoisonAttack:   uint8(info.PoisonAttack),   // uint8
+		Bind:           uint16(info.Bind),          // uint16
+		Reflect:        uint8(info.Reflect),        // uint8
+		HpDrainRate:    uint8(info.HpDrainRate),    // uint8
+		UniqueItem:     int16(info.UniqueItem),     // int16
+		RandomStatsId:  uint8(info.RandomStatsID),  // uint8
+		CanFastRun:     info.CanFastRun,            // bool
+		CanAwakening:   info.CanAwakening,          // bool
+		IsToolTip:      info.IsToolTip,             // bool
+		ToolTip:        info.ToolTip,               // string
+	}
 }
 
 // NPCInfo ...

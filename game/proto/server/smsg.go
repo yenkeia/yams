@@ -312,15 +312,12 @@ type ItemInfo struct {
 	CanAwakening   bool
 	IsToolTip      bool
 	ToolTip        string
-	ClassBased     bool `gorm:"-" codec:"-"`
-	LevelBased     bool `gorm:"-" codec:"-"`
 }
 
 type UserItem struct {
 	ID             uint64 `gorm:"primary_key"` // UniqueID
 	ItemID         int32
 	CurrentDura    uint16
-	DuraChanged    bool `gorm:"-" codec:"-"`
 	MaxDura        uint16
 	Count          uint32
 	AC             uint8
@@ -346,7 +343,6 @@ type UserItem struct {
 	CriticalDamage uint8
 	Freezing       uint8
 	PoisonAttack   uint8
-	Info           *ItemInfo `gorm:"-" codec:"-"`
 }
 
 // ClientMagic 客户端显示技能

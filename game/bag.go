@@ -1,15 +1,39 @@
 package game
 
 import (
+	"github.com/yenkeia/yams/game/cm"
 	"github.com/yenkeia/yams/game/orm"
 	"github.com/yenkeia/yams/game/proto/server"
 )
 
 type bag struct {
-	items []*orm.UserItem
+	typ   cm.UserItemType
+	items []*userItem
 }
 
-func (b *bag) convertItems() []*server.UserItem {
+func newBag(typ cm.UserItemType, n int) *bag {
+	return &bag{typ: typ, items: make([]*userItem, n)}
+}
+
+func bagLoadFromDB(characterID int, typ cm.UserItemType, n int) *bag {
+	b := newBag(typ, n)
+	cui := []*orm.CharacterUserItem{}
+	pdb.db.Table("character_user_item").Where("character_id = ? AND type = ?", characterID, typ).Find(&cui)
+	ids := make([]int, n)
+	userItemIDIndexMap := make(map[int]int)
+	for i, item := range cui {
+		ids[i] = item.UserItemID
+		userItemIDIndexMap[item.UserItemID] = item.Index
+	}
+	items := []*orm.UserItem{}
+	pdb.db.Table("user_item").Where("id in (?)", ids).Find(&items)
+	for _, ui := range items {
+		b.items[userItemIDIndexMap[ui.ID]] = newUserItemFromORM(ui)
+	}
+	return b
+}
+
+func (b *bag) serverUserItems() []*server.UserItem {
 	res := make([]*server.UserItem, len(b.items))
 	for i := range b.items {
 		item := b.items[i]
@@ -17,36 +41,7 @@ func (b *bag) convertItems() []*server.UserItem {
 			res[i] = nil
 			continue
 		}
-		res[i] = &server.UserItem{
-			ID:             uint64(item.ID),            // uint64 `gorm:"primary_key"` // UniqueID
-			ItemID:         int32(item.ItemID),         // int32
-			CurrentDura:    uint16(item.CurrentDura),   // uint16
-			MaxDura:        uint16(item.MaxDura),       // uint16
-			Count:          uint32(item.Count),         // uint32
-			AC:             uint8(item.AC),             // uint8
-			MAC:            uint8(item.MAC),            // uint8
-			DC:             uint8(item.DC),             // uint8
-			MC:             uint8(item.MC),             // uint8
-			SC:             uint8(item.SC),             // uint8
-			Accuracy:       uint8(item.Accuracy),       // uint8
-			Agility:        uint8(item.Agility),        // uint8
-			HP:             uint8(item.HP),             // uint8
-			MP:             uint8(item.MP),             // uint8
-			AttackSpeed:    int8(item.AttackSpeed),     // int8
-			Luck:           int8(item.Luck),            // int8
-			SoulBoundId:    uint32(item.SoulBoundID),   // uint32
-			Bools:          uint8(item.Bools),          // uint8
-			Strong:         uint8(item.Strong),         // uint8
-			MagicResist:    uint8(item.MagicResist),    // uint8
-			PoisonResist:   uint8(item.PoisonResist),   // uint8
-			HealthRecovery: uint8(item.HealthRecovery), // uint8
-			ManaRecovery:   uint8(item.ManaRecovery),   // uint8
-			PoisonRecovery: uint8(item.PoisonRecovery), // uint8
-			CriticalRate:   uint8(item.CriticalRate),   // uint8
-			CriticalDamage: uint8(item.CriticalDamage), // uint8
-			Freezing:       uint8(item.Freezing),       // uint8
-			PoisonAttack:   uint8(item.PoisonAttack),   // uint8
-		}
+		res[i] = item.serverUserItem()
 	}
 	return res
 }

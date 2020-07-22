@@ -208,6 +208,10 @@ func (self *decoder) value(v reflect.Value) {
 }
 
 func (self *encoder) value(v reflect.Value) {
+	if v.Type().Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
 	switch v.Kind() {
 	case reflect.Array:
 		l := v.Len()
@@ -307,6 +311,9 @@ func (self *encoder) skip(v reflect.Value) {
 }
 
 func dataSize(v reflect.Value, sf *reflect.StructField) int {
+	if v.Type().Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
 
 	switch v.Kind() {
 	case reflect.Array:

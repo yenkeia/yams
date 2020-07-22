@@ -2,13 +2,13 @@ package game
 
 import (
 	"github.com/yenkeia/yams/game/cm"
-	"github.com/yenkeia/yams/game/orm"
 )
 
+// item 是地图上显示的游戏物品
 type item struct {
 	baseObject
-	gold     int
-	userItem *orm.UserItem
+	gold int
+	ui   *userItem
 }
 
 // TODO
@@ -18,11 +18,6 @@ func newItem() *item {
 
 // TODO
 func newItemGold() *item {
-	return nil
-}
-
-// TODO
-func newUserItem() *orm.UserItem {
 	return nil
 }
 
