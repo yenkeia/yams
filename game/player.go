@@ -313,24 +313,149 @@ func (p *player) chat(msg *client.Chat) {
 	p.broadcast(res)
 }
 
-func (p *player) moveItem(msg *client.MoveItem)                     {}
-func (p *player) storeItem(msg *client.StoreItem)                   {}
-func (p *player) depositRefineItem(msg *client.DepositRefineItem)   {}
-func (p *player) retrieveRefineItem(msg *client.RetrieveRefineItem) {}
-func (p *player) refineCancel(msg *client.RefineCancel)             {}
-func (p *player) refineItem(msg *client.RefineItem)                 {}
-func (p *player) checkRefine(msg *client.CheckRefine)               {}
-func (p *player) replaceWedRing(msg *client.ReplaceWedRing)         {}
-func (p *player) depositTradeItem(msg *client.DepositTradeItem)     {}
-func (p *player) retrieveTradeItem(msg *client.RetrieveTradeItem)   {}
-func (p *player) takeBackItem(msg *client.TakeBackItem)             {}
-func (p *player) mergeItem(msg *client.MergeItem)                   {}
-func (p *player) equipItem(msg *client.EquipItem)                   {}
-func (p *player) removeItem(msg *client.RemoveItem)                 {}
-func (p *player) removeSlotItem(msg *client.RemoveSlotItem)         {}
-func (p *player) splitItem(msg *client.SplitItem)                   {}
-func (p *player) useItem(msg *client.UseItem)                       {}
-func (p *player) dropItem(msg *client.DropItem)                     {}
-func (p *player) dropGold(msg *client.DropGold)                     {}
-func (p *player) pickUp(msg *client.PickUp)                         {}
-func (p *player) inspect(msg *client.Inspect)                       {}
+func (p *player) moveItem(msg *client.MoveItem) {
+	res := &server.MoveItem{
+		Grid:    msg.Grid,
+		From:    msg.From,
+		To:      msg.To,
+		Success: false,
+	}
+	var err error
+	switch msg.Grid {
+	case cm.MirGridTypeInventory:
+		err = p.inventory.move(int(msg.From), int(msg.To))
+	case cm.MirGridTypeStorage:
+		err = p.storage.move(int(msg.From), int(msg.To))
+	case cm.MirGridTypeTrade:
+		err = p.trade.move(int(msg.From), int(msg.To))
+		p.tradeItem()
+	case cm.MirGridTypeRefine:
+		// TODO
+	}
+	if err != nil {
+		p.receiveChat(err.Error(), cm.ChatTypeSystem)
+	} else {
+		res.Success = true
+	}
+	p.enqueue(res)
+}
+
+func (p *player) storeItem(msg *client.StoreItem)                                 {}
+func (p *player) depositRefineItem(msg *client.DepositRefineItem)                 {}
+func (p *player) retrieveRefineItem(msg *client.RetrieveRefineItem)               {}
+func (p *player) refineCancel(msg *client.RefineCancel)                           {}
+func (p *player) refineItem(msg *client.RefineItem)                               {}
+func (p *player) checkRefine(msg *client.CheckRefine)                             {}
+func (p *player) replaceWedRing(msg *client.ReplaceWedRing)                       {}
+func (p *player) depositTradeItem(msg *client.DepositTradeItem)                   {}
+func (p *player) retrieveTradeItem(msg *client.RetrieveTradeItem)                 {}
+func (p *player) takeBackItem(msg *client.TakeBackItem)                           {}
+func (p *player) mergeItem(msg *client.MergeItem)                                 {}
+func (p *player) equipItem(msg *client.EquipItem)                                 {}
+func (p *player) removeItem(msg *client.RemoveItem)                               {}
+func (p *player) removeSlotItem(msg *client.RemoveSlotItem)                       {}
+func (p *player) splitItem(msg *client.SplitItem)                                 {}
+func (p *player) useItem(msg *client.UseItem)                                     {}
+func (p *player) dropItem(msg *client.DropItem)                                   {}
+func (p *player) dropGold(msg *client.DropGold)                                   {}
+func (p *player) pickUp(msg *client.PickUp)                                       {}
+func (p *player) inspect(msg *client.Inspect)                                     {}
+func (p *player) changeAMode(msg *client.ChangeAMode)                             {}
+func (p *player) changePMode(msg *client.ChangePMode)                             {}
+func (p *player) changeTrade(msg *client.ChangeTrade)                             {}
+func (p *player) attack(msg *client.Attack)                                       {}
+func (p *player) rangeAttack(msg *client.RangeAttack)                             {}
+func (p *player) harvest(msg *client.Harvest)                                     {}
+func (p *player) callNPC(msg *client.CallNPC)                                     {}
+func (p *player) talkMonsterNPC(msg *client.TalkMonsterNPC)                       {}
+func (p *player) buyItem(msg *client.BuyItem)                                     {}
+func (p *player) craftItem(msg *client.CraftItem)                                 {}
+func (p *player) sellItem(msg *client.SellItem)                                   {}
+func (p *player) repairItem(msg *client.RepairItem)                               {}
+func (p *player) buyItemBack(msg *client.BuyItemBack)                             {}
+func (p *player) sRepairItem(msg *client.SRepairItem)                             {}
+func (p *player) magicKey(msg *client.MagicKey)                                   {}
+func (p *player) magic(msg *client.Magic)                                         {}
+func (p *player) switchGroup(msg *client.SwitchGroup)                             {}
+func (p *player) addMember(msg *client.AddMember)                                 {}
+func (p *player) delMember(msg *client.DelMember)                                 {}
+func (p *player) groupInvite(msg *client.GroupInvite)                             {}
+func (p *player) townRevive(msg *client.TownRevive)                               {}
+func (p *player) spellToggle(msg *client.SpellToggle)                             {}
+func (p *player) consignItem(msg *client.ConsignItem)                             {}
+func (p *player) marketSearch(msg *client.MarketSearch)                           {}
+func (p *player) marketRefresh(msg *client.MarketRefresh)                         {}
+func (p *player) marketPage(msg *client.MarketPage)                               {}
+func (p *player) marketBuy(msg *client.MarketBuy)                                 {}
+func (p *player) marketGetBack(msg *client.MarketGetBack)                         {}
+func (p *player) requestUserName(msg *client.RequestUserName)                     {}
+func (p *player) requestChatItem(msg *client.RequestChatItem)                     {}
+func (p *player) editGuildMember(msg *client.EditGuildMember)                     {}
+func (p *player) editGuildNotice(msg *client.EditGuildNotice)                     {}
+func (p *player) guildInvite(msg *client.GuildInvite)                             {}
+func (p *player) requestGuildInfo(msg *client.RequestGuildInfo)                   {}
+func (p *player) guildNameReturn(msg *client.GuildNameReturn)                     {}
+func (p *player) guildStorageGoldChange(msg *client.GuildStorageGoldChange)       {}
+func (p *player) guildStorageItemChange(msg *client.GuildStorageItemChange)       {}
+func (p *player) guildWarReturn(msg *client.GuildWarReturn)                       {}
+func (p *player) marriageRequest(msg *client.MarriageRequest)                     {}
+func (p *player) marriageReply(msg *client.MarriageReply)                         {}
+func (p *player) changeMarriage(msg *client.ChangeMarriage)                       {}
+func (p *player) divorceRequest(msg *client.DivorceRequest)                       {}
+func (p *player) divorceReply(msg *client.DivorceReply)                           {}
+func (p *player) addMentor(msg *client.AddMentor)                                 {}
+func (p *player) mentorReply(msg *client.MentorReply)                             {}
+func (p *player) allowMentor(msg *client.AllowMentor)                             {}
+func (p *player) cancelMentor(msg *client.CancelMentor)                           {}
+func (p *player) tradeRequest(msg *client.TradeRequest)                           {}
+func (p *player) tradeGold(msg *client.TradeGold)                                 {}
+func (p *player) tradeReply(msg *client.TradeReply)                               {}
+func (p *player) tradeConfirm(msg *client.TradeConfirm)                           {}
+func (p *player) tradeCancel(msg *client.TradeCancel)                             {}
+func (p *player) tradeItem()                                                      {}
+func (p *player) equipSlotItem(msg *client.EquipSlotItem)                         {}
+func (p *player) fishingCast(msg *client.FishingCast)                             {}
+func (p *player) fishingChangeAutocast(msg *client.FishingChangeAutocast)         {}
+func (p *player) acceptQuest(msg *client.AcceptQuest)                             {}
+func (p *player) finishQuest(msg *client.FinishQuest)                             {}
+func (p *player) abandonQuest(msg *client.AbandonQuest)                           {}
+func (p *player) shareQuest(msg *client.ShareQuest)                               {}
+func (p *player) acceptReincarnation(msg *client.AcceptReincarnation)             {}
+func (p *player) cancelReincarnation(msg *client.CancelReincarnation)             {}
+func (p *player) combineItem(msg *client.CombineItem)                             {}
+func (p *player) setConcentration(msg *client.SetConcentration)                   {}
+func (p *player) awakeningNeedMaterials(msg *client.AwakeningNeedMaterials)       {}
+func (p *player) awakeningLockedItem(msg *client.AwakeningLockedItem)             {}
+func (p *player) awakening(msg *client.Awakening)                                 {}
+func (p *player) disassembleItem(msg *client.DisassembleItem)                     {}
+func (p *player) downgradeAwakening(msg *client.DowngradeAwakening)               {}
+func (p *player) resetAddedItem(msg *client.ResetAddedItem)                       {}
+func (p *player) sendMail(msg *client.SendMail)                                   {}
+func (p *player) readMail(msg *client.ReadMail)                                   {}
+func (p *player) collectParcel(msg *client.CollectParcel)                         {}
+func (p *player) deleteMail(msg *client.DeleteMail)                               {}
+func (p *player) lockMail(msg *client.LockMail)                                   {}
+func (p *player) mailLockedItem(msg *client.MailLockedItem)                       {}
+func (p *player) mailCost(msg *client.MailCost)                                   {}
+func (p *player) updateIntelligentCreature(msg *client.UpdateIntelligentCreature) {}
+func (p *player) intelligentCreaturePickup(msg *client.IntelligentCreaturePickup) {}
+func (p *player) addFriend(msg *client.AddFriend)                                 {}
+func (p *player) removeFriend(msg *client.RemoveFriend)                           {}
+func (p *player) refreshFriends(msg *client.RefreshFriends)                       {}
+func (p *player) addMemo(msg *client.AddMemo)                                     {}
+func (p *player) guildBuffUpdate(msg *client.GuildBuffUpdate)                     {}
+func (p *player) gameshopBuy(msg *client.GameshopBuy)                             {}
+func (p *player) npcConfirmInput(msg *client.NPCConfirmInput)                     {}
+func (p *player) reportIssue(msg *client.ReportIssue)                             {}
+func (p *player) getRanking(msg *client.GetRanking)                               {}
+func (p *player) opendoor(msg *client.Opendoor)                                   {}
+func (p *player) getRentedItems(msg *client.GetRentedItems)                       {}
+func (p *player) itemRentalRequest(msg *client.ItemRentalRequest)                 {}
+func (p *player) itemRentalFee(msg *client.ItemRentalFee)                         {}
+func (p *player) itemRentalPeriod(msg *client.ItemRentalPeriod)                   {}
+func (p *player) depositRentalItem(msg *client.DepositRentalItem)                 {}
+func (p *player) retrieveRentalItem(msg *client.RetrieveRentalItem)               {}
+func (p *player) cancelItemRental(msg *client.CancelItemRental)                   {}
+func (p *player) itemRentalLockFee(msg *client.ItemRentalLockFee)                 {}
+func (p *player) itemRentalLockItem(msg *client.ItemRentalLockItem)               {}
+func (p *player) confirmItemRental(msg *client.ConfirmItemRental)                 {}

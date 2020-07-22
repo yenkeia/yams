@@ -45,3 +45,8 @@ func (b *bag) serverUserItems() []*server.UserItem {
 	}
 	return res
 }
+
+// TODO
+func (b *bag) move(from, to int) (err error) {
+	return nil
+}
