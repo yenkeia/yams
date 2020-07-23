@@ -55,12 +55,15 @@ func (m *mirMap) update(now time.Time) {
 
 }
 
-func (m *mirMap) broadcast(pos cm.Point, msg interface{}) {
+func (m *mirMap) broadcast(pos cm.Point, msg interface{}, excludeID int) {
 	aoiGrids := m.aoi.getSurroundGridsByPoint(pos)
 	for _, g := range aoiGrids {
 		objs := env.getMapObjects(g.getObjectIDs())
 		for _, o := range objs {
 			if p, ok := env.players[o.getObjectID()]; ok {
+				if p.objectID == excludeID {
+					continue
+				}
 				p.enqueue(msg)
 			}
 		}

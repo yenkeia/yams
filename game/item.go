@@ -63,7 +63,7 @@ func (i *item) drop(center cm.Point, distance int) (err error) {
 
 func (i *item) broadcast(msg interface{}) {
 	mp := env.maps[i.mapID]
-	mp.broadcast(i.location, msg)
+	mp.broadcast(i.location, msg, i.objectID)
 }
 
 func (i *item) broadcastInfo() {

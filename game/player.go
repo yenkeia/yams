@@ -229,7 +229,7 @@ func (p *player) enqueueMapObject(obj mapObject) {
 }
 
 func (p *player) broadcast(msg interface{}) {
-	env.maps[p.mapID].broadcast(p.location, msg)
+	env.maps[p.mapID].broadcast(p.location, msg, p.objectID)
 }
 
 func (p *player) broadcastPlayerUpdate() {
@@ -406,6 +406,7 @@ func (p *player) retrieveTradeItem(msg *client.RetrieveTradeItem)   {}
 func (p *player) takeBackItem(msg *client.TakeBackItem)             {}
 func (p *player) mergeItem(msg *client.MergeItem)                   {}
 
+// 穿装备
 func (p *player) equipItem(msg *client.EquipItem) {
 	mirGridType := msg.Grid
 	to := msg.To
@@ -439,6 +440,7 @@ func (p *player) equipItem(msg *client.EquipItem) {
 	p.broadcastPlayerUpdate()
 }
 
+// 卸下装备
 func (p *player) removeItem(msg *client.RemoveItem) {
 	mirGridType := msg.Grid
 	id := msg.UniqueID

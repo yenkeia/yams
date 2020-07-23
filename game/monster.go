@@ -42,7 +42,7 @@ func (m *monster) getPosition() cm.Point {
 
 func (m *monster) broadcast(msg interface{}) {
 	mp := env.maps[m.mapID]
-	mp.broadcast(m.location, msg)
+	mp.broadcast(m.location, msg, m.objectID)
 }
 
 func (m *monster) broadcastInfo() {

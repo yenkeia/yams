@@ -45,5 +45,5 @@ func (n *npc) update(now time.Time) {
 
 func (n *npc) broadcast(msg interface{}) {
 	mp := env.maps[n.info.MapID]
-	mp.broadcast(n.location, msg)
+	mp.broadcast(n.location, msg, n.objectID)
 }
