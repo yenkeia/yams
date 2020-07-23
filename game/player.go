@@ -439,7 +439,46 @@ func (p *player) equipItem(msg *client.EquipItem) {
 	p.broadcastPlayerUpdate()
 }
 
-func (p *player) removeItem(msg *client.RemoveItem)         {}
+func (p *player) removeItem(msg *client.RemoveItem) {
+	mirGridType := msg.Grid
+	id := msg.UniqueID
+	to := msg.To
+	res := &server.RemoveItem{
+		Grid:     mirGridType,
+		UniqueID: id,
+		To:       to,
+		Success:  false,
+	}
+	index, item := p.getUserItemByID(cm.MirGridTypeEquipment, int(id))
+	if item == nil {
+		p.enqueue(res)
+		return
+	}
+	switch mirGridType {
+	case cm.MirGridTypeInventory:
+		if err := p.equipment.moveTo(index, int(msg.To), p.inventory); err != nil {
+			p.receiveChat(err.Error(), cm.ChatTypeSystem)
+			p.enqueue(res)
+			return
+		}
+	case cm.MirGridTypeStorage:
+		// TODO
+		// if !util.StringEqualFold(p.CallingNPCPage, StorageKey) {
+		// 	p.Enqueue(msg)
+		// 	return
+		// }
+		// p.Equipment.MoveTo(index, int(msg.To), p.Storage)
+		p.receiveChat("没实现这个功能", cm.ChatTypeSystem)
+		p.enqueue(res)
+		return
+	}
+	res.Success = true
+	p.refreshStats()
+	p.enqueue(res)
+	p.updateConcentration()
+	p.broadcastPlayerUpdate()
+}
+
 func (p *player) removeSlotItem(msg *client.RemoveSlotItem) {}
 func (p *player) splitItem(msg *client.SplitItem)           {}
 func (p *player) useItem(msg *client.UseItem)               {}
