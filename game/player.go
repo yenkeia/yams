@@ -347,7 +347,7 @@ func (p *player) chat(msg *client.Chat) {
 	p.broadcast(res)
 }
 
-func (p *player) getUserItemByID(mirGridType cm.MirGridType, id int) (index int, item *userItem) {
+func (p *player) getUserItemByObjectID(mirGridType cm.MirGridType, objectID int) (index int, item *userItem) {
 	var arr []*userItem
 	switch mirGridType {
 	case cm.MirGridTypeInventory:
@@ -360,7 +360,7 @@ func (p *player) getUserItemByID(mirGridType cm.MirGridType, id int) (index int,
 		panic("error mirGridType")
 	}
 	for i, v := range arr {
-		if v != nil && v.id == id {
+		if v != nil && v.objectID == objectID {
 			return i, v
 		}
 	}
@@ -416,9 +416,9 @@ func (p *player) equipItem(msg *client.EquipItem) {
 		To:       to,
 		Success:  false,
 	}
-	index, item := p.getUserItemByID(mirGridType, int(id))
+	index, item := p.getUserItemByObjectID(mirGridType, int(id))
 	if item == nil {
-		p.enqueue(msg)
+		p.enqueue(res)
 		return
 	}
 	var err error
@@ -429,7 +429,7 @@ func (p *player) equipItem(msg *client.EquipItem) {
 		err = p.inventory.moveTo(index, int(to), p.storage)
 	}
 	if err != nil {
-		p.enqueue(msg)
+		p.enqueue(res)
 		return
 	}
 	res.Success = true
@@ -449,7 +449,7 @@ func (p *player) removeItem(msg *client.RemoveItem) {
 		To:       to,
 		Success:  false,
 	}
-	index, item := p.getUserItemByID(cm.MirGridTypeEquipment, int(id))
+	index, item := p.getUserItemByObjectID(cm.MirGridTypeEquipment, int(id))
 	if item == nil {
 		p.enqueue(res)
 		return
@@ -464,7 +464,7 @@ func (p *player) removeItem(msg *client.RemoveItem) {
 	case cm.MirGridTypeStorage:
 		// TODO
 		// if !util.StringEqualFold(p.CallingNPCPage, StorageKey) {
-		// 	p.Enqueue(msg)
+		// 	p.Enqueue(res)
 		// 	return
 		// }
 		// p.Equipment.MoveTo(index, int(msg.To), p.Storage)
@@ -490,16 +490,16 @@ func (p *player) dropItem(msg *client.DropItem) {
 		Success:  false,
 	}
 	count := int(msg.Count)
-	index, userItem := p.getUserItemByID(cm.MirGridTypeInventory, int(msg.UniqueID))
+	index, userItem := p.getUserItemByObjectID(cm.MirGridTypeInventory, int(msg.UniqueID))
 	if userItem == nil || count > userItem.count {
-		p.enqueue(msg)
+		p.enqueue(res)
 		return
 	}
 	var err error
 	obj := newItem(p.mapID, p.location, userItem)
 	if err = obj.drop(p.location, 1); err != nil {
 		p.receiveChat(err.Error(), cm.ChatTypeSystem)
-		p.enqueue(msg)
+		p.enqueue(res)
 		return
 	}
 	if int(msg.Count) >= userItem.count {
@@ -513,7 +513,7 @@ func (p *player) dropItem(msg *client.DropItem) {
 		log.Errorln(err.Error())
 	}
 	p.refreshBagWeight()
-	p.enqueue(msg)
+	p.enqueue(res)
 }
 
 func (p *player) dropGold(msg *client.DropGold) {

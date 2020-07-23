@@ -21,6 +21,7 @@ func newItem(mapID int, location cm.Point, ui *userItem) *item {
 	i.nameColor = cm.ColorWhite
 	i.mapID = mapID
 	i.location = location
+	i.ui = ui
 	return i
 }
 
@@ -77,7 +78,7 @@ func (i *item) broadcastInfo() {
 		i.broadcast(&server.ObjectItem{
 			ObjectID:  uint32(i.objectID),      // uint32
 			Name:      i.name,                  // string
-			NameColor: cm.ColorCyan.ToInt32(),  // int32
+			NameColor: cm.ColorWhite.ToInt32(), // int32
 			LocationX: int32(i.location.X),     // int32
 			LocationY: int32(i.location.Y),     // int32
 			Image:     uint16(i.ui.info.Image), // uint16
