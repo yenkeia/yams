@@ -29,3 +29,16 @@ func (c *cell) deleteObject(obj mapObject) {
 		c.objects.Remove(e)
 	}
 }
+
+func (c *cell) hasItem() bool {
+	for it := c.objects.Front(); it != nil; it = it.Next() {
+		// 有 NPC 的 cell 也不能放置物品
+		if _, ok := it.Value.(*npc); ok {
+			return true
+		}
+		if _, ok := it.Value.(*item); ok {
+			return true
+		}
+	}
+	return false
+}

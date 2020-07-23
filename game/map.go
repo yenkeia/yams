@@ -133,3 +133,33 @@ func (m *mirMap) canSpawnMonster(pos cm.Point) bool {
 	// 判断是否已经有 player npc monster
 	return true
 }
+
+// 从p点开始（包含P），由内至外向周围遍历cell。回调函数返回false，停止遍历
+func (m *mirMap) rangeCell(p cm.Point, depth int, fun func(c *cell, x, y int) bool) {
+	px, py := int(p.X), int(p.Y)
+	for d := 0; d <= depth; d++ {
+		for y := py - d; y <= py+d; y++ {
+			if y < 0 {
+				continue
+			}
+			if y >= m.height {
+				break
+			}
+			for x := px - d; x <= px+d; {
+				if x >= m.width {
+					break
+				}
+				if x >= 0 {
+					if !fun(m.getCell(cm.NewPoint(x, y)), x, y) {
+						return
+					}
+				}
+				if y-py == d || y-py == -d {
+					x++ // x += 1
+				} else {
+					x += d * 2
+				}
+			}
+		}
+	}
+}

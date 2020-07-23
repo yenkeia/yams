@@ -82,3 +82,25 @@ func (ui *userItem) serverUserItem() *server.UserItem {
 		PoisonAttack:   0,                      // uint8(ui.PoisonAttack),
 	}
 }
+
+func (ui *userItem) ormUserItem() *orm.UserItem {
+	return &orm.UserItem{
+		ID:          ui.id,
+		ItemID:      ui.info.ID,
+		CurrentDura: ui.currentDura,
+		MaxDura:     ui.maxDura,
+		Count:       ui.count,
+		AC:          ui.ac,
+		MAC:         ui.mac,
+		DC:          ui.dc,
+		MC:          ui.mc,
+		SC:          ui.sc,
+		Accuracy:    ui.accuracy,
+		Agility:     ui.agility,
+		HP:          0,
+		MP:          0,
+		AttackSpeed: ui.attackSpeed,
+		Luck:        ui.luck,
+		SoulBoundID: ui.soulBoundID,
+	}
+}

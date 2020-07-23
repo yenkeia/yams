@@ -59,6 +59,7 @@ CREATE TABLE `user_item` (
     `attack_speed` int(11) DEFAULT NULL,
     `luck` int(11) DEFAULT NULL,
     `soul_bound_id` int(11) DEFAULT NULL,
+    /*
     `bools` int(11) DEFAULT NULL,
     `strong` int(11) DEFAULT NULL,
     `magic_resist` int(11) DEFAULT NULL,
@@ -70,6 +71,7 @@ CREATE TABLE `user_item` (
     `critical_damage` int(11) DEFAULT NULL,
     `freezing` int(11) DEFAULT NULL,
     `poison_attack` int(11) DEFAULT NULL,
+    */
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

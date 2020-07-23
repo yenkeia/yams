@@ -11,16 +11,17 @@ import (
 type AnyMap map[string]interface{}
 
 type bag struct {
-	typ   cm.UserItemType
-	items []*userItem
+	characterID int
+	typ         cm.UserItemType
+	items       []*userItem
 }
 
-func newBag(typ cm.UserItemType, n int) *bag {
-	return &bag{typ: typ, items: make([]*userItem, n)}
+func newBag(cid int, typ cm.UserItemType, n int) *bag {
+	return &bag{characterID: cid, typ: typ, items: make([]*userItem, n)}
 }
 
 func bagLoadFromDB(characterID int, typ cm.UserItemType, n int) *bag {
-	b := newBag(typ, n)
+	b := newBag(characterID, typ, n)
 	cui := []*orm.CharacterUserItem{}
 	pdb.db.Table("character_user_item").Where("character_id = ? AND type = ?", characterID, typ).Find(&cui)
 	ids := make([]int, n)
@@ -75,4 +76,40 @@ func (b *bag) moveTo(from, to int, tobag *bag) error {
 	}
 	b.items[from], tobag.items[to] = tobag.items[to], b.items[from]
 	return nil
+}
+
+func (b *bag) set(i int, ui *userItem) (err error) {
+	if ui != nil {
+		if b.items[i] != nil {
+			return fmt.Errorf("该位置有物品了")
+		}
+		pdb.db.Table("user_item").Create(ui.ormUserItem())
+		pdb.db.Table("character_user_item").Create(&orm.CharacterUserItem{
+			CharacterID: int(b.characterID),
+			UserItemID:  int(ui.id),
+			Type:        int(b.typ),
+			Index:       i,
+		})
+		b.items[i] = ui
+	} else {
+		ui = b.items[i]
+		if ui == nil {
+			return fmt.Errorf("尝试删除空位置的物品")
+		}
+		pdb.db.Table("user_item").Where("id = ?", ui.id).Delete(&orm.UserItem{})
+		pdb.db.Table("character_user_item").Where("user_item_id = ?", ui.id).Delete(&orm.CharacterUserItem{})
+		b.items[i] = nil
+	}
+	return
+}
+
+func (b *bag) setCount(index int, count int) {
+	if count == 0 {
+		log.Infof("Delete UserItem %d \n", b.items[index].id)
+		b.set(index, nil)
+	} else {
+		pdb.db.Table("user_item").Where("id = ?", b.items[index].id).Update("count", count)
+		b.items[index].count = count
+	}
+	return
 }

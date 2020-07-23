@@ -32,3 +32,7 @@ func (d *playerDatabase) syncPosition(p *player) {
 	d.setCharacterAttr(p, "current_location_x", p.location.X)
 	d.setCharacterAttr(p, "current_location_y", p.location.Y)
 }
+
+func (d *playerDatabase) syncGold(p *player) {
+	d.setCharacterAttr(p, "gold", p.gold)
+}

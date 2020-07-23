@@ -39,6 +39,7 @@ type player struct {
 	petMode           cm.PetMode
 	allowGroup        bool
 	sendedItemInfoIDs []int
+	dead              bool
 }
 
 func (p *player) getObjectID() int {
@@ -282,6 +283,11 @@ func (p *player) refreshStats() {
 
 }
 
+// TODO
+func (p *player) refreshBagWeight() {
+
+}
+
 func (p *player) turn(msg *client.Turn) {
 	p.direction = msg.Direction
 	p.enqueue(&server.UserLocation{Location: p.location, Direction: p.direction})
@@ -313,6 +319,26 @@ func (p *player) chat(msg *client.Chat) {
 	p.broadcast(res)
 }
 
+func (p *player) getUserItemByID(mirGridType cm.MirGridType, id int) (index int, item *userItem) {
+	var arr []*userItem
+	switch mirGridType {
+	case cm.MirGridTypeInventory:
+		arr = p.inventory.items
+	case cm.MirGridTypeEquipment:
+		arr = p.equipment.items
+	case cm.MirGridTypeStorage:
+		arr = p.storage.items
+	default:
+		panic("error mirGridType")
+	}
+	for i, v := range arr {
+		if v != nil && v.id == id {
+			return i, v
+		}
+	}
+	return -1, nil
+}
+
 func (p *player) moveItem(msg *client.MoveItem) {
 	res := &server.MoveItem{
 		Grid:    msg.Grid,
@@ -340,25 +366,175 @@ func (p *player) moveItem(msg *client.MoveItem) {
 	p.enqueue(res)
 }
 
-func (p *player) storeItem(msg *client.StoreItem)                                 {}
-func (p *player) depositRefineItem(msg *client.DepositRefineItem)                 {}
-func (p *player) retrieveRefineItem(msg *client.RetrieveRefineItem)               {}
-func (p *player) refineCancel(msg *client.RefineCancel)                           {}
-func (p *player) refineItem(msg *client.RefineItem)                               {}
-func (p *player) checkRefine(msg *client.CheckRefine)                             {}
-func (p *player) replaceWedRing(msg *client.ReplaceWedRing)                       {}
-func (p *player) depositTradeItem(msg *client.DepositTradeItem)                   {}
-func (p *player) retrieveTradeItem(msg *client.RetrieveTradeItem)                 {}
-func (p *player) takeBackItem(msg *client.TakeBackItem)                           {}
-func (p *player) mergeItem(msg *client.MergeItem)                                 {}
-func (p *player) equipItem(msg *client.EquipItem)                                 {}
-func (p *player) removeItem(msg *client.RemoveItem)                               {}
-func (p *player) removeSlotItem(msg *client.RemoveSlotItem)                       {}
-func (p *player) splitItem(msg *client.SplitItem)                                 {}
-func (p *player) useItem(msg *client.UseItem)                                     {}
-func (p *player) dropItem(msg *client.DropItem)                                   {}
-func (p *player) dropGold(msg *client.DropGold)                                   {}
-func (p *player) pickUp(msg *client.PickUp)                                       {}
+func (p *player) storeItem(msg *client.StoreItem)                   {}
+func (p *player) depositRefineItem(msg *client.DepositRefineItem)   {}
+func (p *player) retrieveRefineItem(msg *client.RetrieveRefineItem) {}
+func (p *player) refineCancel(msg *client.RefineCancel)             {}
+func (p *player) refineItem(msg *client.RefineItem)                 {}
+func (p *player) checkRefine(msg *client.CheckRefine)               {}
+func (p *player) replaceWedRing(msg *client.ReplaceWedRing)         {}
+func (p *player) depositTradeItem(msg *client.DepositTradeItem)     {}
+func (p *player) retrieveTradeItem(msg *client.RetrieveTradeItem)   {}
+func (p *player) takeBackItem(msg *client.TakeBackItem)             {}
+func (p *player) mergeItem(msg *client.MergeItem)                   {}
+func (p *player) equipItem(msg *client.EquipItem)                   {}
+func (p *player) removeItem(msg *client.RemoveItem)                 {}
+func (p *player) removeSlotItem(msg *client.RemoveSlotItem)         {}
+func (p *player) splitItem(msg *client.SplitItem)                   {}
+func (p *player) useItem(msg *client.UseItem)                       {}
+
+func (p *player) dropItem(msg *client.DropItem) {
+	res := &server.DropItem{
+		UniqueID: msg.UniqueID,
+		Count:    msg.Count,
+		Success:  false,
+	}
+	count := int(msg.Count)
+	index, userItem := p.getUserItemByID(cm.MirGridTypeInventory, int(msg.UniqueID))
+	if userItem == nil || count > userItem.count {
+		p.enqueue(msg)
+		return
+	}
+	var err error
+	obj := newItem(p.mapID, p.location, userItem)
+	if err = obj.drop(p.location, 1); err != nil {
+		p.receiveChat(err.Error(), cm.ChatTypeSystem)
+		p.enqueue(msg)
+		return
+	}
+	if int(msg.Count) >= userItem.count {
+		err = p.inventory.set(index, nil)
+	} else {
+		p.inventory.setCount(index, userItem.count-count)
+	}
+	res.Success = true
+	if err != nil {
+		res.Success = false
+		log.Errorln(err.Error())
+	}
+	p.refreshBagWeight()
+	p.enqueue(msg)
+}
+
+func (p *player) dropGold(msg *client.DropGold) {
+	amount := int(msg.Amount)
+	if p.gold < amount {
+		return
+	}
+	obj := newItemGold(p.mapID, p.location, amount)
+	if err := obj.drop(p.location, 3); err != nil {
+		p.receiveChat(err.Error(), cm.ChatTypeSystem)
+		return
+	}
+	p.takeGold(amount)
+}
+
+// takeGold 玩家扣钱
+func (p *player) takeGold(amount int) {
+	if amount > p.gold {
+		p.gold = 0
+	} else {
+		p.gold -= amount
+	}
+	pdb.syncGold(p)
+	p.enqueue(&server.LoseGold{Gold: uint32(amount)})
+}
+
+// gainGold 玩家加钱
+func (p *player) gainGold(amount int) {
+	p.gold += amount
+	pdb.syncGold(p)
+	p.enqueue(&server.GainedGold{Gold: uint32(amount)})
+}
+
+func (p *player) gainItem(ui *userItem) (res bool) {
+	ui.soulBoundID = p.characterID
+
+	if ui.info.StackSize > 1 {
+		for i, v := range p.inventory.items {
+			if v == nil || ui.info != v.info || v.count > ui.info.StackSize {
+				continue
+			}
+			if ui.count+v.count <= ui.info.StackSize {
+				p.inventory.setCount(i, v.count+ui.count)
+				p.enqueue(&server.GainedItem{Item: ui.serverUserItem()})
+				return true
+			}
+			p.inventory.setCount(i, v.count+ui.count)
+			ui.count -= ui.info.StackSize - v.count
+		}
+	}
+
+	i, j := 0, 46
+	if ui.info.Type == cm.ItemTypePotion ||
+		ui.info.Type == cm.ItemTypeScroll ||
+		(ui.info.Type == cm.ItemTypeScript && ui.info.Effect == 1) {
+		i = 0
+		j = 4
+	} else if ui.info.Type == cm.ItemTypeAmulet {
+		i = 4
+		j = 6
+	} else {
+		i = 6
+		j = 46
+	}
+	for i < j {
+		if p.inventory.items[i] != nil {
+			i++
+			continue
+		}
+		p.inventory.set(i, ui)
+		// p.Inventory.Items[i] = ui
+		p.enqueueItemInfo(ui.info.ID)
+		p.enqueue(&server.GainedItem{Item: ui.serverUserItem()})
+		p.refreshBagWeight()
+		return true
+	}
+	i = 0
+	for i < 46 {
+		if p.inventory.items[i] != nil {
+			i++
+			continue
+		}
+		p.inventory.set(i, ui)
+		p.enqueueItemInfo(ui.info.ID)
+		p.enqueue(&server.GainedItem{Item: ui.serverUserItem()})
+		p.refreshBagWeight()
+		return true
+	}
+	p.receiveChat("没有合适的格子放置物品", cm.ChatTypeSystem)
+	return false
+}
+
+func (p *player) pickUp(msg *client.PickUp) {
+	if p.dead {
+		return
+	}
+	mp := env.maps[p.mapID]
+	c := mp.getCell(p.location)
+	if c == nil {
+		return
+	}
+	items := make([]*item, 0)
+	for it := c.objects.Front(); it != nil; it = it.Next() {
+		if i, ok := it.Value.(*item); ok {
+			if i.ui == nil {
+				p.gainGold(i.gold)
+				items = append(items, i)
+			} else {
+				if p.gainItem(i.ui) {
+					items = append(items, i)
+				}
+			}
+		}
+	}
+	for i := range items {
+		item := items[i]
+		mp.deleteObject(item)
+		item.broadcast(&server.ObjectRemove{ObjectID: uint32(item.objectID)})
+	}
+}
+
 func (p *player) inspect(msg *client.Inspect)                                     {}
 func (p *player) changeAMode(msg *client.ChangeAMode)                             {}
 func (p *player) changePMode(msg *client.ChangePMode)                             {}
