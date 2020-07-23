@@ -8,6 +8,7 @@ import (
 	"github.com/yenkeia/yams/game/proto/server"
 )
 
+// AnyMap ...
 type AnyMap map[string]interface{}
 
 type bag struct {

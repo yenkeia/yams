@@ -29,6 +29,10 @@ type player struct {
 	gender            cm.MirGender
 	hair              int
 	light             int
+	looksWeapon       int
+	looksWeaponEffect int
+	looksArmour       int
+	looksWings        int
 	gold              int
 	inventory         *bag // 46
 	equipment         *bag // 14
@@ -163,24 +167,24 @@ func (p *player) getObjectPlayer() *server.ObjectPlayer {
 		Direction:        p.direction,             // cm.MirDirection
 		Hair:             uint8(p.hair),           // uint8
 		Light:            uint8(p.light),          // uint8
-		Weapon:           0,                       // int16
-		WeaponEffect:     0,                       // int16
-		Armour:           0,                       // int16
-		Poison:           0,                       // cm.PoisonType // = (PoisonType)reader.ReadUInt16()
-		Dead:             false,                   // bool
-		Hidden:           false,                   // bool
-		Effect:           0,                       // cm.SpellEffect // = (SpellEffect)reader.ReadByte()
-		WingEffect:       0,                       // uint8
-		Extra:            false,                   // bool
-		MountType:        0,                       // int16
-		RidingMount:      false,                   // bool
-		Fishing:          false,                   // bool
-		TransformType:    0,                       // int16
-		ElementOrbEffect: 0,                       // uint32
-		ElementOrbLvl:    0,                       // uint32
-		ElementOrbMax:    0,                       // uint32
-		Buffs:            make([]cm.BuffType, 0),  // []cm.BuffType
-		LevelEffects:     0,                       // cm.LevelEffects
+		Weapon:           int16(p.looksWeapon),
+		WeaponEffect:     int16(p.looksWeaponEffect),
+		Armour:           int16(p.looksArmour),
+		Poison:           0,                      // cm.PoisonType // = (PoisonType)reader.ReadUInt16()
+		Dead:             false,                  // bool
+		Hidden:           false,                  // bool
+		Effect:           0,                      // cm.SpellEffect // = (SpellEffect)reader.ReadByte()
+		WingEffect:       0,                      // uint8
+		Extra:            false,                  // bool
+		MountType:        0,                      // int16
+		RidingMount:      false,                  // bool
+		Fishing:          false,                  // bool
+		TransformType:    0,                      // int16
+		ElementOrbEffect: 0,                      // uint32
+		ElementOrbLvl:    0,                      // uint32
+		ElementOrbMax:    0,                      // uint32
+		Buffs:            make([]cm.BuffType, 0), // []cm.BuffType
+		LevelEffects:     0,                      // cm.LevelEffects
 	}
 }
 
@@ -226,6 +230,17 @@ func (p *player) enqueueMapObject(obj mapObject) {
 
 func (p *player) broadcast(msg interface{}) {
 	env.maps[p.mapID].broadcast(p.location, msg)
+}
+
+func (p *player) broadcastPlayerUpdate() {
+	p.broadcast(&server.PlayerUpdate{
+		ObjectID:     uint32(p.objectID),
+		Light:        uint8(p.light),
+		Weapon:       int16(p.looksWeapon),
+		WeaponEffect: int16(p.looksWeaponEffect),
+		Armour:       int16(p.looksArmour),
+		WingEffect:   uint8(p.looksWings),
+	})
 }
 
 func (p *player) receiveChat(text string, typ cm.ChatType) {
@@ -276,6 +291,19 @@ func (p *player) updateInfo(c *orm.Character) {
 		p.maxMP = int((13 + float32(p.level)/8.0*2.2*float32(p.level)) + (float32(p.level) * baseStats.MpGainRate))
 	}
 	*/
+}
+
+func (p *player) updateConcentration() {
+	p.enqueue(&server.SetConcentration{
+		ObjectID:    uint32(p.accountID),
+		Enabled:     false,
+		Interrupted: false,
+	})
+	p.broadcast(&server.SetObjectConcentration{
+		ObjectID:    uint32(p.accountID),
+		Enabled:     false,
+		Interrupted: false,
+	})
 }
 
 // TODO
@@ -377,11 +405,44 @@ func (p *player) depositTradeItem(msg *client.DepositTradeItem)     {}
 func (p *player) retrieveTradeItem(msg *client.RetrieveTradeItem)   {}
 func (p *player) takeBackItem(msg *client.TakeBackItem)             {}
 func (p *player) mergeItem(msg *client.MergeItem)                   {}
-func (p *player) equipItem(msg *client.EquipItem)                   {}
-func (p *player) removeItem(msg *client.RemoveItem)                 {}
-func (p *player) removeSlotItem(msg *client.RemoveSlotItem)         {}
-func (p *player) splitItem(msg *client.SplitItem)                   {}
-func (p *player) useItem(msg *client.UseItem)                       {}
+
+func (p *player) equipItem(msg *client.EquipItem) {
+	mirGridType := msg.Grid
+	to := msg.To
+	id := msg.UniqueID
+	res := &server.EquipItem{
+		Grid:     mirGridType,
+		UniqueID: id,
+		To:       to,
+		Success:  false,
+	}
+	index, item := p.getUserItemByID(mirGridType, int(id))
+	if item == nil {
+		p.enqueue(msg)
+		return
+	}
+	var err error
+	switch mirGridType {
+	case cm.MirGridTypeInventory:
+		err = p.inventory.moveTo(index, int(to), p.equipment)
+	case cm.MirGridTypeStorage:
+		err = p.inventory.moveTo(index, int(to), p.storage)
+	}
+	if err != nil {
+		p.enqueue(msg)
+		return
+	}
+	res.Success = true
+	p.refreshStats()
+	p.enqueue(res)
+	p.updateConcentration()
+	p.broadcastPlayerUpdate()
+}
+
+func (p *player) removeItem(msg *client.RemoveItem)         {}
+func (p *player) removeSlotItem(msg *client.RemoveSlotItem) {}
+func (p *player) splitItem(msg *client.SplitItem)           {}
+func (p *player) useItem(msg *client.UseItem)               {}
 
 func (p *player) dropItem(msg *client.DropItem) {
 	res := &server.DropItem{
