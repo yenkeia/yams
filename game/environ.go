@@ -270,6 +270,7 @@ func login(s cellnet.Session, msg *client.Login, env *Environ) {
 	}
 
 	player := sessionPlayer[s.ID()]
+	player.accountID = a.ID
 	player.session = &s
 	player.gameStage = SELECT
 
