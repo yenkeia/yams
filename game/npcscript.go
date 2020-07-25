@@ -2,9 +2,12 @@ package game
 
 import (
 	"bufio"
+	"container/list"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 // npcScript 每个文件是一个 script
@@ -25,11 +28,55 @@ type page struct {
 	elseSay     []string
 }
 
+var regexSharp = regexp.MustCompile(`#(\w+)`)
+
 // TODO
 func newPage(ps *pageSource) *page {
 	p := new(page)
 	p.name = ps.name
+	checkList := &list.List{}
+	actList := &list.List{}
+	elseActList := &list.List{}
+	say := &list.List{}
+	elseSay := &list.List{}
+	var cur = say
+	for i := 0; i < len(ps.lines); i++ {
+		line := ps.lines[i]
+		if line[0] == '#' {
+			match := regexSharp.FindStringSubmatch(line)
+			switch strings.ToUpper(match[1]) {
+			case "IF":
+				cur = checkList
+			case "SAY":
+				cur = say
+			case "ACT":
+				cur = actList
+			case "ELSEACT":
+				cur = elseActList
+			case "ELSESAY":
+				cur = elseSay
+			default:
+				panic("error:" + p.name + "---" + match[1])
+			}
+			continue
+		}
+		cur.PushBack(trimEnd(line))
+	}
+	p.say = listToStringArray(say)
+	p.elseSay = listToStringArray(elseSay)
 	return p
+}
+
+func trimEnd(s string) string {
+	return strings.TrimRightFunc(s, unicode.IsSpace)
+}
+
+func listToStringArray(l *list.List) []string {
+	ret := []string{}
+	for it := l.Front(); it != nil; it = it.Next() {
+		ret = append(ret, it.Value.(string))
+	}
+	return ret
 }
 
 type pageSource struct {
