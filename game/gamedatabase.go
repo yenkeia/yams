@@ -8,13 +8,14 @@ import (
 )
 
 type gameDatabase struct {
-	mapInfos       []*orm.MapInfo
-	npcInfos       []*orm.NPCInfo
-	itemInfos      []*orm.ItemInfo
-	monsterInfos   []*orm.MonsterInfo
-	respawnInfos   []*orm.RespawnInfo
-	itemInfoMap    map[int]*orm.ItemInfo
-	monsterInfoMap map[int]*orm.MonsterInfo
+	mapInfos        []*orm.MapInfo
+	npcInfos        []*orm.NPCInfo
+	itemInfos       []*orm.ItemInfo
+	monsterInfos    []*orm.MonsterInfo
+	respawnInfos    []*orm.RespawnInfo
+	itemInfoMap     map[int]*orm.ItemInfo    // key: orm.ItemInfo.ID
+	itemInfoNameMap map[string]*orm.ItemInfo // key: orm.ItemInfo.Name
+	monsterInfoMap  map[int]*orm.MonsterInfo // key: orm.MonsterInfo.ID
 }
 
 func newGameDatabase() *gameDatabase {
@@ -32,8 +33,10 @@ func newGameDatabase() *gameDatabase {
 	db.Table("respawn_info").Find(&gameData.respawnInfos)
 	gameData.itemInfoMap = make(map[int]*orm.ItemInfo)
 	gameData.monsterInfoMap = make(map[int]*orm.MonsterInfo)
+	gameData.itemInfoNameMap = make(map[string]*orm.ItemInfo)
 	for _, ii := range gameData.itemInfos {
 		gameData.itemInfoMap[ii.ID] = ii
+		gameData.itemInfoNameMap[ii.Name] = ii
 	}
 	for _, mi := range gameData.monsterInfos {
 		gameData.monsterInfoMap[mi.ID] = mi
