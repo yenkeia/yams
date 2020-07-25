@@ -12,6 +12,7 @@ type npc struct {
 	baseObject
 	info     *orm.NPCInfo
 	turnTime time.Time
+	script   *npcScript
 }
 
 func newNPC(info *orm.NPCInfo) *npc {
@@ -24,6 +25,7 @@ func newNPC(info *orm.NPCInfo) *npc {
 	n.direction = cm.MirDirection(cm.RandomInt(0, 1))
 	n.info = info
 	n.turnTime = time.Now()
+	n.script = newNPCScript(conf.Assets + "/NPCs/" + n.info.Filename)
 	return n
 }
 

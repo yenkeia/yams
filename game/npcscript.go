@@ -21,16 +21,19 @@ type npcScript struct {
 
 // page 是每个 [...] 及以下部分
 type page struct {
-	name        string
-	checkList   []*function
-	actList     []*function
-	elseActList []*function
-	say         []string
-	elseSay     []string
+	name string
+	// checkList   []*function
+	// actList     []*function
+	// elseActList []*function
+	say     []string
+	elseSay []string
 }
 
 // TODO
-type function struct{}
+// type function struct {
+// 	args []string
+// 	f    func([]string)
+// }
 
 func (p *page) String() string {
 	return fmt.Sprintf("page: %s, say: %s, elseSay: %s\n", p.name, p.say, p.elseSay)
@@ -194,4 +197,14 @@ func (ns *npcScript) parseTrade(lines []string) {
 		}
 		ns.trade = append(ns.trade, line)
 	}
+}
+
+// TODO
+func replaceTemplates(n *npc, p *player, say []string) []string {
+	return []string{"test", "test2", n.info.Filename}
+}
+
+// TODO
+func (ns *npcScript) call(page string, n *npc, p *player) ([]string, error) {
+	return nil, nil
 }

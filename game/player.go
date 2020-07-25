@@ -1,8 +1,6 @@
 package game
 
 import (
-	"fmt"
-
 	"github.com/davyxu/cellnet"
 	"github.com/yenkeia/yams/game/cm"
 	"github.com/yenkeia/yams/game/orm"
@@ -46,6 +44,8 @@ type player struct {
 	allowGroup        bool
 	sendedItemInfoIDs []int
 	dead              bool
+	callingNPC        int // obejctID
+	callingNPCKey     string
 }
 
 func (p *player) getObjectID() int {
@@ -399,14 +399,18 @@ func (p *player) moveItem(msg *client.MoveItem) {
 func (p *player) storeItem(msg *client.StoreItem)                   {}
 func (p *player) depositRefineItem(msg *client.DepositRefineItem)   {}
 func (p *player) retrieveRefineItem(msg *client.RetrieveRefineItem) {}
-func (p *player) refineCancel(msg *client.RefineCancel)             {}
-func (p *player) refineItem(msg *client.RefineItem)                 {}
-func (p *player) checkRefine(msg *client.CheckRefine)               {}
-func (p *player) replaceWedRing(msg *client.ReplaceWedRing)         {}
-func (p *player) depositTradeItem(msg *client.DepositTradeItem)     {}
-func (p *player) retrieveTradeItem(msg *client.RetrieveTradeItem)   {}
-func (p *player) takeBackItem(msg *client.TakeBackItem)             {}
-func (p *player) mergeItem(msg *client.MergeItem)                   {}
+
+func (p *player) refineCancel(msg *client.RefineCancel) {
+	p.callingNPC = 0
+}
+
+func (p *player) refineItem(msg *client.RefineItem)               {}
+func (p *player) checkRefine(msg *client.CheckRefine)             {}
+func (p *player) replaceWedRing(msg *client.ReplaceWedRing)       {}
+func (p *player) depositTradeItem(msg *client.DepositTradeItem)   {}
+func (p *player) retrieveTradeItem(msg *client.RetrieveTradeItem) {}
+func (p *player) takeBackItem(msg *client.TakeBackItem)           {}
+func (p *player) mergeItem(msg *client.MergeItem)                 {}
 
 // 穿装备
 func (p *player) equipItem(msg *client.EquipItem) {
@@ -647,8 +651,24 @@ func (p *player) attack(msg *client.Attack)           {}
 func (p *player) rangeAttack(msg *client.RangeAttack) {}
 func (p *player) harvest(msg *client.Harvest)         {}
 
+// TODO
 func (p *player) callNPC(msg *client.CallNPC) {
-	fmt.Println("->", msg.Key) // [@Main]
+	// fmt.Println("->", msg.Key) // [@Main]
+	// 判断玩家位置
+	n, ok := env.npcs[int(msg.ObjectID)]
+	if !ok {
+		return
+	}
+	say, err := n.script.call(msg.Key, n, p)
+	if err != nil {
+		log.Warnf("NPC 脚本执行失败: %d %s %s\n", n.objectID, msg.Key, err.Error())
+	}
+	log.Debugf("callNPC: %s %d, key: %s", n.name, n.objectID, msg.Key)
+	p.callingNPC = int(msg.ObjectID)
+	p.callingNPCKey = msg.Key
+	p.enqueue(&server.NPCResponse{Page: replaceTemplates(n, p, say)})
+	// TODO
+	// ProcessSpecial
 }
 
 func (p *player) talkMonsterNPC(msg *client.TalkMonsterNPC)                       {}
