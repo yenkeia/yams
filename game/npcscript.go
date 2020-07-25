@@ -147,7 +147,7 @@ func newNPCScript(path string) *npcScript {
 	ns.pages = make(map[string]*page)
 	for _, s := range ps {
 		p := newPage(s)
-		ns.pages[p.name] = p
+		ns.pages[strings.ToUpper(p.name)] = p
 		if s.name == "[Types]" {
 			ns.parseTypes(s.lines)
 		}
@@ -201,10 +201,15 @@ func (ns *npcScript) parseTrade(lines []string) {
 
 // TODO
 func replaceTemplates(n *npc, p *player, say []string) []string {
-	return []string{"test", "test2", n.info.Filename}
+	return say
 }
 
 // TODO
-func (ns *npcScript) call(page string, n *npc, p *player) ([]string, error) {
-	return nil, nil
+func (ns *npcScript) call(pageKey string, n *npc, p *player) ([]string, error) {
+	// log.Debugln(ns.pages)
+	pg, ok := ns.pages[pageKey]
+	if !ok {
+		return nil, fmt.Errorf("page key not found: %s", pageKey)
+	}
+	return pg.say, nil
 }

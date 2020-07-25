@@ -1,6 +1,8 @@
 package game
 
 import (
+	"strings"
+
 	"github.com/davyxu/cellnet"
 	"github.com/yenkeia/yams/game/cm"
 	"github.com/yenkeia/yams/game/orm"
@@ -659,13 +661,14 @@ func (p *player) callNPC(msg *client.CallNPC) {
 	if !ok {
 		return
 	}
-	say, err := n.script.call(msg.Key, n, p)
+	key := strings.ToUpper(msg.Key)
+	say, err := n.script.call(key, n, p)
 	if err != nil {
-		log.Warnf("NPC 脚本执行失败: %d %s %s\n", n.objectID, msg.Key, err.Error())
+		log.Warnf("NPC 脚本执行失败: %d %s %s\n", n.objectID, key, err.Error())
 	}
-	log.Debugf("callNPC: %s %d, key: %s", n.name, n.objectID, msg.Key)
+	log.Debugf("callNPC: %s %d, key: %s", n.name, n.objectID, key)
 	p.callingNPC = int(msg.ObjectID)
-	p.callingNPCKey = msg.Key
+	p.callingNPCKey = key
 	p.enqueue(&server.NPCResponse{Page: replaceTemplates(n, p, say)})
 	// TODO
 	// ProcessSpecial
