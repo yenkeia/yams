@@ -1,6 +1,8 @@
 package game
 
 import (
+	"fmt"
+
 	"github.com/davyxu/cellnet"
 	"github.com/yenkeia/yams/game/cm"
 	"github.com/yenkeia/yams/game/orm"
@@ -637,14 +639,18 @@ func (p *player) pickUp(msg *client.PickUp) {
 	}
 }
 
-func (p *player) inspect(msg *client.Inspect)                                     {}
-func (p *player) changeAMode(msg *client.ChangeAMode)                             {}
-func (p *player) changePMode(msg *client.ChangePMode)                             {}
-func (p *player) changeTrade(msg *client.ChangeTrade)                             {}
-func (p *player) attack(msg *client.Attack)                                       {}
-func (p *player) rangeAttack(msg *client.RangeAttack)                             {}
-func (p *player) harvest(msg *client.Harvest)                                     {}
-func (p *player) callNPC(msg *client.CallNPC)                                     {}
+func (p *player) inspect(msg *client.Inspect)         {}
+func (p *player) changeAMode(msg *client.ChangeAMode) {}
+func (p *player) changePMode(msg *client.ChangePMode) {}
+func (p *player) changeTrade(msg *client.ChangeTrade) {}
+func (p *player) attack(msg *client.Attack)           {}
+func (p *player) rangeAttack(msg *client.RangeAttack) {}
+func (p *player) harvest(msg *client.Harvest)         {}
+
+func (p *player) callNPC(msg *client.CallNPC) {
+	fmt.Println("->", msg.Key) // [@Main]
+}
+
 func (p *player) talkMonsterNPC(msg *client.TalkMonsterNPC)                       {}
 func (p *player) buyItem(msg *client.BuyItem)                                     {}
 func (p *player) craftItem(msg *client.CraftItem)                                 {}
