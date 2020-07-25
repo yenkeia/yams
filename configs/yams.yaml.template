@@ -1,0 +1,10 @@
+---
+assets: assets文件夹绝对路径
+
+mysql:
+  host: mysql服务器地址
+  port: 3306
+  gameDatabase: gamedatabase
+  playerDatabase: playerdatabase
+  username: mysql账号
+  password: mysql密码

@@ -3,6 +3,7 @@ package game
 import (
 	"bufio"
 	"container/list"
+	"fmt"
 	"os"
 	"regexp"
 	"strconv"
@@ -21,11 +22,18 @@ type npcScript struct {
 // page 是每个 [...] 及以下部分
 type page struct {
 	name        string
-	checkList   interface{} // *function
-	actList     interface{} // *function
-	elseActList interface{} // *function
+	checkList   []*function
+	actList     []*function
+	elseActList []*function
 	say         []string
 	elseSay     []string
+}
+
+// TODO
+type function struct{}
+
+func (p *page) String() string {
+	return fmt.Sprintf("page: %s, say: %s, elseSay: %s\n", p.name, p.say, p.elseSay)
 }
 
 var regexSharp = regexp.MustCompile(`#(\w+)`)
@@ -34,6 +42,11 @@ var regexSharp = regexp.MustCompile(`#(\w+)`)
 func newPage(ps *pageSource) *page {
 	p := new(page)
 	p.name = ps.name
+	p.say = make([]string, 0)
+	p.elseSay = make([]string, 0)
+	// p.checkList = make([]*function, 0)
+	// p.actList = make([]*function, 0)
+	// p.elseActList = make([]*function, 0)
 	checkList := &list.List{}
 	actList := &list.List{}
 	elseActList := &list.List{}
@@ -42,6 +55,9 @@ func newPage(ps *pageSource) *page {
 	var cur = say
 	for i := 0; i < len(ps.lines); i++ {
 		line := ps.lines[i]
+		if line == "" {
+			continue
+		}
 		if line[0] == '#' {
 			match := regexSharp.FindStringSubmatch(line)
 			switch strings.ToUpper(match[1]) {
@@ -62,9 +78,27 @@ func newPage(ps *pageSource) *page {
 		}
 		cur.PushBack(trimEnd(line))
 	}
+	p.parseCheck(checkList)
+	p.parseAct(actList)
+	p.parseElseAct(elseActList)
 	p.say = listToStringArray(say)
 	p.elseSay = listToStringArray(elseSay)
 	return p
+}
+
+// TODO
+func (p *page) parseCheck(checkList *list.List) {
+
+}
+
+// TODO
+func (p *page) parseAct(actList *list.List) {
+
+}
+
+// TODO
+func (p *page) parseElseAct(elseActList *list.List) {
+
 }
 
 func trimEnd(s string) string {
