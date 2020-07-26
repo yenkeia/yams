@@ -35,7 +35,6 @@ func (p *page) String() string {
 
 var regexSharp = regexp.MustCompile(`#(\w+)`)
 
-// TODO
 func newPage(ps *pageSource) *page {
 	p := new(page)
 	p.name = ps.name
@@ -83,19 +82,32 @@ func newPage(ps *pageSource) *page {
 	return p
 }
 
-// TODO
 func (p *page) parseCheck(checkList *list.List) {
-
+	for it := checkList.Front(); it != nil; it = it.Next() {
+		v := it.Value.(string)
+		res := strings.Split(v, " ")
+		p.checkList = append(p.checkList, newFunction(res[0], res[1:]))
+	}
 }
 
-// TODO
 func (p *page) parseAct(actList *list.List) {
-
+	// fmt.Println(">>>parseAct start")
+	for it := actList.Front(); it != nil; it = it.Next() {
+		v := it.Value.(string)
+		res := strings.Split(v, " ")
+		p.actList = append(p.actList, newFunction(res[0], res[1:]))
+	}
+	// fmt.Println("<<<parseAct end")
 }
 
-// TODO
 func (p *page) parseElseAct(elseActList *list.List) {
-
+	// fmt.Println("===parseElseAct start")
+	for it := elseActList.Front(); it != nil; it = it.Next() {
+		v := it.Value.(string)
+		res := strings.Split(v, " ")
+		p.elseActList = append(p.elseActList, newFunction(res[0], res[1:]))
+	}
+	// fmt.Println("===parseElseAct end")
 }
 
 func trimEnd(s string) string {
@@ -137,6 +149,7 @@ func newNPCScript(path string) *npcScript {
 	}
 	ps = append(ps, cur)
 
+	// fmt.Println("============")
 	ns := new(npcScript)
 	ns.pages = make(map[string]*page)
 	for _, s := range ps {
@@ -191,11 +204,6 @@ func (ns *npcScript) parseTrade(lines []string) {
 		}
 		ns.trade = append(ns.trade, line)
 	}
-}
-
-// TODO
-func replaceTemplates(n *npc, p *player, say []string) []string {
-	return say
 }
 
 type cmdBreak struct{}

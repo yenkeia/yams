@@ -674,6 +674,12 @@ func (p *player) callNPC(msg *client.CallNPC) {
 	// ProcessSpecial
 }
 
+// TODO
+func replaceTemplates(n *npc, p *player, say []string) []string {
+	say = say[1:]
+	return say
+}
+
 func (p *player) talkMonsterNPC(msg *client.TalkMonsterNPC)                       {}
 func (p *player) buyItem(msg *client.BuyItem)                                     {}
 func (p *player) craftItem(msg *client.CraftItem)                                 {}
