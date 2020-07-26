@@ -21,19 +21,13 @@ type npcScript struct {
 
 // page 是每个 [...] 及以下部分
 type page struct {
-	name string
-	// checkList   []*function
-	// actList     []*function
-	// elseActList []*function
-	say     []string
-	elseSay []string
+	name        string
+	checkList   []*function
+	actList     []*function
+	elseActList []*function
+	say         []string
+	elseSay     []string
 }
-
-// TODO
-// type function struct {
-// 	args []string
-// 	f    func([]string)
-// }
 
 func (p *page) String() string {
 	return fmt.Sprintf("page: %s, say: %s, elseSay: %s\n", p.name, p.say, p.elseSay)
@@ -47,9 +41,9 @@ func newPage(ps *pageSource) *page {
 	p.name = ps.name
 	p.say = make([]string, 0)
 	p.elseSay = make([]string, 0)
-	// p.checkList = make([]*function, 0)
-	// p.actList = make([]*function, 0)
-	// p.elseActList = make([]*function, 0)
+	p.checkList = make([]*function, 0)
+	p.actList = make([]*function, 0)
+	p.elseActList = make([]*function, 0)
 	checkList := &list.List{}
 	actList := &list.List{}
 	elseActList := &list.List{}
@@ -204,12 +198,43 @@ func replaceTemplates(n *npc, p *player, say []string) []string {
 	return say
 }
 
-// TODO
-func (ns *npcScript) call(pageKey string, n *npc, p *player) ([]string, error) {
-	// log.Debugln(ns.pages)
+type cmdBreak struct{}
+
+type cmdGoto struct {
+	gotoPage string
+}
+
+func (ns *npcScript) call(pageKey string, n *npc, p *player) (say []string, err error) {
 	pg, ok := ns.pages[pageKey]
 	if !ok {
 		return nil, fmt.Errorf("page key not found: %s", pageKey)
 	}
-	return pg.say, nil
+	ok = true
+	for _, c := range pg.checkList {
+		if !c.check(n, p) {
+			ok = false
+			break
+		}
+	}
+	var acts []*function
+	if ok {
+		acts = pg.actList
+		say = pg.say
+	} else {
+		acts = pg.elseActList
+		say = pg.elseSay
+	}
+ACTION:
+	for _, act := range acts {
+		res := act.execute(n, p)
+		switch cmd := res.(type) {
+		case cmdBreak: // 多用于任务，例如拿走任务物品后，跳出 acts，返回 say 给客户端。 例子 Envir/NPCs/MongchonProvince/14Qas-D604.txt
+			break ACTION
+		case cmdGoto:
+			return ns.call(cmd.gotoPage, n, p)
+		case nil:
+			continue
+		}
+	}
+	return
 }
