@@ -30,9 +30,10 @@ type userItem struct {
 // newUserItem 新建一个游戏内部使用的 userItem
 func newUserItem(info *orm.ItemInfo) *userItem {
 	return &userItem{
-		info:     info,
-		objectID: env.newObjectID(),
-		count:    1,
+		info:        info,
+		objectID:    env.newObjectID(),
+		count:       1,
+		soulBoundID: -1, // 根据客户端代码 -1 时候不现实 "灵魂绑定给" ..
 	}
 }
 
