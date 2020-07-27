@@ -208,7 +208,7 @@ func encodeUserInformation(msg *server.UserInformation) (data interface{}, err e
 	}
 
 	// IntelligentCreature 直接填充字节数组, 功能不做
-	writer.Write([]byte{0, 0, 0, 0, 99, 0})
+	writer.buf = append(writer.buf, []byte{0, 0, 0, 0, 99, 0}...)
 
 	return writer.buf, nil
 }
