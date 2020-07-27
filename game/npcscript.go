@@ -202,6 +202,10 @@ func (ns *npcScript) parseTrade(lines []string) {
 		if index == 0 || line == "" {
 			continue
 		}
+		_, ok := gdb.itemInfoNameMap[line]
+		if !ok {
+			panic(fmt.Sprintf("NPC脚本文件 trade 物品名不存在: %s", line))
+		}
 		ns.trade = append(ns.trade, line)
 	}
 }

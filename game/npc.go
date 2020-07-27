@@ -13,6 +13,7 @@ type npc struct {
 	info     *orm.NPCInfo
 	turnTime time.Time
 	script   *npcScript
+	goods    []*userItem
 }
 
 func newNPC(info *orm.NPCInfo) *npc {
@@ -26,6 +27,7 @@ func newNPC(info *orm.NPCInfo) *npc {
 	n.info = info
 	n.turnTime = time.Now()
 	n.script = newNPCScript(conf.Assets + "/NPCs/" + n.info.Filename)
+	n.goods = make([]*userItem, 0)
 	return n
 }
 
@@ -48,4 +50,40 @@ func (n *npc) update(now time.Time) {
 func (n *npc) broadcast(msg interface{}) {
 	mp := env.maps[n.info.MapID]
 	mp.broadcast(n.location, msg, n.objectID)
+}
+
+func (n *npc) processSpecial(p *player, key string) {
+	switch key {
+	case BuyKey:
+		ls := make([]*server.UserItem, 0)
+		for _, good := range n.goods {
+			p.enqueueItemInfo(good.info.ID)
+			ls = append(ls, good.serverUserItem())
+		}
+		p.enqueue(&server.NPCGoods{Goods: ls, Rate: 1.0, Type: cm.PanelTypeBuy})
+	case SellKey:
+	case BuySellKey:
+	case RepairKey:
+	case SRepairKey:
+	case CraftKey:
+	case RefineKey:
+	case RefineCheckKey:
+	case RefineCollectKey:
+	case ReplaceWedRingKey:
+	case StorageKey:
+	case BuyBackKey:
+	case BuyUsedKey:
+	case ConsignKey:
+	case MarketKey:
+	case ConsignmentsKey:
+	case GuildCreateKey:
+	case RequestWarKey:
+	case SendParcelKey:
+	case CollectParcelKey:
+	case AwakeningKey:
+	case DisassembleKey:
+	case DowngradeKey:
+	case ResetKey:
+	case PearlBuyKey:
+	}
 }

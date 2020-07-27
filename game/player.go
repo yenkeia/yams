@@ -670,8 +670,7 @@ func (p *player) callNPC(msg *client.CallNPC) {
 	p.callingNPC = int(msg.ObjectID)
 	p.callingNPCKey = key
 	p.enqueue(&server.NPCResponse{Page: replaceTemplates(n, p, say)})
-	// TODO
-	// ProcessSpecial
+	n.processSpecial(p, key)
 }
 
 // TODO
