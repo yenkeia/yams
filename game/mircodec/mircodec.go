@@ -84,6 +84,8 @@ func (*mirCodec) Encode(msgObj interface{}, ctx cellnet.ContextSet) (data interf
 		return encodeNPCResponse(res)
 	case *server.TradeItem:
 		return encodeTradeItem(res)
+	case *server.NPCGoods:
+		return encodeNPCGoods(res)
 	default:
 		return encode(msgObj)
 	}
@@ -340,5 +342,18 @@ func encodeTradeItem(msg *server.TradeItem) (data interface{}, err error) {
 			writer.Write(ui)
 		}
 	}
+	return writer.buf, nil
+}
+
+func encodeNPCGoods(msg *server.NPCGoods) (data interface{}, err error) {
+	writer := &wrapper{buf: make([]byte, 0)}
+	length := len(msg.Goods)
+	writer.Write(int32(length))
+	for i := 0; i < length; i++ {
+		ui := msg.Goods[i]
+		writer.Write(ui)
+	}
+	writer.Write(msg.Rate)
+	writer.Write(msg.Type)
 	return writer.buf, nil
 }

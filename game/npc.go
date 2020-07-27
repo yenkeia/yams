@@ -27,7 +27,7 @@ func newNPC(info *orm.NPCInfo) *npc {
 	n.info = info
 	n.turnTime = time.Now()
 	n.script = newNPCScript(conf.Assets + "/NPCs/" + n.info.Filename)
-	n.goods = make([]*userItem, 0)
+	n.loadGoods()
 	return n
 }
 
@@ -52,17 +52,24 @@ func (n *npc) broadcast(msg interface{}) {
 	mp.broadcast(n.location, msg, n.objectID)
 }
 
+func (n *npc) loadGoods() {
+	n.goods = make([]*userItem, 0)
+	for _, name := range n.script.trade {
+		n.goods = append(n.goods, newUserItem(gdb.itemInfoNameMap[name]))
+	}
+}
+
 func (n *npc) processSpecial(p *player, key string) {
 	switch key {
 	case BuyKey:
+	case SellKey:
+	case BuySellKey:
 		ls := make([]*server.UserItem, 0)
 		for _, good := range n.goods {
 			p.enqueueItemInfo(good.info.ID)
 			ls = append(ls, good.serverUserItem())
 		}
 		p.enqueue(&server.NPCGoods{Goods: ls, Rate: 1.0, Type: cm.PanelTypeBuy})
-	case SellKey:
-	case BuySellKey:
 	case RepairKey:
 	case SRepairKey:
 	case CraftKey:
