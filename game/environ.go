@@ -149,6 +149,9 @@ func (env *Environ) Update(now time.Time) {
 	for _, n := range env.npcs {
 		n.update(now)
 	}
+	for _, p := range env.players {
+		p.update(now)
+	}
 }
 
 // HandleEvent 处理客户端包

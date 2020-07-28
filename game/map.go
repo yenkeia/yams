@@ -9,20 +9,6 @@ import (
 	"github.com/yenkeia/yams/game/orm"
 )
 
-type baseObject struct {
-	objectID  int
-	name      string
-	nameColor cm.Color
-	mapID     int
-	location  cm.Point
-	direction cm.MirDirection
-}
-
-type mapObject interface {
-	getObjectID() int
-	getPosition() cm.Point
-}
-
 type mirMap struct {
 	width   int
 	height  int

@@ -1083,3 +1083,20 @@ const (
 	RankOptionsCanChangeNotice              = 64
 	RankOptionsCanActivateBuff              = 128
 )
+
+// DelayedType .
+type DelayedType int
+
+const (
+	DelayedTypeMagic DelayedType = iota
+	DelayedTypeDamage
+	DelayedTypeRangeDamage
+	DelayedTypeSpawn
+	DelayedTypeDie
+	DelayedTypeRecall
+	DelayedTypeMapMovement
+	DelayedTypeMine
+	DelayedTypeNPC
+	DelayedTypePoison
+	DelayedTypeDamageIndicator
+)

@@ -1,6 +1,8 @@
 package game
 
 import (
+	"fmt"
+
 	"github.com/yenkeia/yams/game/cm"
 	"github.com/yenkeia/yams/game/orm"
 	"github.com/yenkeia/yams/game/proto/server"
@@ -30,6 +32,10 @@ func newMonster(mapID int, location cm.Point, info *orm.MonsterInfo) *monster {
 	m.location = location
 	m.direction = cm.RandomDirection()
 	return m
+}
+
+func (m *monster) String() string {
+	return fmt.Sprintf("怪物: %s", m.name)
 }
 
 func (m *monster) getObjectID() int {
@@ -70,4 +76,15 @@ func (m *monster) broadcastInfo() {
 // TODO
 func (m *monster) broadcastHealthChange() {
 
+}
+
+// TODO
+func (m *monster) attacked(atk attacker, dmg int, typ cm.DefenceType, isWeapon bool) int {
+	log.Debugf("monster[%s] attacked. attacker: [%s], damage: %d", m, atk, dmg)
+	return 0
+}
+
+// TODO
+func (m *monster) isAttackTarget(attacker) bool {
+	return true
 }

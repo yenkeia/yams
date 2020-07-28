@@ -1,7 +1,9 @@
 package game
 
 import (
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/davyxu/cellnet"
 	"github.com/yenkeia/yams/game/cm"
@@ -13,6 +15,7 @@ import (
 type player struct {
 	baseObject
 	session           *cellnet.Session
+	actionList        *actionList
 	gameStage         int
 	accountID         int // account.ID
 	characterID       int // character.ID 保存数据库用
@@ -48,6 +51,20 @@ type player struct {
 	dead              bool
 	callingNPC        int // obejctID
 	callingNPCKey     string
+	minAC             int // 物理防御力
+	maxAC             int
+	minMAC            int // 魔法防御力
+	maxMAC            int
+	minDC             int // 攻击力
+	maxDC             int
+	minMC             int // 魔法力
+	maxMC             int
+	minSC             int // 道术力
+	maxSC             int
+}
+
+func (p *player) String() string {
+	return fmt.Sprintf("玩家: %s, 等级: %d, 位置: %s", p.name, p.level, p.location)
 }
 
 func (p *player) getObjectID() int {
@@ -56,6 +73,21 @@ func (p *player) getObjectID() int {
 
 func (p *player) getPosition() cm.Point {
 	return p.location
+}
+
+func (p *player) update(now time.Time) {
+	p.actionList.execute()
+}
+
+func (p *player) getAttackPower(min, max int) int {
+	if min < 0 {
+		min = 0
+	}
+	if max < min {
+		max = min
+	}
+	// TODO luck
+	return cm.RandomInt(min, max)
 }
 
 func (p *player) enqueue(msg interface{}) {
@@ -253,6 +285,7 @@ func (p *player) receiveChat(text string, typ cm.ChatType) {
 
 // FIXME
 func (p *player) updateInfo(c *orm.Character) {
+	p.actionList = newActionList()
 	p.gameStage = GAME
 	p.objectID = env.newObjectID()
 	p.characterID = c.ID
@@ -651,7 +684,56 @@ func (p *player) inspect(msg *client.Inspect)         {}
 func (p *player) changeAMode(msg *client.ChangeAMode) {}
 func (p *player) changePMode(msg *client.ChangePMode) {}
 func (p *player) changeTrade(msg *client.ChangeTrade) {}
-func (p *player) attack(msg *client.Attack)           {}
+
+func (p *player) attack(msg ...interface{}) {
+	p.direction = msg[0].(*client.Attack).Direction
+	p.enqueue(&server.UserLocation{Location: p.location, Direction: p.direction})
+	p.broadcast(&server.ObjectAttack{
+		ObjectID:  uint32(p.objectID),  // uint32
+		LocationX: int32(p.location.X), // int32
+		LocationY: int32(p.location.Y), // int32
+		Direction: p.direction,         // cm.MirDirection
+		Spell:     cm.SpellNone,        // cm.Spell
+		Level:     0,                   // uint8
+		Type:      0,                   // uint8
+	})
+	damageBase := p.getAttackPower(p.minDC, p.maxDC)
+	damageFinal := damageBase          // TODO
+	defence := cm.DefenceTypeACAgility // TODO
+	mp := env.maps[p.mapID]
+	cell := mp.getCell(p.location.NextPoint(p.direction, 1))
+	if cell.attribute != cm.CellAttributeWalk {
+		return
+	}
+	for e := cell.objects.Front(); e != nil; e = e.Next() {
+		obj := e.Value.(attackableObject)
+		p.actionList.pushDelayAction(cm.DelayedTypeDamage, 300, func() { p.completeAttack(obj, damageFinal, defence, true) })
+	}
+}
+
+func (p *player) completeAttack(args ...interface{}) {
+	target := args[0].(attackableObject)
+	damage := args[1].(int)
+	defence := args[2].(cm.DefenceType)
+	damageWeapon := args[3].(bool)
+	if target == nil || !target.isAttackTarget(p) { // || target.CurrentMap != CurrentMap || target.Node == nil) {
+		return
+	}
+	if target.attacked(p, damage, defence, damageWeapon) <= 0 {
+		return
+	}
+	/* TODO
+	//Level Fencing / SpiritSword
+	for _, magic := range p.Magics {
+		switch magic.Spell {
+		case cm.SpellFencing, cm.SpellSpiritSword:
+			p.LevelMagic(magic)
+			break
+		}
+	}
+	*/
+}
+
 func (p *player) rangeAttack(msg *client.RangeAttack) {}
 func (p *player) harvest(msg *client.Harvest)         {}
 
