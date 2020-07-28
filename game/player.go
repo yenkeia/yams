@@ -192,7 +192,6 @@ func (p *player) getObjectPlayer() *server.ObjectPlayer {
 	}
 }
 
-// TODO
 func (p *player) enqueueMapObject(obj mapObject) {
 	switch o := obj.(type) {
 	case *player:
@@ -228,8 +227,9 @@ func (p *player) enqueueMapObject(obj mapObject) {
 			Extra:             false, // TODO
 			ExtraByte:         0,     // TODO
 		})
+	case *item:
+		p.enqueue(o.getItemObjectInfo())
 	}
-
 }
 
 func (p *player) broadcast(msg interface{}) {
@@ -558,7 +558,8 @@ func (p *player) gainGold(amount int) {
 }
 
 func (p *player) gainItem(ui *userItem) (res bool) {
-	ui.soulBoundID = p.characterID
+	// ui.soulBoundID = p.characterID
+	ui.soulBoundID = -1
 
 	if ui.info.StackSize > 1 {
 		for i, v := range p.inventory.items {
@@ -641,6 +642,7 @@ func (p *player) pickUp(msg *client.PickUp) {
 	for i := range items {
 		item := items[i]
 		mp.deleteObject(item)
+		delete(env.items, item.objectID)
 		item.broadcast(&server.ObjectRemove{ObjectID: uint32(item.objectID)})
 	}
 }
@@ -653,9 +655,9 @@ func (p *player) attack(msg *client.Attack)           {}
 func (p *player) rangeAttack(msg *client.RangeAttack) {}
 func (p *player) harvest(msg *client.Harvest)         {}
 
-// TODO
 func (p *player) callNPC(msg *client.CallNPC) {
 	// fmt.Println("->", msg.Key) // [@Main]
+	// TODO
 	// 判断玩家位置
 	n, ok := env.npcs[int(msg.ObjectID)]
 	if !ok {
@@ -679,8 +681,36 @@ func replaceTemplates(n *npc, p *player, say []string) []string {
 	return say
 }
 
-func (p *player) talkMonsterNPC(msg *client.TalkMonsterNPC)                       {}
-func (p *player) buyItem(msg *client.BuyItem)                                     {}
+func (p *player) talkMonsterNPC(msg *client.TalkMonsterNPC) {}
+
+// 从 NPC 买东西
+func (p *player) buyItem(msg *client.BuyItem) {
+	n, ok := env.npcs[p.callingNPC]
+	if !ok {
+		return
+	}
+	var item *userItem
+	for _, good := range n.goods {
+		if good.objectID == int(msg.ItemIndex) {
+			item = good
+			break
+		}
+	}
+	count := int(msg.Count)
+	if item == nil || msg.Count == 0 || count > item.info.StackSize {
+		return
+	}
+	price := item.price()
+	if price > p.gold {
+		p.receiveChat("金币不足", cm.ChatTypeSystem)
+		return
+	}
+	newUserItem := newUserItem(item.info)
+	if p.gainItem(newUserItem) {
+		p.takeGold(price)
+	}
+}
+
 func (p *player) craftItem(msg *client.CraftItem)                                 {}
 func (p *player) sellItem(msg *client.SellItem)                                   {}
 func (p *player) repairItem(msg *client.RepairItem)                               {}

@@ -41,6 +41,7 @@ type Environ struct {
 	npcs     map[int]*npc     // npc.objectID: npc
 	players  map[int]*player  // player.objectID: player
 	monsters map[int]*monster // monster.objectID: monster
+	items    map[int]*item    // item.objectID: item
 }
 
 // NewEnviron 初始化
@@ -53,6 +54,7 @@ func NewEnviron(c *Config) *Environ {
 	e.objectID = 1
 	e.players = make(map[int]*player)
 	e.monsters = make(map[int]*monster)
+	e.items = make(map[int]*item)
 	e.initMap()
 	e.initNPC()
 	e.initRespawn() // 怪物刷新
@@ -128,6 +130,10 @@ func (env *Environ) getMapObjects(ids []int) []mapObject {
 		}
 		if m, ok := env.monsters[id]; ok {
 			objs = append(objs, m)
+			continue
+		}
+		if i, ok := env.items[id]; ok {
+			objs = append(objs, i)
 			continue
 		}
 	}

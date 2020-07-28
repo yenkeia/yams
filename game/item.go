@@ -52,7 +52,8 @@ func (i *item) drop(center cm.Point, distance int) (err error) {
 		ok = true
 		i.location = cm.NewPoint(x, y)
 		mp.addObject(i)
-		i.broadcastInfo()
+		env.items[i.objectID] = i
+		i.broadcast(i.getItemObjectInfo())
 		return false
 	})
 	if !ok {
@@ -66,23 +67,22 @@ func (i *item) broadcast(msg interface{}) {
 	mp.broadcast(i.location, msg, i.objectID)
 }
 
-func (i *item) broadcastInfo() {
+func (i *item) getItemObjectInfo() interface{} {
 	if i.ui == nil {
-		i.broadcast(&server.ObjectGold{
+		return &server.ObjectGold{
 			ObjectID:  uint32(i.objectID),  // uint32
 			Gold:      uint32(i.gold),      // uint32
 			LocationX: int32(i.location.X), // int32
 			LocationY: int32(i.location.Y), // int32
-		})
-	} else {
-		i.broadcast(&server.ObjectItem{
-			ObjectID:  uint32(i.objectID),      // uint32
-			Name:      i.name,                  // string
-			NameColor: cm.ColorWhite.ToInt32(), // int32
-			LocationX: int32(i.location.X),     // int32
-			LocationY: int32(i.location.Y),     // int32
-			Image:     uint16(i.ui.info.Image), // uint16
-			Grade:     cm.ItemGradeNone,        // TODO cm.ItemGrade
-		})
+		}
+	}
+	return &server.ObjectItem{
+		ObjectID:  uint32(i.objectID),      // uint32
+		Name:      i.name,                  // string
+		NameColor: cm.ColorWhite.ToInt32(), // int32
+		LocationX: int32(i.location.X),     // int32
+		LocationY: int32(i.location.Y),     // int32
+		Image:     uint16(i.ui.info.Image), // uint16
+		Grade:     cm.ItemGradeNone,        // TODO cm.ItemGrade
 	}
 }

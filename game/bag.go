@@ -84,7 +84,9 @@ func (b *bag) set(i int, ui *userItem) (err error) {
 		if b.items[i] != nil {
 			return fmt.Errorf("该位置有物品了")
 		}
-		pdb.db.Table("user_item").Create(ui.ormUserItem())
+		oui := ui.ormUserItem()
+		pdb.db.Table("user_item").Create(oui)
+		ui.id = oui.ID
 		pdb.db.Table("character_user_item").Create(&orm.CharacterUserItem{
 			CharacterID: int(b.characterID),
 			UserItemID:  int(ui.id),

@@ -105,3 +105,8 @@ func (ui *userItem) ormUserItem() *orm.UserItem {
 		SoulBoundID: ui.soulBoundID,
 	}
 }
+
+// TODO
+func (ui *userItem) price() int {
+	return ui.info.Price
+}
