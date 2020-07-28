@@ -15,6 +15,22 @@ type monster struct {
 	isSkeleton bool
 	poison     cm.PoisonType
 	isHidden   bool
+	hp         int
+	mp         int
+	level      int
+	petLevel   int
+	experience int
+	maxHP      int
+	minAC      int
+	maxAC      int
+	minMAC     int
+	maxMAC     int
+	minDC      int
+	maxDC      int
+	minMC      int
+	maxMC      int
+	minSC      int
+	maxSC      int
 }
 
 func newMonster(mapID int, location cm.Point, info *orm.MonsterInfo) *monster {
@@ -24,6 +40,7 @@ func newMonster(mapID int, location cm.Point, info *orm.MonsterInfo) *monster {
 		isSkeleton: false,
 		poison:     cm.PoisonTypeNone,
 		isHidden:   false,
+		hp:         info.HP,
 	}
 	m.objectID = env.newObjectID()
 	m.name = info.Name
@@ -44,6 +61,30 @@ func (m *monster) getObjectID() int {
 
 func (m *monster) getPosition() cm.Point {
 	return m.location
+}
+
+// ChangeHP 怪物改变血量 amount 可以是负数(扣血)
+func (m *monster) changeHP(amount int) {
+	if m.isDead {
+		return
+	}
+	value := m.hp + amount
+	if value == m.hp {
+		return
+	}
+	if value <= 0 {
+		m.die()
+		m.hp = 0
+	} else {
+		m.hp = value
+	}
+	percent := uint8(float32(m.hp) / float32(m.maxHP) * 100)
+	log.Debugf("monster changeHP. amount: %d. hp: %d, maxHP: %d, percent: %d\n", amount, m.hp, m.maxHP, percent)
+	m.broadcast(&server.ObjectHealth{
+		ObjectID: uint32(m.objectID),
+		Percent:  percent,
+		Expire:   5,
+	})
 }
 
 func (m *monster) broadcast(msg interface{}) {
@@ -78,13 +119,56 @@ func (m *monster) broadcastHealthChange() {
 
 }
 
+func (m *monster) broadcastObjectStruck(a attacker) {
+	attackerID := 0
+	switch atk := a.(type) {
+	case *player:
+		attackerID = atk.objectID
+	case *monster:
+		attackerID = atk.objectID
+	}
+	m.broadcast(&server.ObjectStruck{
+		ObjectID:   uint32(m.objectID),
+		AttackerID: uint32(attackerID),
+		LocationX:  int32(m.location.X),
+		LocationY:  int32(m.location.Y),
+		Direction:  m.direction,
+	})
+}
+
+func (m *monster) broadcastDamageIndicator(typ cm.DamageType, dmg int) {
+	m.broadcast(&server.DamageIndicator{Damage: int32(dmg), Type: typ, ObjectID: uint32(m.objectID)})
+}
+
 // TODO
 func (m *monster) attacked(atk attacker, dmg int, typ cm.DefenceType, isWeapon bool) int {
 	log.Debugf("monster[%s] attacked. attacker: [%s], damage: %d", m, atk, dmg)
+	armor := 0    // TODO
+	damage := dmg // TODO
+	value := damage - armor
+	log.Debugf("attacker damage: %d, monster armour: %d\n", damage, armor)
+	if value <= 0 {
+		m.broadcastDamageIndicator(cm.DamageTypeMiss, 0)
+		return 0
+	}
+	// TODO 还有很多没做
+	m.broadcastObjectStruck(atk)
+	m.broadcastDamageIndicator(cm.DamageTypeHit, -value)
+	m.changeHP(-value)
 	return 0
 }
 
 // TODO
 func (m *monster) isAttackTarget(attacker) bool {
 	return true
+}
+
+// TODO
+func (m *monster) attack(...interface{}) {
+
+}
+
+// TODO
+func (m *monster) die() {
+
 }

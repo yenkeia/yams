@@ -345,11 +345,33 @@ func (p *player) updateConcentration() {
 
 // TODO
 func (p *player) refreshStats() {
+	p.refreshLevelStats()
+	p.refreshBagWeight()
+	p.refreshEquipmentStats()
+	/*
+		p.RefreshItemSetStats()
+		p.RefreshMirSetStats()
+		p.RefreshSkills()
+		p.RefreshBuffs()
+		p.RefreshStatCaps()
+		p.RefreshMountStats()
+		p.RefreshGuildBuffs()
+	*/
+}
 
+// TODO
+func (p *player) refreshLevelStats() {
+	p.minDC = 0
+	p.maxDC = 20
 }
 
 // TODO
 func (p *player) refreshBagWeight() {
+
+}
+
+// TODO
+func (p *player) refreshEquipmentStats() {
 
 }
 
