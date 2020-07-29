@@ -71,7 +71,21 @@ type player struct {
 }
 
 func (p *player) String() string {
-	return fmt.Sprintf("玩家: %s, 等级: %d, 位置: %s", p.name, p.level, p.location)
+	res := fmt.Sprintf(`
+	玩家: %s, 等级: %d, 位置: %s
+	物理防御力minAC: %d, maxAC: %d
+	魔法防御力minMAC: %d, maxMAC: %d
+	攻击力minDC: %d, maxDC: %d
+	魔法力minMC: %d, maxMC: %d
+	道术力minSC: %d, maxSC: %d
+	准确accuracy: %d
+	敏捷agility: %d
+	暴击率criticalRate: %d, 暴击伤害criticalDamage: %d
+	maxBagWeight: %d, maxWearWeight: %d, maxHandWeight: %d
+	`, p.name, p.level, p.location,
+		p.minAC, p.maxAC, p.minMAC, p.maxMAC, p.minDC, p.maxDC, p.minMC, p.maxMC, p.minSC, p.maxSC,
+		p.accuracy, p.agility, p.criticalRate, p.criticalDamage, p.maxBagWeight, p.maxWearWeight, p.maxHandWeight)
+	return res
 }
 
 func (p *player) getObjectID() int {
@@ -364,9 +378,9 @@ func (p *player) refreshStats() {
 		p.RefreshMountStats()
 		p.RefreshGuildBuffs()
 	*/
+	log.Debugf("refreshStats \n %s", p)
 }
 
-// TODO
 func (p *player) refreshLevelStats() {
 	baseStats := gdb.baseStatsMap[p.class]
 	p.accuracy = baseStats.StartAccuracy

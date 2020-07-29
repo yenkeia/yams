@@ -435,6 +435,8 @@ func startGame(s cellnet.Session, msg *client.StartGame) {
 	p.enqueueAreaObjects(nil, mp.aoi.getGridByPoint(p.location))
 	p.broadcast(p.getObjectPlayer())
 
+	log.Debugf("玩家登陆游戏: %v", p)
+
 	// 加入到游戏环境
 	env.players[p.objectID] = p
 	mp.addObject(p)
