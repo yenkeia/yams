@@ -229,3 +229,36 @@ type RespawnInfo struct {
 	Spread    int // 范围
 	Interval  int // 刷新时间（分钟
 }
+
+// BaseStats 各职业的基础属性
+type BaseStats struct {
+	ID                  int     `gorm:"primary_key"` // 对应 cm.MirClass
+	HPGain              float32 `gorm:"Column:hp_gain"`
+	HPGainRate          float32 `gorm:"Column:hp_gain_rate"`
+	MPGainRate          float32 `gorm:"Column:mp_gain_rate"`
+	BagWeightGain       float32
+	WearWeightGain      float32
+	HandWeightGain      float32
+	MinAC               int
+	MaxAC               int
+	MinMAC              int
+	MaxMAC              int
+	MinDC               int
+	MaxDC               int
+	MinMC               int
+	MaxMC               int
+	MinSC               int
+	MaxSC               int
+	StartAgility        int
+	StartAccuracy       int
+	StartCriticalRate   int
+	StartCriticalDamage int
+	CritialRateGain     float32
+	CriticalDamageGain  float32
+}
+
+// LevelMaxExperience 玩家等级和最大经验值对应关系
+type LevelMaxExperience struct {
+	ID            int `gorm:"primary_key"` // 对应等级
+	MaxExperience int
+}

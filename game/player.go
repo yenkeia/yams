@@ -61,6 +61,13 @@ type player struct {
 	maxMC             int
 	minSC             int // 道术力
 	maxSC             int
+	accuracy          int
+	agility           int
+	criticalRate      int
+	criticalDamage    int
+	maxBagWeight      int
+	maxWearWeight     int
+	maxHandWeight     int
 }
 
 func (p *player) String() string {
@@ -361,8 +368,73 @@ func (p *player) refreshStats() {
 
 // TODO
 func (p *player) refreshLevelStats() {
+	baseStats := gdb.baseStatsMap[p.class]
+	p.accuracy = baseStats.StartAccuracy
+	p.agility = baseStats.StartAgility
+	p.criticalRate = baseStats.StartCriticalRate
+	p.criticalDamage = baseStats.StartCriticalDamage
+	p.maxExperience = gdb.levelMaxExpMap[p.level]
+	p.maxHP = 14 + int((float32(p.level)/baseStats.HPGain+baseStats.HPGainRate)*float32(p.level))
+	p.minAC = 0
+	if baseStats.MinAC > 0 {
+		p.minAC = p.level / baseStats.MinAC
+	}
+	p.maxAC = 0
+	if baseStats.MaxAC > 0 {
+		p.maxAC = p.level / baseStats.MaxAC
+	}
+	p.minMAC = 0
+	if baseStats.MinMAC > 0 {
+		p.minMAC = p.level / baseStats.MinMAC
+	}
+	p.maxMAC = 0
+	if baseStats.MaxMAC > 0 {
+		p.maxMAC = p.level / baseStats.MaxMAC
+	}
 	p.minDC = 0
-	p.maxDC = 20
+	if baseStats.MinDC > 0 {
+		p.minDC = p.level / baseStats.MinDC
+	}
+	p.maxDC = 0
+	if baseStats.MaxDC > 0 {
+		p.maxDC = p.level / baseStats.MaxDC
+	}
+	p.minMC = 0
+	if baseStats.MinMC > 0 {
+		p.minMC = p.level / baseStats.MinMC
+	}
+	p.maxMC = 0
+	if baseStats.MaxMC > 0 {
+		p.maxMC = p.level / baseStats.MaxMC
+	}
+	p.minSC = 0
+	if baseStats.MinSC > 0 {
+		p.minSC = p.level / baseStats.MinSC
+	}
+	p.maxSC = 0
+	if baseStats.MaxSC > 0 {
+		p.maxSC = p.level / baseStats.MaxSC
+	}
+	p.criticalRate = 0
+	if baseStats.CritialRateGain > 0 {
+		p.criticalRate = p.criticalRate + int(float32(p.level)/baseStats.CritialRateGain)
+	}
+	p.criticalDamage = 0
+	if baseStats.CriticalDamageGain > 0 {
+		p.criticalDamage = p.criticalDamage + int(float32(p.level)/baseStats.CriticalDamageGain)
+	}
+	p.maxBagWeight = 50 + int(float32(p.level)/baseStats.BagWeightGain*float32(p.level))
+	p.maxWearWeight = 15 + int(float32(p.level)/baseStats.WearWeightGain*float32(p.level))
+	p.maxHandWeight = 12 + int(float32(p.level)/baseStats.HandWeightGain*float32(p.level))
+	switch p.class {
+	case cm.MirClassWarrior:
+		p.maxHP = 14 + int((float32(p.level)/baseStats.HPGain+baseStats.HPGainRate+float32(p.level)/20.0)*float32(p.level))
+		p.maxMP = 11 + int((float32(p.level)*3.5)+(float32(p.level)*baseStats.MPGainRate))
+	case cm.MirClassWizard:
+		p.maxMP = 13 + int((float32(p.level/5.0+2.0)*2.2*float32(p.level))+(float32(p.level)*baseStats.MPGainRate))
+	case cm.MirClassTaoist:
+		p.maxMP = 13 + int((float32(p.level)/8.0*2.2*float32(p.level))+(float32(p.level)*baseStats.MPGainRate))
+	}
 }
 
 // TODO
@@ -749,7 +821,7 @@ func (p *player) completeAttack(args ...interface{}) {
 	for _, magic := range p.Magics {
 		switch magic.Spell {
 		case cm.SpellFencing, cm.SpellSpiritSword:
-			p.LevelMagic(magic)
+			p.levelMagic(magic)
 			break
 		}
 	}

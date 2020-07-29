@@ -42,6 +42,17 @@ func newMonster(mapID int, location cm.Point, info *orm.MonsterInfo) *monster {
 		isHidden:   false,
 		hp:         info.HP,
 		maxHP:      info.HP,
+		level:      info.Level,
+		minAC:      info.MinAC,
+		maxAC:      info.MaxAC,
+		minMAC:     info.MinMAC,
+		maxMAC:     info.MaxMAC,
+		minDC:      info.MinDC,
+		maxDC:      info.MaxDC,
+		minMC:      info.MinMC,
+		maxMC:      info.MaxMC,
+		minSC:      info.MinSC,
+		maxSC:      info.MaxSC,
 	}
 	m.objectID = env.newObjectID()
 	m.name = info.Name

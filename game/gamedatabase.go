@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
+	"github.com/yenkeia/yams/game/cm"
 	"github.com/yenkeia/yams/game/orm"
 )
 
@@ -13,9 +14,12 @@ type gameDatabase struct {
 	itemInfos       []*orm.ItemInfo
 	monsterInfos    []*orm.MonsterInfo
 	respawnInfos    []*orm.RespawnInfo
-	itemInfoMap     map[int]*orm.ItemInfo    // key: orm.ItemInfo.ID
-	itemInfoNameMap map[string]*orm.ItemInfo // key: orm.ItemInfo.Name
-	monsterInfoMap  map[int]*orm.MonsterInfo // key: orm.MonsterInfo.ID
+	baseStats       []*orm.BaseStats
+	itemInfoMap     map[int]*orm.ItemInfo          // key: orm.ItemInfo.ID
+	itemInfoNameMap map[string]*orm.ItemInfo       // key: orm.ItemInfo.Name
+	monsterInfoMap  map[int]*orm.MonsterInfo       // key: orm.MonsterInfo.ID
+	baseStatsMap    map[cm.MirClass]*orm.BaseStats // 各职业基础属性
+	levelMaxExpMap  map[int]int                    // 玩家等级和最大经验对应关系
 }
 
 func newGameDatabase() *gameDatabase {
@@ -31,15 +35,26 @@ func newGameDatabase() *gameDatabase {
 	db.Table("item_info").Find(&gameData.itemInfos)
 	db.Table("monster_info").Find(&gameData.monsterInfos)
 	db.Table("respawn_info").Find(&gameData.respawnInfos)
+	db.Table("base_stats").Find(&gameData.baseStats)
 	gameData.itemInfoMap = make(map[int]*orm.ItemInfo)
 	gameData.monsterInfoMap = make(map[int]*orm.MonsterInfo)
 	gameData.itemInfoNameMap = make(map[string]*orm.ItemInfo)
+	gameData.baseStatsMap = make(map[cm.MirClass]*orm.BaseStats)
+	gameData.levelMaxExpMap = make(map[int]int)
 	for _, ii := range gameData.itemInfos {
 		gameData.itemInfoMap[ii.ID] = ii
 		gameData.itemInfoNameMap[ii.Name] = ii
 	}
 	for _, mi := range gameData.monsterInfos {
 		gameData.monsterInfoMap[mi.ID] = mi
+	}
+	for _, s := range gameData.baseStats {
+		gameData.baseStatsMap[cm.MirClass(s.ID-1)] = s
+	}
+	var levelExperience []*orm.LevelMaxExperience
+	db.Table("level_max_experience").Find(&levelExperience)
+	for _, i := range levelExperience {
+		gameData.levelMaxExpMap[i.ID] = i.MaxExperience
 	}
 	return gameData
 }

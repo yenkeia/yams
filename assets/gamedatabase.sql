@@ -182,3 +182,111 @@ CREATE TABLE `respawn_info` (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 INSERT INTO respawn_info VALUES(1,1,1,288,611,1,1,1);
+
+CREATE TABLE `base_stats` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `hp_gain` float(5,2) DEFAULT NULL,
+  `hp_gain_rate` float(5,2) DEFAULT NULL,
+  `mp_gain_rate` float(5,2) DEFAULT NULL,
+  `bag_weight_gain` float(5,2) DEFAULT NULL,
+  `wear_weight_gain` float(5,2) DEFAULT NULL,
+  `hand_weight_gain` float(5,2) DEFAULT NULL,
+  `min_ac` int(11) DEFAULT NULL,
+  `max_ac` int(11) DEFAULT NULL,
+  `min_mac` int(11) DEFAULT NULL,
+  `max_mac` int(11) DEFAULT NULL,
+  `min_dc` int(11) DEFAULT NULL,
+  `max_dc` int(11) DEFAULT NULL,
+  `min_mc` int(11) DEFAULT NULL,
+  `max_mc` int(11) DEFAULT NULL,
+  `min_sc` int(11) DEFAULT NULL,
+  `max_sc` int(11) DEFAULT NULL,
+  `start_agility` int(11) DEFAULT NULL,
+  `start_accuracy` int(11) DEFAULT NULL,
+  `start_critical_rate` int(11) DEFAULT NULL,
+  `start_critical_damage` int(11) DEFAULT NULL,
+  `critial_rate_gain` float(2,2) DEFAULT NULL,
+  `critical_damage_gain` float(2,2) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO base_stats VALUES(1,4,4.5,0,3,20,13,0,7,0,0,5,5,0,0,0,0,15,5,0,0,0,0);
+INSERT INTO base_stats VALUES(2,15,1.8,0,5,100,90,0,0,0,0,7,7,7,7,0,0,15,5,0,0,0,0);
+INSERT INTO base_stats VALUES(3,6,2.5,0,4,50,42,0,0,12,6,7,7,0,0,7,7,18,5,0,0,0,0);
+
+CREATE TABLE `level_max_experience` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+    `max_experience` bigint(20) DEFAULT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO level_max_experience VALUES(1,100);
+INSERT INTO level_max_experience VALUES(2,200);
+INSERT INTO level_max_experience VALUES(3,300);
+INSERT INTO level_max_experience VALUES(4,400);
+INSERT INTO level_max_experience VALUES(5,600);
+INSERT INTO level_max_experience VALUES(6,900);
+INSERT INTO level_max_experience VALUES(7,1200);
+INSERT INTO level_max_experience VALUES(8,1700);
+INSERT INTO level_max_experience VALUES(9,2500);
+INSERT INTO level_max_experience VALUES(10,6000);
+INSERT INTO level_max_experience VALUES(11,8000);
+INSERT INTO level_max_experience VALUES(12,10000);
+INSERT INTO level_max_experience VALUES(13,15000);
+INSERT INTO level_max_experience VALUES(14,30000);
+INSERT INTO level_max_experience VALUES(15,40000);
+INSERT INTO level_max_experience VALUES(16,50000);
+INSERT INTO level_max_experience VALUES(17,75000);
+INSERT INTO level_max_experience VALUES(18,100000);
+INSERT INTO level_max_experience VALUES(19,120000);
+INSERT INTO level_max_experience VALUES(20,140000);
+INSERT INTO level_max_experience VALUES(21,250000);
+INSERT INTO level_max_experience VALUES(22,300000);
+INSERT INTO level_max_experience VALUES(23,350000);
+INSERT INTO level_max_experience VALUES(24,400000);
+INSERT INTO level_max_experience VALUES(25,500000);
+INSERT INTO level_max_experience VALUES(26,700000);
+INSERT INTO level_max_experience VALUES(27,1000000);
+INSERT INTO level_max_experience VALUES(28,1400000);
+INSERT INTO level_max_experience VALUES(29,1800000);
+INSERT INTO level_max_experience VALUES(30,2000000);
+INSERT INTO level_max_experience VALUES(31,2400000);
+INSERT INTO level_max_experience VALUES(32,2800000);
+INSERT INTO level_max_experience VALUES(33,3200000);
+INSERT INTO level_max_experience VALUES(34,3600000);
+INSERT INTO level_max_experience VALUES(35,4000000);
+INSERT INTO level_max_experience VALUES(36,4800000);
+INSERT INTO level_max_experience VALUES(37,5600000);
+INSERT INTO level_max_experience VALUES(38,8200000);
+INSERT INTO level_max_experience VALUES(39,9000000);
+INSERT INTO level_max_experience VALUES(40,12000000);
+INSERT INTO level_max_experience VALUES(41,16000000);
+INSERT INTO level_max_experience VALUES(42,30000000);
+INSERT INTO level_max_experience VALUES(43,50000000);
+INSERT INTO level_max_experience VALUES(44,80000000);
+INSERT INTO level_max_experience VALUES(45,120000000);
+INSERT INTO level_max_experience VALUES(46,160000000);
+INSERT INTO level_max_experience VALUES(47,200000000);
+INSERT INTO level_max_experience VALUES(48,250000000);
+INSERT INTO level_max_experience VALUES(49,300000000);
+INSERT INTO level_max_experience VALUES(50,350000000);
+INSERT INTO level_max_experience VALUES(51,400000000);
+INSERT INTO level_max_experience VALUES(52,480000000);
+INSERT INTO level_max_experience VALUES(53,560000000);
+INSERT INTO level_max_experience VALUES(54,640000000);
+INSERT INTO level_max_experience VALUES(55,740000000);
+INSERT INTO level_max_experience VALUES(56,840000000);
+INSERT INTO level_max_experience VALUES(57,950000000);
+INSERT INTO level_max_experience VALUES(58,1000000000);
+INSERT INTO level_max_experience VALUES(59,1200000000);
+INSERT INTO level_max_experience VALUES(60,1350000000);
+INSERT INTO level_max_experience VALUES(61,1500000000);
+INSERT INTO level_max_experience VALUES(62,1600000000);
+INSERT INTO level_max_experience VALUES(63,1700000000);
+INSERT INTO level_max_experience VALUES(64,1800000000);
+INSERT INTO level_max_experience VALUES(65,1900000000);
+INSERT INTO level_max_experience VALUES(66,2000000000);
+INSERT INTO level_max_experience VALUES(67,2100000000);
+INSERT INTO level_max_experience VALUES(68,2200000000);
+INSERT INTO level_max_experience VALUES(69,2300000000);
+INSERT INTO level_max_experience VALUES(70,2400000000);
