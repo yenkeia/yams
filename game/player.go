@@ -756,6 +756,11 @@ func (p *player) completeAttack(args ...interface{}) {
 	*/
 }
 
+// TODO 被攻击
+func (p *player) attacked(atk attacker, dmg int, typ cm.DefenceType, isWeapon bool) int {
+	return 0
+}
+
 func (p *player) rangeAttack(msg *client.RangeAttack) {}
 func (p *player) harvest(msg *client.Harvest)         {}
 

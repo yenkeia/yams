@@ -41,6 +41,7 @@ func newMonster(mapID int, location cm.Point, info *orm.MonsterInfo) *monster {
 		poison:     cm.PoisonTypeNone,
 		isHidden:   false,
 		hp:         info.HP,
+		maxHP:      info.HP,
 	}
 	m.objectID = env.newObjectID()
 	m.name = info.Name
@@ -68,6 +69,7 @@ func (m *monster) changeHP(amount int) {
 	if m.isDead {
 		return
 	}
+	log.Debugf("monster changeHP. 当前血量 m.hp: %d, 变化量 amount: %d.", m.hp, amount)
 	value := m.hp + amount
 	if value == m.hp {
 		return
@@ -79,7 +81,7 @@ func (m *monster) changeHP(amount int) {
 		m.hp = value
 	}
 	percent := uint8(float32(m.hp) / float32(m.maxHP) * 100)
-	log.Debugf("monster changeHP. amount: %d. hp: %d, maxHP: %d, percent: %d\n", amount, m.hp, m.maxHP, percent)
+	log.Debugf("怪物最终血量 m.hp: %d, m.maxHP: %d, percent: %d\n", m.hp, m.maxHP, percent)
 	m.broadcast(&server.ObjectHealth{
 		ObjectID: uint32(m.objectID),
 		Percent:  percent,
@@ -170,5 +172,23 @@ func (m *monster) attack(...interface{}) {
 
 // TODO
 func (m *monster) die() {
+	if m.isDead {
+		return
+	}
+	m.hp = 0
+	m.isDead = true
+	m.broadcast(&server.ObjectDied{
+		ObjectID:  uint32(m.objectID),
+		LocationX: int32(m.location.X),
+		LocationY: int32(m.location.Y),
+		Direction: m.direction,
+		Type:      0,
+	})
+	m.drop()
+	// TODO 击杀者获得经验
+}
+
+// TODO 怪物掉落
+func (m *monster) drop() {
 
 }

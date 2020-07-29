@@ -7,3 +7,7 @@ yams 客户端还是用的 C#，但服务端策划、玩法会完全按照我自
 # TODO
 
 客户端 MirCore-Client Common.UserItem 剩下的字段补全
+
+# 参考
+
+[MMORPG AI 系统设计与实现](https://gameinstitute.qq.com/course/detail/10097)
