@@ -25,6 +25,7 @@ type player struct {
 	isDead            bool
 	hp                int
 	mp                int
+	recovery          recovery
 	maxHP             int
 	maxMP             int
 	level             int
@@ -86,10 +87,33 @@ type player struct {
 	poisonAttack      int
 }
 
+type recovery struct {
+	// 生命药水回复
+	hpPotValue    int           // 回复总值
+	hpPotPerValue int           // 一次回复多少
+	hpPotNextTime time.Time     // 下次生效时间
+	hpPotDuration time.Duration // 两次生效时间间隔
+	hpPotTickNum  int           // 总共跳几次
+	hpPotTickTime int           // 当前第几跳
+	// 魔法药水回复
+	mpPotValue    int
+	mpPotPerValue int
+	mpPotNextTime time.Time
+	mpPotDuration time.Duration
+	mpPotTickNum  int
+	mpPotTickTime int
+	// 角色自身的生命/魔法回复
+	recoveryNextTime time.Time
+	recoveryDuration time.Duration
+}
+
 func (p *player) String() string {
 	res := fmt.Sprintf(`
 	玩家: %s, 等级: %d, 位置: %s
 	当前血量 hp: %d, maxHP: %d, mp: %d, maxMP: %d
+	当前经验值 experience: %d, maxExpericence: %d,
+	生命值回复 healthRecovery: %d, 魔法值回复 manaRecovery: %d
+	中毒回复？poisonRecovery: %d
 	物理防御力minAC: %d, maxAC: %d
 	魔法防御力minMAC: %d, maxMAC: %d
 	攻击力minDC: %d, maxDC: %d
@@ -101,6 +125,8 @@ func (p *player) String() string {
 	currentBagWeight: %d, maxBagWeight: %d, maxWearWeight: %d, maxHandWeight: %d
 	`, p.name, p.level, p.location,
 		p.hp, p.maxHP, p.mp, p.maxMP,
+		p.experience, p.maxExperience,
+		p.healthRecovery, p.manaRecovery, p.poisonRecovery,
 		p.minAC, p.maxAC, p.minMAC, p.maxMAC, p.minDC, p.maxDC, p.minMC, p.maxMC, p.minSC, p.maxSC,
 		p.accuracy, p.agility, p.criticalRate, p.criticalDamage, p.currentBagWeight, p.maxBagWeight, p.maxWearWeight, p.maxHandWeight)
 	return res
@@ -116,6 +142,35 @@ func (p *player) getPosition() cm.Point {
 
 func (p *player) update(now time.Time) {
 	p.actionList.execute(now)
+	p.updateRecovery(now)
+}
+
+// 处理玩家自身回复，药水回复
+func (p *player) updateRecovery(now time.Time) {
+	rec := &p.recovery
+	if rec.hpPotValue != 0 && rec.hpPotNextTime.Before(now) {
+		p.changeHP(rec.hpPotPerValue)
+		rec.hpPotTickTime++
+		if rec.hpPotTickTime >= rec.hpPotTickNum {
+			rec.hpPotValue = 0
+		} else {
+			rec.hpPotNextTime = now.Add(rec.hpPotDuration)
+		}
+	}
+	if rec.mpPotValue != 0 && rec.mpPotNextTime.Before(now) {
+		p.changeMP(rec.mpPotPerValue)
+		rec.mpPotTickTime++
+		if rec.mpPotTickTime >= rec.mpPotTickNum {
+			rec.mpPotValue = 0
+		} else {
+			rec.mpPotNextTime = now.Add(rec.mpPotDuration)
+		}
+	}
+	if now.After(rec.recoveryNextTime) {
+		rec.recoveryNextTime = now.Add(rec.recoveryDuration)
+		p.changeHP(int(float32(p.maxHP)*0.03) + 1 + p.healthRecovery)
+		p.changeMP(int(float32(p.maxMP)*0.03) + 1 + p.manaRecovery)
+	}
 }
 
 // 直接将 hp 设置为某个值
@@ -135,6 +190,7 @@ func (p *player) setHP(hp int) {
 	}
 	p.enqueue(&server.HealthChanged{HP: uint16(p.hp), MP: uint16(p.mp)})
 	p.broadcastHealthChange()
+	log.Debugf("setHP. hp: %d, p.hp: %d, p.maxHP: %d", hp, p.hp, p.maxHP)
 }
 
 func (p *player) setMP(mp int) {
@@ -150,10 +206,12 @@ func (p *player) setMP(mp int) {
 	p.mp = mp
 	p.enqueue(&server.HealthChanged{HP: uint16(p.hp), MP: uint16(p.mp)})
 	p.broadcastHealthChange()
+	log.Debugf("setMP. mp: %d, p.mp: %d, p.maxMP: %d", mp, p.mp, p.maxMP)
 }
 
 // 改变玩家血量 amount 可以是负数，表示扣血
 func (p *player) changeHP(amount int) {
+	log.Debugf("changeHP. amount: %d", amount)
 	if amount == 0 || p.isDead {
 		return
 	}
@@ -168,6 +226,7 @@ func (p *player) changeHP(amount int) {
 }
 
 func (p *player) changeMP(amount int) {
+	log.Debugf("changeMP. amount: %d", amount)
 	if amount == 0 || p.isDead {
 		return
 	}
@@ -178,7 +237,7 @@ func (p *player) changeMP(amount int) {
 	if mp >= p.maxMP {
 		mp = p.maxMP
 	}
-	p.setMP(p.mp)
+	p.setMP(mp)
 }
 
 func (p *player) getAttackPower(min, max int) int {
@@ -410,6 +469,13 @@ func (p *player) updateInfo(c *orm.Character) {
 	p.direction = cm.MirDirection(c.Direction)
 	p.hp = c.HP
 	p.mp = c.MP
+	now := env.maps[p.mapID].now
+	p.recovery = recovery{
+		hpPotDuration:    1 * time.Second, // 药水回复
+		mpPotDuration:    1 * time.Second,
+		recoveryNextTime: now.Add(10 * time.Second), // 角色自身回复
+		recoveryDuration: 10 * time.Second,
+	}
 	p.level = c.Level
 	p.experience = c.Experience
 	p.maxExperience = c.Experience + 100 // TODO
