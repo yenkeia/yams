@@ -127,9 +127,14 @@ func (m *monster) broadcastInfo() {
 	})
 }
 
-// TODO
 func (m *monster) broadcastHealthChange() {
-
+	percent := byte(float32(m.hp) / float32(m.maxHP) * 100)
+	msg := &server.ObjectHealth{
+		ObjectID: uint32(m.objectID),
+		Percent:  percent,
+		Expire:   5,
+	}
+	m.broadcast(msg)
 }
 
 func (m *monster) broadcastObjectStruck(a attacker) {

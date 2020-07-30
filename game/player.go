@@ -65,6 +65,7 @@ type player struct {
 	agility           int
 	criticalRate      int
 	criticalDamage    int
+	currentBagWeight  int
 	maxBagWeight      int
 	maxWearWeight     int
 	maxHandWeight     int
@@ -94,10 +95,10 @@ func (p *player) String() string {
 	准确accuracy: %d
 	敏捷agility: %d
 	暴击率criticalRate: %d, 暴击伤害criticalDamage: %d
-	maxBagWeight: %d, maxWearWeight: %d, maxHandWeight: %d
+	currentBagWeight: %d, maxBagWeight: %d, maxWearWeight: %d, maxHandWeight: %d
 	`, p.name, p.level, p.location,
 		p.minAC, p.maxAC, p.minMAC, p.maxMAC, p.minDC, p.maxDC, p.minMC, p.maxMC, p.minSC, p.maxSC,
-		p.accuracy, p.agility, p.criticalRate, p.criticalDamage, p.maxBagWeight, p.maxWearWeight, p.maxHandWeight)
+		p.accuracy, p.agility, p.criticalRate, p.criticalDamage, p.currentBagWeight, p.maxBagWeight, p.maxWearWeight, p.maxHandWeight)
 	return res
 }
 
@@ -456,9 +457,13 @@ func (p *player) refreshLevelStats() {
 	}
 }
 
-// TODO
 func (p *player) refreshBagWeight() {
-
+	p.currentBagWeight = 0
+	for _, ui := range p.inventory.items {
+		if ui != nil {
+			p.currentBagWeight += ui.info.Weight
+		}
+	}
 }
 
 func (p *player) refreshEquipmentStats() {
