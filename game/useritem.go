@@ -9,22 +9,38 @@ import (
 // orm.UserItem 是存在数据库里面的
 // server.UserItem 是只用来和客户端交互用的
 type userItem struct {
-	info        *orm.ItemInfo
-	id          int // 保存 orm.UserItem.ID
-	objectID    int
-	currentDura int
-	maxDura     int
-	count       int
-	soulBoundID int
-	ac          int // 额外增加的属性
-	mac         int // 额外增加的属性
-	dc          int // 额外增加的属性
-	mc          int // 额外增加的属性
-	sc          int // 额外增加的属性
-	accuracy    int // 额外增加的属性
-	agility     int // 额外增加的属性
-	attackSpeed int // 额外增加的属性
-	luck        int // 额外增加的属性
+	info           *orm.ItemInfo
+	id             int // 保存 orm.UserItem.ID
+	objectID       int
+	currentDura    int
+	maxDura        int
+	count          int
+	soulBoundID    int
+	hp             int // 相对于 orm.ItemInfo 额外增加的属性，也就是所谓的小极品
+	mp             int
+	ac             int
+	mac            int
+	dc             int
+	mc             int
+	sc             int
+	accuracy       int
+	agility        int
+	attackSpeed    int
+	luck           int
+	magicResist    int
+	poisonResist   int
+	healthRecovery int
+	manaRecovery   int
+	poisonRecovery int
+	hpRate         int
+	mpRate         int
+	criticalRate   int
+	criticalDamage int
+	holy           int
+	freezing       int
+	poisonAttack   int
+	bools          int
+	strong         int
 }
 
 // newUserItem 新建一个游戏内部使用的 userItem
@@ -65,44 +81,55 @@ func (ui *userItem) serverUserItem() *server.UserItem {
 		SC:             uint8(ui.sc),
 		Accuracy:       uint8(ui.accuracy),
 		Agility:        uint8(ui.agility),
-		HP:             0, // uint8(ui.HP),
-		MP:             0, // uint8(ui.MP),
+		HP:             uint8(ui.hp),
+		MP:             uint8(ui.mp),
 		AttackSpeed:    int8(ui.attackSpeed),
 		Luck:           int8(ui.luck),
 		SoulBoundId:    uint32(ui.soulBoundID), // uint32(ui.SoulBoundID),
-		Bools:          0,                      // uint8(ui.Bools),
-		Strong:         0,                      // uint8(ui.Strong),
-		MagicResist:    0,                      // uint8(ui.MagicResist),
-		PoisonResist:   0,                      // uint8(ui.PoisonResist),
-		HealthRecovery: 0,                      // uint8(ui.HealthRecovery),
-		ManaRecovery:   0,                      // uint8(ui.ManaRecovery),
-		PoisonRecovery: 0,                      // uint8(ui.PoisonRecovery),
-		CriticalRate:   0,                      // uint8(ui.CriticalRate),
-		CriticalDamage: 0,                      // uint8(ui.CriticalDamage),
-		Freezing:       0,                      // uint8(ui.Freezing),
-		PoisonAttack:   0,                      // uint8(ui.PoisonAttack),
+		Bools:          uint8(ui.bools),
+		Strong:         uint8(ui.strong),
+		MagicResist:    uint8(ui.magicResist),
+		PoisonResist:   uint8(ui.poisonResist),
+		HealthRecovery: uint8(ui.healthRecovery),
+		ManaRecovery:   uint8(ui.manaRecovery),
+		PoisonRecovery: uint8(ui.poisonRecovery),
+		CriticalRate:   uint8(ui.criticalRate),
+		CriticalDamage: uint8(ui.criticalDamage),
+		Freezing:       uint8(ui.freezing),
+		PoisonAttack:   uint8(ui.poisonAttack),
 	}
 }
 
 func (ui *userItem) ormUserItem() *orm.UserItem {
 	return &orm.UserItem{
-		ID:          ui.id,
-		ItemID:      ui.info.ID,
-		CurrentDura: ui.currentDura,
-		MaxDura:     ui.maxDura,
-		Count:       ui.count,
-		AC:          ui.ac,
-		MAC:         ui.mac,
-		DC:          ui.dc,
-		MC:          ui.mc,
-		SC:          ui.sc,
-		Accuracy:    ui.accuracy,
-		Agility:     ui.agility,
-		HP:          0,
-		MP:          0,
-		AttackSpeed: ui.attackSpeed,
-		Luck:        ui.luck,
-		SoulBoundID: ui.soulBoundID,
+		ID:             ui.id,
+		ItemID:         ui.info.ID,
+		CurrentDura:    ui.currentDura,
+		MaxDura:        ui.maxDura,
+		Count:          ui.count,
+		AC:             ui.ac,
+		MAC:            ui.mac,
+		DC:             ui.dc,
+		MC:             ui.mc,
+		SC:             ui.sc,
+		Accuracy:       ui.accuracy,
+		Agility:        ui.agility,
+		HP:             ui.hp,
+		MP:             ui.mp,
+		AttackSpeed:    ui.attackSpeed,
+		Luck:           ui.luck,
+		SoulBoundID:    ui.soulBoundID,
+		Bools:          ui.bools,
+		Strong:         ui.strong,
+		MagicResist:    ui.magicResist,
+		PoisonResist:   ui.poisonResist,
+		HealthRecovery: ui.healthRecovery,
+		ManaRecovery:   ui.manaRecovery,
+		PoisonRecovery: ui.poisonRecovery,
+		CriticalRate:   ui.criticalRate,
+		CriticalDamage: ui.criticalDamage,
+		Freezing:       ui.freezing,
+		PoisonAttack:   ui.poisonAttack,
 	}
 }
 

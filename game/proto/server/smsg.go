@@ -291,7 +291,7 @@ type ItemInfo struct {
 	MagicResist    uint8
 	PoisonResist   uint8
 	HealthRecovery uint8
-	SpellRecovery  uint8
+	ManaRecovery   uint8
 	PoisonRecovery uint8
 	HpRate         uint8 // C# HRate
 	MpRate         uint8 // C# MRate

@@ -95,7 +95,7 @@ CREATE TABLE `item_info` (
   `magic_resist` int(11) DEFAULT NULL,
   `poison_resist` int(11) DEFAULT NULL,
   `health_recovery` int(11) DEFAULT NULL,
-  `spell_recovery` int(11) DEFAULT NULL,
+  `mana_recovery` int(11) DEFAULT NULL,
   `poison_recovery` int(11) DEFAULT NULL,
   `hp_rate` int(11) DEFAULT NULL,
   `mp_rate` int(11) DEFAULT NULL,

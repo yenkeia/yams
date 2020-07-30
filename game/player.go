@@ -68,6 +68,19 @@ type player struct {
 	maxBagWeight      int
 	maxWearWeight     int
 	maxHandWeight     int
+	attackSpeed       int
+	luck              int
+	lifeOnHit         int
+	hpDrainRate       int
+	reflect           int
+	magicResist       int
+	poisonResist      int
+	healthRecovery    int
+	manaRecovery      int
+	poisonRecovery    int
+	holy              int
+	freezing          int
+	poisonAttack      int
 }
 
 func (p *player) String() string {
@@ -364,21 +377,13 @@ func (p *player) updateConcentration() {
 	})
 }
 
-// TODO
 func (p *player) refreshStats() {
+	// FIXME 因为不像 C# 有对比最小值最大值，可能会有整型溢出问题
+	log.Debugf("before refreshStats \n %s", p)
 	p.refreshLevelStats()
 	p.refreshBagWeight()
 	p.refreshEquipmentStats()
-	/*
-		p.RefreshItemSetStats()
-		p.RefreshMirSetStats()
-		p.RefreshSkills()
-		p.RefreshBuffs()
-		p.RefreshStatCaps()
-		p.RefreshMountStats()
-		p.RefreshGuildBuffs()
-	*/
-	log.Debugf("refreshStats \n %s", p)
+	log.Debugf("after refreshStats \n %s", p)
 }
 
 func (p *player) refreshLevelStats() {
@@ -456,9 +461,97 @@ func (p *player) refreshBagWeight() {
 
 }
 
-// TODO
 func (p *player) refreshEquipmentStats() {
+	oldLooksWeapon := p.looksWeapon
+	oldLooksWeaponEffect := p.looksWeaponEffect
+	oldLooksArmour := p.looksArmour
+	// oldMountType = MountType;
+	oldLooksWings := p.looksWings
+	oldLight := p.light
 
+	p.looksArmour = 0
+	p.looksWeapon = -1
+	p.looksWeaponEffect = 0
+	p.looksWings = 0
+	for _, temp := range p.equipment.items {
+		if temp == nil {
+			continue
+		}
+
+		RealItem := gdb.getRealItem(temp.info, p.level, p.class, gdb.itemInfos)
+
+		p.minAC = p.minAC + RealItem.MinAC
+		p.maxAC = p.maxAC + RealItem.MaxAC + temp.ac
+		p.minMAC = p.minMAC + RealItem.MinMAC
+		p.maxMAC = p.maxMAC + RealItem.MaxMAC + temp.mac
+		p.minDC = p.minDC + RealItem.MinDC
+		p.maxDC = p.maxDC + RealItem.MaxDC + temp.dc
+		p.minMC = p.minMC + RealItem.MinMC
+		p.maxMC = p.maxMC + RealItem.MaxMC + temp.mc
+		p.minSC = p.minSC + RealItem.MinSC
+		p.maxSC = p.maxSC + RealItem.MaxSC + temp.sc
+		p.maxHP = p.maxHP + RealItem.HP + temp.hp
+		p.maxMP = p.maxMP + RealItem.MP + temp.mp
+
+		p.maxBagWeight = p.maxBagWeight + RealItem.BagWeight
+		p.maxWearWeight = p.maxWearWeight + RealItem.WearWeight
+		p.maxHandWeight = p.maxHandWeight + RealItem.HandWeight
+
+		p.attackSpeed = p.attackSpeed + temp.attackSpeed + RealItem.AttackSpeed
+		p.luck = p.luck + temp.luck + RealItem.Luck
+
+		p.accuracy = p.accuracy + RealItem.Accuracy + temp.accuracy
+		p.agility = p.agility + RealItem.Agility + temp.agility
+
+		// p.HPrate = util.Int8(HPrate + RealItem.HPrate)
+		// p.MPrate = util.Int8(MPrate + RealItem.MPrate)
+		// p.Acrate = util.Int8(Acrate + RealItem.MaxAcRate)
+		// p.Macrate = util.Int8(Macrate + RealItem.MaxMacRate)
+
+		p.magicResist = p.magicResist + temp.magicResist + RealItem.MagicResist
+		p.poisonResist = p.poisonResist + temp.poisonResist + RealItem.PoisonResist
+		p.healthRecovery = p.healthRecovery + temp.healthRecovery + RealItem.HealthRecovery
+		p.manaRecovery = p.manaRecovery + temp.manaRecovery + RealItem.ManaRecovery
+		p.poisonRecovery = p.poisonRecovery + temp.poisonRecovery + RealItem.PoisonRecovery
+		p.criticalRate = p.criticalRate + temp.criticalRate + RealItem.CriticalRate
+		p.criticalDamage = p.criticalDamage + temp.criticalDamage + RealItem.CriticalDamage
+		p.holy = p.holy + RealItem.Holy
+		p.freezing = p.freezing + temp.freezing + RealItem.Freezing
+		p.poisonAttack = p.poisonAttack + temp.poisonAttack + RealItem.PoisonAttack
+		p.reflect = p.reflect + RealItem.Reflect
+		p.hpDrainRate = p.hpDrainRate + RealItem.HpDrainRate
+
+		switch RealItem.Type {
+		case cm.ItemTypeArmour:
+			p.looksArmour = int(RealItem.Shape)
+			p.looksWings = int(RealItem.Effect)
+		case cm.ItemTypeWeapon:
+			p.looksWeapon = int(RealItem.Shape)
+			p.looksWeaponEffect = int(RealItem.Effect)
+		}
+	}
+
+	/* TODO
+	MaxHP = (ushort)Math.Min(ushort.MaxValue, (((double)HPrate / 100) + 1) * MaxHP);
+	MaxMP = (ushort)Math.Min(ushort.MaxValue, (((double)MPrate / 100) + 1) * MaxMP);
+	MaxAC = (ushort)Math.Min(ushort.MaxValue, (((double)Acrate / 100) + 1) * MaxAC);
+	MaxMAC = (ushort)Math.Min(ushort.MaxValue, (((double)Macrate / 100) + 1) * MaxMAC);
+
+	AddTempSkills(skillsToAdd);
+	RemoveTempSkills(skillsToRemove);
+
+	if (HasMuscleRing)
+	{
+		MaxBagWeight = (ushort)(MaxBagWeight * 2);
+		MaxWearWeight = Math.Min(ushort.MaxValue, (ushort)(MaxWearWeight * 2));
+		MaxHandWeight = Math.Min(ushort.MaxValue, (ushort)(MaxHandWeight * 2));
+	}
+	*/
+
+	if (oldLooksArmour != p.looksArmour) || (oldLooksWeapon != p.looksWeapon) || (oldLooksWeaponEffect != p.looksWeaponEffect) || (oldLooksWings != p.looksWings) || (oldLight != p.light) {
+		p.updateConcentration()
+		p.broadcastPlayerUpdate()
+	}
 }
 
 func (p *player) turn(msg *client.Turn) {

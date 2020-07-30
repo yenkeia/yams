@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/jinzhu/gorm"
 	"github.com/yenkeia/yams/game/cm"
@@ -44,6 +45,14 @@ func newGameDatabase() *gameDatabase {
 	for _, ii := range gameData.itemInfos {
 		gameData.itemInfoMap[ii.ID] = ii
 		gameData.itemInfoNameMap[ii.Name] = ii
+		b1 := ii.Bools & 0x04
+		if b1 == 0x04 {
+			ii.ClassBased = true
+		}
+		b2 := ii.Bools & 0x08
+		if b2 == 0x08 {
+			ii.LevelBased = true
+		}
 	}
 	for _, mi := range gameData.monsterInfos {
 		gameData.monsterInfoMap[mi.ID] = mi
@@ -57,4 +66,58 @@ func newGameDatabase() *gameDatabase {
 		gameData.levelMaxExpMap[i.ID] = i.MaxExperience
 	}
 	return gameData
+}
+
+func (d *gameDatabase) getRealItem(origin *orm.ItemInfo, level int, job cm.MirClass, itemList []*orm.ItemInfo) *orm.ItemInfo {
+	if origin.ClassBased && origin.LevelBased {
+		return d.getClassAndLevelBasedItem(origin, job, level, itemList)
+	}
+	if origin.ClassBased {
+		return d.getClassBasedItem(origin, job, itemList)
+	}
+	if origin.LevelBased {
+		return d.getLevelBasedItem(origin, level, itemList)
+	}
+	return origin
+}
+
+func (d *gameDatabase) getLevelBasedItem(origin *orm.ItemInfo, level int, itemList []*orm.ItemInfo) *orm.ItemInfo {
+	output := origin
+	for i := 0; i < len(itemList); i++ {
+		info := itemList[i]
+		// if info.Name.StartsWith(Origin.Name) {
+		if strings.HasPrefix(info.Name, origin.Name) {
+			if (info.RequiredType == cm.RequiredTypeLevel) && (int(info.RequiredAmount) <= level) && (output.RequiredAmount < info.RequiredAmount) && (origin.RequiredGender == info.RequiredGender) {
+				output = info
+			}
+		}
+	}
+	return output
+}
+
+func (d *gameDatabase) getClassBasedItem(origin *orm.ItemInfo, job cm.MirClass, itemList []*orm.ItemInfo) *orm.ItemInfo {
+	for i := 0; i < len(itemList); i++ {
+		info := itemList[i]
+		if strings.HasPrefix(info.Name, origin.Name) {
+			if (uint8(info.RequiredClass) == (1 << uint8(job))) && (origin.RequiredGender == info.RequiredGender) {
+				return info
+			}
+		}
+	}
+	return origin
+}
+
+func (d *gameDatabase) getClassAndLevelBasedItem(origin *orm.ItemInfo, job cm.MirClass, level int, itemList []*orm.ItemInfo) *orm.ItemInfo {
+	output := origin
+	for i := 0; i < len(itemList); i++ {
+		info := itemList[i]
+		if strings.HasPrefix(info.Name, origin.Name) {
+			if uint8(info.RequiredClass) == (1 << uint8(job)) {
+				if (info.RequiredType == cm.RequiredTypeLevel) && (int(info.RequiredAmount) <= level) && (output.RequiredAmount <= info.RequiredAmount) && (origin.RequiredGender == info.RequiredGender) {
+					output = info
+				}
+			}
+		}
+	}
+	return output
 }

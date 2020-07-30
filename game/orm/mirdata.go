@@ -83,7 +83,7 @@ type ItemInfo struct {
 	MagicResist    int // uint8
 	PoisonResist   int // uint8
 	HealthRecovery int // uint8
-	SpellRecovery  int // uint8
+	ManaRecovery   int // uint8
 	PoisonRecovery int // uint8
 	HpRate         int // uint8 // C# HRate
 	MpRate         int // uint8 // C# MRate
@@ -104,6 +104,8 @@ type ItemInfo struct {
 	CanAwakening   bool
 	IsToolTip      bool
 	ToolTip        string
+	ClassBased     bool `gorm:"-"`
+	LevelBased     bool `gorm:"-"`
 }
 
 // ToServerItemInfo 直接从数据库使用的 orm.ItemInfo 转换成和客户端沟通使用的 server.ItemInfo
@@ -150,7 +152,7 @@ func (info *ItemInfo) ToServerItemInfo() *server.ItemInfo {
 		MagicResist:    uint8(info.MagicResist),    // uint8
 		PoisonResist:   uint8(info.PoisonResist),   // uint8
 		HealthRecovery: uint8(info.HealthRecovery), // uint8
-		SpellRecovery:  uint8(info.SpellRecovery),  // uint8
+		ManaRecovery:   uint8(info.ManaRecovery),   // uint8
 		PoisonRecovery: uint8(info.PoisonRecovery), // uint8
 		HpRate:         uint8(info.HpRate),         // uint8 // C# HRate
 		MpRate:         uint8(info.MpRate),         // uint8 // C# MRate

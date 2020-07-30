@@ -49,34 +49,32 @@ type CharacterUserItem struct {
 
 // UserItem ..
 type UserItem struct {
-	ID          int `gorm:"primary_key"` // UniqueID     // uint64
-	ItemID      int // int32
-	CurrentDura int // uint16
-	MaxDura     int // uint16
-	Count       int // uint32
-	AC          int // uint8
-	MAC         int // uint8
-	DC          int // uint8
-	MC          int // uint8
-	SC          int // uint8
-	Accuracy    int // uint8
-	Agility     int // uint8
-	HP          int // uint8
-	MP          int // uint8
-	AttackSpeed int // int8
-	Luck        int // int8
-	SoulBoundID int // uint32
-	/*
-		Bools          int // uint8
-		Strong         int // uint8
-		MagicResist    int // uint8
-		PoisonResist   int // uint8
-		HealthRecovery int // uint8
-		ManaRecovery   int // uint8
-		PoisonRecovery int // uint8
-		CriticalRate   int // uint8
-		CriticalDamage int // uint8
-		Freezing       int // uint8
-		PoisonAttack   int // uint8
-	*/
+	ID             int `gorm:"primary_key"` // UniqueID     // uint64
+	ItemID         int // int32
+	CurrentDura    int // uint16
+	MaxDura        int // uint16
+	Count          int // uint32
+	AC             int // uint8
+	MAC            int // uint8
+	DC             int // uint8
+	MC             int // uint8
+	SC             int // uint8
+	Accuracy       int // uint8
+	Agility        int // uint8
+	HP             int // uint8
+	MP             int // uint8
+	AttackSpeed    int // int8
+	Luck           int // int8
+	SoulBoundID    int // uint32
+	Bools          int // uint8
+	Strong         int // uint8
+	MagicResist    int // uint8
+	PoisonResist   int // uint8
+	HealthRecovery int // uint8
+	ManaRecovery   int // uint8
+	PoisonRecovery int // uint8
+	CriticalRate   int // uint8
+	CriticalDamage int // uint8
+	Freezing       int // uint8
+	PoisonAttack   int // uint8
 }
