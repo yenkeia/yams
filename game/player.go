@@ -65,10 +65,6 @@ type player struct {
 	maxSC             int
 	accuracy          int
 	agility           int
-	hpRate            int
-	mpRate            int
-	acRate            int // 物理防御力
-	macRate           int // 魔法防御力
 	criticalRate      int
 	criticalDamage    int
 	currentBagWeight  int
@@ -78,7 +74,7 @@ type player struct {
 	attackSpeed       int
 	luck              int
 	lifeOnHit         int
-	hpDrainRate       int
+	hpDrainRate       int // hp 流失率
 	reflect           int
 	magicResist       int
 	poisonResist      int
@@ -548,6 +544,12 @@ func (p *player) refreshEquipmentStats() {
 	p.looksWeapon = -1
 	p.looksWeaponEffect = 0
 	p.looksWings = 0
+
+	hpRate := 0
+	mpRate := 0
+	acRate := 0
+	macRate := 0
+
 	for _, temp := range p.equipment.items {
 		if temp == nil {
 			continue
@@ -578,10 +580,10 @@ func (p *player) refreshEquipmentStats() {
 		p.accuracy = p.accuracy + RealItem.Accuracy + temp.accuracy
 		p.agility = p.agility + RealItem.Agility + temp.agility
 
-		p.hpRate = p.hpRate + RealItem.HpRate
-		p.mpRate = p.mpRate + RealItem.MpRate
-		p.acRate = p.acRate + RealItem.MaxAcRate
-		p.macRate = p.macRate + RealItem.MaxMacRate
+		hpRate = hpRate + RealItem.HpRate
+		mpRate = mpRate + RealItem.MpRate
+		acRate = acRate + RealItem.MaxAcRate
+		macRate = macRate + RealItem.MaxMacRate
 
 		p.magicResist = p.magicResist + temp.magicResist + RealItem.MagicResist
 		p.poisonResist = p.poisonResist + temp.poisonResist + RealItem.PoisonResist
@@ -606,10 +608,10 @@ func (p *player) refreshEquipmentStats() {
 		}
 	}
 
-	p.maxHP = ((p.hpRate / 100) + 1) * p.maxHP
-	p.maxMP = ((p.mpRate / 100) + 1) * p.maxMP
-	p.maxAC = ((p.acRate / 100) + 1) * p.maxAC
-	p.maxMAC = ((p.macRate / 100) + 1) * p.maxMAC
+	p.maxHP = ((hpRate / 100) + 1) * p.maxHP
+	p.maxMP = ((mpRate / 100) + 1) * p.maxMP
+	p.maxAC = ((acRate / 100) + 1) * p.maxAC
+	p.maxMAC = ((macRate / 100) + 1) * p.maxMAC
 
 	/* TODO
 	AddTempSkills(skillsToAdd);
