@@ -31,6 +31,7 @@ type monster struct {
 	maxMC      int
 	minSC      int
 	maxSC      int
+	expOwnerID int // 获得经验的玩家 objectID
 }
 
 func newMonster(mapID int, location cm.Point, info *orm.MonsterInfo) *monster {

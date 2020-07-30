@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -21,6 +22,7 @@ type player struct {
 	characterID       int // character.ID 保存数据库用
 	bindLocation      cm.Point
 	bindMapID         int
+	isDead            bool
 	hp                int
 	mp                int
 	maxHP             int
@@ -87,6 +89,7 @@ type player struct {
 func (p *player) String() string {
 	res := fmt.Sprintf(`
 	玩家: %s, 等级: %d, 位置: %s
+	当前血量 hp: %d, maxHP: %d, mp: %d, maxMP: %d
 	物理防御力minAC: %d, maxAC: %d
 	魔法防御力minMAC: %d, maxMAC: %d
 	攻击力minDC: %d, maxDC: %d
@@ -97,6 +100,7 @@ func (p *player) String() string {
 	暴击率criticalRate: %d, 暴击伤害criticalDamage: %d
 	currentBagWeight: %d, maxBagWeight: %d, maxWearWeight: %d, maxHandWeight: %d
 	`, p.name, p.level, p.location,
+		p.hp, p.maxHP, p.mp, p.maxMP,
 		p.minAC, p.maxAC, p.minMAC, p.maxMAC, p.minDC, p.maxDC, p.minMC, p.maxMC, p.minSC, p.maxSC,
 		p.accuracy, p.agility, p.criticalRate, p.criticalDamage, p.currentBagWeight, p.maxBagWeight, p.maxWearWeight, p.maxHandWeight)
 	return res
@@ -112,6 +116,69 @@ func (p *player) getPosition() cm.Point {
 
 func (p *player) update(now time.Time) {
 	p.actionList.execute()
+}
+
+// 直接将 hp 设置为某个值
+func (p *player) setHP(hp int) {
+	if p.hp == hp {
+		return
+	}
+	if hp <= 0 {
+		hp = 0
+	}
+	if hp >= p.maxHP {
+		hp = p.maxHP
+	}
+	p.hp = hp
+	if !p.isDead && p.hp == 0 {
+		p.die()
+	}
+	p.enqueue(&server.HealthChanged{HP: uint16(p.hp), MP: uint16(p.mp)})
+	p.broadcastHealthChange()
+}
+
+func (p *player) setMP(mp int) {
+	if p.mp == mp {
+		return
+	}
+	if mp <= 0 {
+		mp = 0
+	}
+	if mp >= p.maxMP {
+		mp = p.maxMP
+	}
+	p.mp = mp
+	p.enqueue(&server.HealthChanged{HP: uint16(p.hp), MP: uint16(p.mp)})
+	p.broadcastHealthChange()
+}
+
+// 改变玩家血量 amount 可以是负数，表示扣血
+func (p *player) changeHP(amount int) {
+	if amount == 0 || p.isDead {
+		return
+	}
+	hp := p.hp + amount
+	if hp <= 0 {
+		hp = 0
+	}
+	if hp >= p.maxHP {
+		hp = p.maxHP
+	}
+	p.setHP(hp)
+}
+
+func (p *player) changeMP(amount int) {
+	if amount == 0 || p.isDead {
+		return
+	}
+	mp := p.mp + amount
+	if mp <= 0 {
+		mp = 0
+	}
+	if mp >= p.maxMP {
+		mp = p.maxMP
+	}
+	p.setMP(p.mp)
 }
 
 func (p *player) getAttackPower(min, max int) int {
@@ -312,6 +379,16 @@ func (p *player) broadcastPlayerUpdate() {
 		Armour:       int16(p.looksArmour),
 		WingEffect:   uint8(p.looksWings),
 	})
+}
+
+func (p *player) broadcastHealthChange() {
+	percent := byte(float32(p.hp) / float32(p.maxHP) * 100)
+	msg := &server.ObjectHealth{
+		ObjectID: uint32(p.objectID),
+		Percent:  percent,
+		Expire:   5,
+	}
+	p.broadcast(msg)
 }
 
 func (p *player) receiveChat(text string, typ cm.ChatType) {
@@ -940,9 +1017,66 @@ func (p *player) completeAttack(args ...interface{}) {
 	*/
 }
 
+// winExp 根据怪物等级为玩家增加经验
+func (p *player) winExp(amount, targetLevel int) {
+	var expPoint int
+	level := int(p.level)
+
+	if level < targetLevel+10 { //|| !Settings.ExpMobLevelDifference
+		expPoint = amount
+	} else {
+		expPoint = amount - int(math.Round(math.Max(float64(amount)/15.0, 1.0)*float64(level-(targetLevel+10))))
+	}
+	if expPoint <= 0 {
+		expPoint = 1
+	}
+	// if (GroupMembers != null)
+	p.gainExp(expPoint)
+}
+
+func (p *player) gainExp(amount int) {
+	p.experience += amount
+	p.enqueue(&server.GainExperience{Amount: uint32(amount)})
+	// log.Debugf("Player: %s GainExp amount: %d, p.Experience: %d, p.MaxExperience: %d\n", p.Name, amount, p.Experience, p.MaxExperience)
+	if p.experience < p.maxExperience {
+		return
+	}
+	// 连续升级
+	var exp = p.experience
+	for exp >= p.maxExperience {
+		p.level++
+		exp -= p.maxExperience
+		p.refreshStats()
+	}
+	pdb.syncLevel(p)
+	p.experience = exp
+	p.levelUp()
+}
+
+// 玩家升级
+func (p *player) levelUp() {
+	p.refreshStats()
+	p.setHP(p.maxHP)
+	p.setMP(p.maxMP)
+	p.enqueue(&server.LevelChanged{
+		Level:         uint16(p.level),
+		Experience:    int64(p.experience),
+		MaxExperience: int64(p.maxExperience),
+	})
+	p.broadcast(&server.ObjectLeveled{ObjectID: uint32(p.objectID)})
+}
+
 // TODO 被攻击
 func (p *player) attacked(atk attacker, dmg int, typ cm.DefenceType, isWeapon bool) int {
 	return 0
+}
+
+// 玩家角色死亡
+func (p *player) die() {
+	p.hp = 0
+	p.isDead = true
+	p.enqueue(&server.Death{Direction: p.direction, LocationX: int32(p.location.X), LocationY: int32(p.location.Y)})
+	p.broadcast(&server.ObjectDied{ObjectID: uint32(p.objectID), Direction: p.direction, LocationX: int32(p.location.X), LocationY: int32(p.location.Y), Type: 0})
 }
 
 func (p *player) rangeAttack(msg *client.RangeAttack) {}

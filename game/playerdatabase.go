@@ -36,3 +36,7 @@ func (d *playerDatabase) syncPosition(p *player) {
 func (d *playerDatabase) syncGold(p *player) {
 	d.setCharacterAttr(p, "gold", p.gold)
 }
+
+func (d *playerDatabase) syncLevel(p *player) {
+	d.setCharacterAttr(p, "level", p.level)
+}
