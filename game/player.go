@@ -211,7 +211,7 @@ func (p *player) setMP(mp int) {
 
 // 改变玩家血量 amount 可以是负数，表示扣血
 func (p *player) changeHP(amount int) {
-	log.Debugf("changeHP. amount: %d", amount)
+	// log.Debugf("changeHP. amount: %d", amount)
 	if amount == 0 || p.isDead {
 		return
 	}
@@ -226,7 +226,7 @@ func (p *player) changeHP(amount int) {
 }
 
 func (p *player) changeMP(amount int) {
-	log.Debugf("changeMP. amount: %d", amount)
+	// log.Debugf("changeMP. amount: %d", amount)
 	if amount == 0 || p.isDead {
 		return
 	}
