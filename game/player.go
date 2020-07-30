@@ -1030,6 +1030,7 @@ func (p *player) winExp(amount, targetLevel int) {
 	if expPoint <= 0 {
 		expPoint = 1
 	}
+	log.Debugf("player winExp. expPoint: %d", expPoint)
 	// if (GroupMembers != null)
 	p.gainExp(expPoint)
 }

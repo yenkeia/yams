@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/yenkeia/yams/game/cm"
 	"github.com/yenkeia/yams/game/orm"
@@ -10,50 +11,56 @@ import (
 
 type monster struct {
 	baseObject
-	info       *orm.MonsterInfo
-	isDead     bool
-	isSkeleton bool
-	poison     cm.PoisonType
-	isHidden   bool
-	hp         int
-	mp         int
-	level      int
-	petLevel   int
-	experience int
-	maxHP      int
-	minAC      int
-	maxAC      int
-	minMAC     int
-	maxMAC     int
-	minDC      int
-	maxDC      int
-	minMC      int
-	maxMC      int
-	minSC      int
-	maxSC      int
-	expOwnerID int // 获得经验的玩家 objectID
+	info         *orm.MonsterInfo
+	isDead       bool
+	isSkeleton   bool
+	poison       cm.PoisonType
+	isHidden     bool
+	hp           int
+	mp           int
+	level        int
+	petLevel     int
+	experience   int
+	maxHP        int
+	minAC        int
+	maxAC        int
+	minMAC       int
+	maxMAC       int
+	minDC        int
+	maxDC        int
+	minMC        int
+	maxMC        int
+	minSC        int
+	maxSC        int
+	expOwnerID   int // 获得经验的玩家 objectID
+	expOwnerTime time.Time
+	masterID     int // 怪物主人 objectID
 }
 
 func newMonster(mapID int, location cm.Point, info *orm.MonsterInfo) *monster {
 	m := &monster{
-		info:       info,
-		isDead:     false,
-		isSkeleton: false,
-		poison:     cm.PoisonTypeNone,
-		isHidden:   false,
-		hp:         info.HP,
-		maxHP:      info.HP,
-		level:      info.Level,
-		minAC:      info.MinAC,
-		maxAC:      info.MaxAC,
-		minMAC:     info.MinMAC,
-		maxMAC:     info.MaxMAC,
-		minDC:      info.MinDC,
-		maxDC:      info.MaxDC,
-		minMC:      info.MinMC,
-		maxMC:      info.MaxMC,
-		minSC:      info.MinSC,
-		maxSC:      info.MaxSC,
+		info:         info,
+		isDead:       false,
+		isSkeleton:   false,
+		poison:       cm.PoisonTypeNone,
+		isHidden:     false,
+		hp:           info.HP,
+		maxHP:        info.HP,
+		level:        info.Level,
+		experience:   info.Experience,
+		minAC:        info.MinAC,
+		maxAC:        info.MaxAC,
+		minMAC:       info.MinMAC,
+		maxMAC:       info.MaxMAC,
+		minDC:        info.MinDC,
+		maxDC:        info.MaxDC,
+		minMC:        info.MinMC,
+		maxMC:        info.MaxMC,
+		minSC:        info.MinSC,
+		maxSC:        info.MaxSC,
+		expOwnerID:   0,
+		expOwnerTime: time.Now(),
+		masterID:     0,
 	}
 	m.objectID = env.newObjectID()
 	m.name = info.Name
@@ -74,6 +81,15 @@ func (m *monster) getObjectID() int {
 
 func (m *monster) getPosition() cm.Point {
 	return m.location
+}
+
+// 怪物定时轮询
+func (m *monster) update(now time.Time) {
+	if m.expOwnerID != 0 && now.After(m.expOwnerTime) {
+		m.expOwnerID = 0
+		log.Debugln("monster expOwnerID = 0")
+	}
+	// TODO 清除怪物尸体，从游戏环境删除 monster 对象
 }
 
 // ChangeHP 怪物改变血量 amount 可以是负数(扣血)
@@ -170,6 +186,23 @@ func (m *monster) attacked(atk attacker, dmg int, typ cm.DefenceType, isWeapon b
 		m.broadcastDamageIndicator(cm.DamageTypeMiss, 0)
 		return 0
 	}
+
+	// 判断怪物被谁攻击，设置 expOwner
+	switch atk := atk.(type) {
+	case *monster:
+		if atk.masterID != 0 {
+			m.expOwnerID = atk.masterID
+		} else {
+			m.expOwnerID = 0
+		}
+	case *player:
+		m.expOwnerID = atk.objectID
+	}
+	if m.expOwnerID != 0 {
+		m.expOwnerTime = time.Now().Add(5 * time.Second)
+	}
+	log.Debugf("monster attacked. expOwnerID: %d, expOwnerTime: %s", m.expOwnerID, m.expOwnerTime)
+
 	// TODO 还有很多没做
 	m.broadcastObjectStruck(atk)
 	m.broadcastDamageIndicator(cm.DamageTypeHit, -value)
@@ -187,7 +220,6 @@ func (m *monster) attack(...interface{}) {
 
 }
 
-// TODO
 func (m *monster) die() {
 	if m.isDead {
 		return
@@ -202,7 +234,15 @@ func (m *monster) die() {
 		Type:      0,
 	})
 	m.drop()
-	// TODO 击杀者获得经验
+	// 击杀者获得经验
+	if m.expOwnerID != 0 && m.masterID == 0 {
+		p, ok := env.players[m.expOwnerID]
+		if !ok {
+			return
+		}
+		log.Debugf("怪物[%s]死亡。击杀者[%s]", m.name, p.name)
+		p.winExp(m.experience, m.level)
+	}
 }
 
 // TODO 怪物掉落

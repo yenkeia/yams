@@ -229,7 +229,7 @@ type RespawnInfo struct {
 	LocationY int
 	Count     int // 数量
 	Spread    int // 范围
-	Interval  int // 刷新时间（分钟
+	Interval  int // 刷新时间（秒
 }
 
 // BaseStats 各职业的基础属性

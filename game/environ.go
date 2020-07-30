@@ -143,14 +143,17 @@ func (env *Environ) getMapObjects(ids []int) []mapObject {
 // Update 更新游戏状态
 func (env *Environ) Update(now time.Time) {
 	// log.Debugln("Update")
-	for _, m := range env.maps {
-		m.update(now)
+	for _, mp := range env.maps {
+		mp.update(now)
 	}
 	for _, n := range env.npcs {
 		n.update(now)
 	}
 	for _, p := range env.players {
 		p.update(now)
+	}
+	for _, m := range env.monsters {
+		m.update(now)
 	}
 }
 

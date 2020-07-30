@@ -168,6 +168,7 @@ INSERT INTO monster_info VALUES(8,'蛤蟆',8,0,0,12,7,0,20,0,0,0,0,0,5,0,0,0,0,6
 INSERT INTO monster_info VALUES(9,'稻草人',5,0,0,10,7,0,25,0,0,0,0,1,2,0,0,0,0,5,8,0,2500,1500,15,1,1,1,0);
 INSERT INTO monster_info VALUES(10,'多钩猫',6,0,0,13,7,0,30,0,0,0,0,2,4,0,0,0,0,5,7,0,2500,1500,23,1,1,1,0);
 INSERT INTO monster_info VALUES(11,'钉耙猫',7,0,0,13,7,0,32,0,0,0,0,2,4,0,0,0,0,5,8,0,2500,1800,27,1,1,1,0);
+INSERT INTO monster_info VALUES(12,'测试',142,1,0,13,7,0,200,0,0,0,0,1,3,0,0,0,0,7,10,0,3000,1400,16,1,1,1,0);
 
 CREATE TABLE `respawn_info` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -177,11 +178,12 @@ CREATE TABLE `respawn_info` (
   `location_y` int(11) DEFAULT NULL,
   `count` int(11) DEFAULT NULL,
   `spread` int(11) DEFAULT NULL,
-  `interval` int(11) DEFAULT NULL,
+  `interval` int(11) DEFAULT NULL,  -- 刷新间隔 秒
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 INSERT INTO respawn_info VALUES(1,1,1,288,611,1,1,1);
+INSERT INTO respawn_info VALUES(2,1,12,287,610,1,1,10);
 
 CREATE TABLE `base_stats` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
