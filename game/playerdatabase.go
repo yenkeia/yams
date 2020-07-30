@@ -40,3 +40,12 @@ func (d *playerDatabase) syncGold(p *player) {
 func (d *playerDatabase) syncLevel(p *player) {
 	d.setCharacterAttr(p, "level", p.level)
 }
+
+func (d *playerDatabase) syncExperience(p *player) {
+	d.setCharacterAttr(p, "experience", p.experience)
+}
+
+func (d *playerDatabase) syncHPMP(p *player) {
+	d.setCharacterAttr(p, "hp", p.hp)
+	d.setCharacterAttr(p, "mp", p.mp)
+}

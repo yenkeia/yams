@@ -455,6 +455,8 @@ func logout(s cellnet.Session, msg *client.LogOut) {
 		s.Send(&server.LogOutSuccess{Characters: getAccountCharacters(p.accountID)})
 
 		pdb.syncPosition(p)
+		pdb.syncExperience(p)
+		pdb.syncHPMP(p)
 
 		// 从游戏环境删除
 		delete(env.players, p.objectID)

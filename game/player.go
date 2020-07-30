@@ -65,6 +65,10 @@ type player struct {
 	maxSC             int
 	accuracy          int
 	agility           int
+	hpRate            int
+	mpRate            int
+	acRate            int // 物理防御力
+	macRate           int // 魔法防御力
 	criticalRate      int
 	criticalDamage    int
 	currentBagWeight  int
@@ -429,17 +433,6 @@ func (p *player) updateInfo(c *orm.Character) {
 	p.petMode = cm.PetModeBoth
 	p.allowGroup = true
 	p.sendedItemInfoIDs = make([]int, 0)
-	/* TODO
-	switch p.class {
-	case cm.MirClassWarrior:
-		p.maxHP = int(14.0 + (float32(p.level)/baseStats.HpGain+baseStats.HpGainRate+float32(p.level)/20.0)*float32(p.level))
-		p.maxMP = int(11.0 + (float32(p.level) * 3.5) + (float32(p.level) * baseStats.MpGainRate))
-	case cm.MirClassWizard:
-		p.maxMP = int(13.0 + (float32(p.level/5.0+2.0) * 2.2 * float32(p.level)) + (float32(p.level) * baseStats.MpGainRate))
-	case cm.MirClassTaoist:
-		p.maxMP = int((13 + float32(p.level)/8.0*2.2*float32(p.level)) + (float32(p.level) * baseStats.MpGainRate))
-	}
-	*/
 }
 
 func (p *player) updateConcentration() {
@@ -585,10 +578,10 @@ func (p *player) refreshEquipmentStats() {
 		p.accuracy = p.accuracy + RealItem.Accuracy + temp.accuracy
 		p.agility = p.agility + RealItem.Agility + temp.agility
 
-		// p.HPrate = util.Int8(HPrate + RealItem.HPrate)
-		// p.MPrate = util.Int8(MPrate + RealItem.MPrate)
-		// p.Acrate = util.Int8(Acrate + RealItem.MaxAcRate)
-		// p.Macrate = util.Int8(Macrate + RealItem.MaxMacRate)
+		p.hpRate = p.hpRate + RealItem.HpRate
+		p.mpRate = p.mpRate + RealItem.MpRate
+		p.acRate = p.acRate + RealItem.MaxAcRate
+		p.macRate = p.macRate + RealItem.MaxMacRate
 
 		p.magicResist = p.magicResist + temp.magicResist + RealItem.MagicResist
 		p.poisonResist = p.poisonResist + temp.poisonResist + RealItem.PoisonResist
@@ -613,12 +606,12 @@ func (p *player) refreshEquipmentStats() {
 		}
 	}
 
-	/* TODO
-	MaxHP = (ushort)Math.Min(ushort.MaxValue, (((double)HPrate / 100) + 1) * MaxHP);
-	MaxMP = (ushort)Math.Min(ushort.MaxValue, (((double)MPrate / 100) + 1) * MaxMP);
-	MaxAC = (ushort)Math.Min(ushort.MaxValue, (((double)Acrate / 100) + 1) * MaxAC);
-	MaxMAC = (ushort)Math.Min(ushort.MaxValue, (((double)Macrate / 100) + 1) * MaxMAC);
+	p.maxHP = ((p.hpRate / 100) + 1) * p.maxHP
+	p.maxMP = ((p.mpRate / 100) + 1) * p.maxMP
+	p.maxAC = ((p.acRate / 100) + 1) * p.maxAC
+	p.maxMAC = ((p.macRate / 100) + 1) * p.maxMAC
 
+	/* TODO
 	AddTempSkills(skillsToAdd);
 	RemoveTempSkills(skillsToRemove);
 
