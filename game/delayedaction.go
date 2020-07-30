@@ -33,8 +33,7 @@ func (al *actionList) pushDelayAction(typ cm.DelayedType, delay int, cb delayedC
 	})
 }
 
-func (al *actionList) execute() {
-	now := time.Now()
+func (al *actionList) execute(now time.Time) {
 	for it := al.ls.Front(); it != nil; {
 		action := it.Value.(*delayedAction)
 		if now.Before(action.actionTime) {

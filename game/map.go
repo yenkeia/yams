@@ -10,21 +10,24 @@ import (
 )
 
 type mirMap struct {
-	width   int
-	height  int
-	version int
-	info    *orm.MapInfo
-	cells   []*cell
-	aoi     *aoiManager
+	now        time.Time
+	width      int
+	height     int
+	version    int
+	info       *orm.MapInfo
+	cells      []*cell
+	aoi        *aoiManager
+	actionList *actionList
 }
 
 func newMirMap(width, height, version int) *mirMap {
 	return &mirMap{
-		width:   width,
-		height:  height,
-		version: version,
-		cells:   make([]*cell, width*height),
-		aoi:     newAOIManager(width, height),
+		width:      width,
+		height:     height,
+		version:    version,
+		cells:      make([]*cell, width*height),
+		aoi:        newAOIManager(width, height),
+		actionList: newActionList(),
 	}
 }
 
@@ -38,7 +41,8 @@ func (m *mirMap) setCellAttribute(x, y int, attr cm.CellAttribute) {
 }
 
 func (m *mirMap) update(now time.Time) {
-
+	m.now = now
+	m.actionList.execute(now)
 }
 
 func (m *mirMap) broadcast(pos cm.Point, msg interface{}, excludeID int) {

@@ -115,7 +115,7 @@ func (p *player) getPosition() cm.Point {
 }
 
 func (p *player) update(now time.Time) {
-	p.actionList.execute()
+	p.actionList.execute(now)
 }
 
 // 直接将 hp 设置为某个值

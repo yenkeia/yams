@@ -36,7 +36,7 @@ var env *Environ
 type Environ struct {
 	objectID uint32
 	Peer     cellnet.GenericPeer
-	respawns []*respawn       // 刷怪信息
+	respawns map[int]*respawn // key: RespawnInfo.ID 刷怪信息
 	maps     map[int]*mirMap  // MapInfo.ID: mirMap
 	npcs     map[int]*npc     // npc.objectID: npc
 	players  map[int]*player  // player.objectID: player
@@ -106,13 +106,13 @@ func (env *Environ) initNPC() {
 }
 
 func (env *Environ) initRespawn() {
-	env.respawns = make([]*respawn, len(gdb.respawnInfos))
-	for i, ri := range gdb.respawnInfos {
-		env.respawns[i] = newRespawn(ri)
+	env.respawns = make(map[int]*respawn)
+	for _, ri := range gdb.respawnInfos {
+		env.respawns[ri.ID] = newRespawn(ri)
 	}
 	for _, r := range env.respawns {
 		for i := 0; i < r.info.Count; i++ {
-			r.spawn()
+			r.spawnOneMonster()
 		}
 	}
 }

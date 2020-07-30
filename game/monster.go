@@ -11,6 +11,7 @@ import (
 
 type monster struct {
 	baseObject
+	respawnID    int
 	info         *orm.MonsterInfo
 	isDead       bool
 	isSkeleton   bool
@@ -34,11 +35,13 @@ type monster struct {
 	maxSC        int
 	expOwnerID   int // 获得经验的玩家 objectID
 	expOwnerTime time.Time
-	masterID     int // 怪物主人 objectID
+	masterID     int       // 怪物主人 objectID
+	deleteTime   time.Time // 从 env.monsters 中删除的时间
 }
 
-func newMonster(mapID int, location cm.Point, info *orm.MonsterInfo) *monster {
+func newMonster(respawnID int, mapID int, location cm.Point, info *orm.MonsterInfo) *monster {
 	m := &monster{
+		respawnID:    respawnID,
 		info:         info,
 		isDead:       false,
 		isSkeleton:   false,
@@ -85,11 +88,18 @@ func (m *monster) getPosition() cm.Point {
 
 // 怪物定时轮询
 func (m *monster) update(now time.Time) {
+	if m.isDead && now.After(m.deleteTime) {
+		log.Debugf("怪物[%s,%d]死亡，从游戏环境删除", m.name, m.objectID)
+		m.broadcast(&server.ObjectRemove{ObjectID: uint32(m.objectID)})
+		mp := env.maps[m.mapID]
+		mp.deleteObject(m)
+		delete(env.monsters, m.objectID)
+		return
+	}
 	if m.expOwnerID != 0 && now.After(m.expOwnerTime) {
 		m.expOwnerID = 0
 		log.Debugln("monster expOwnerID = 0")
 	}
-	// TODO 清除怪物尸体，从游戏环境删除 monster 对象
 }
 
 // ChangeHP 怪物改变血量 amount 可以是负数(扣血)
@@ -243,6 +253,15 @@ func (m *monster) die() {
 		log.Debugf("怪物[%s]死亡。击杀者[%s]", m.name, p.name)
 		p.winExp(m.experience, m.level)
 	}
+
+	// 设置怪物从 env.monsters 中删除的时间，在 monster.update 时候再删除
+	mp := env.maps[m.mapID]
+	m.deleteTime = mp.now.Add(10 * time.Second)
+	// 往地图中加入一个延迟动作，刷一个新的怪物
+	r := env.respawns[m.respawnID]
+	mp.actionList.pushDelayAction(cm.DelayedTypeSpawn, r.info.Interval*1000, func() {
+		r.spawnOneMonster()
+	})
 }
 
 // TODO 怪物掉落

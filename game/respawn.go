@@ -13,7 +13,7 @@ func newRespawn(ri *orm.RespawnInfo) *respawn {
 	return &respawn{info: ri}
 }
 
-func (r *respawn) spawn() {
+func (r *respawn) spawnOneMonster() bool {
 	mp := env.maps[r.info.MapID]
 	for i := 0; i < 10; i++ {
 		x := r.info.LocationX + cm.RandomInt(-r.info.Spread, r.info.Spread)
@@ -21,14 +21,14 @@ func (r *respawn) spawn() {
 		if !mp.canSpawnMonster(cm.NewPoint(x, y)) {
 			continue
 		}
-		m := newMonster(mp.info.ID, cm.NewPoint(x, y), gdb.monsterInfoMap[r.info.MonsterID])
+		m := newMonster(r.info.ID, mp.info.ID, cm.NewPoint(x, y), gdb.monsterInfoMap[r.info.MonsterID])
 
-		// TODO 从 env 中删除
 		env.monsters[m.objectID] = m
 		mp.addObject(m)
 
 		m.broadcastInfo()
 		m.broadcastHealthChange()
-		return
+		return true
 	}
+	return false
 }
