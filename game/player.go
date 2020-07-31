@@ -527,6 +527,7 @@ func (p *player) refreshLevelStats() {
 	p.criticalDamage = baseStats.StartCriticalDamage
 	p.maxExperience = gdb.levelMaxExpMap[p.level]
 	p.maxHP = 14 + int((float32(p.level)/baseStats.HPGain+baseStats.HPGainRate)*float32(p.level))
+	// log.Debugln(fmt.Sprintf("=======> p.maxHP: %d, p.level: %d, baseStats.HPGain: %f, baseStats.HPGainRate: %f", p.maxHP, p.level, baseStats.HPGain, baseStats.HPGainRate))
 	p.minAC = 0
 	if baseStats.MinAC > 0 {
 		p.minAC = p.level / baseStats.MinAC

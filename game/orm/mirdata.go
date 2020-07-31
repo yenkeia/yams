@@ -259,6 +259,33 @@ type BaseStats struct {
 	CriticalDamageGain  float32
 }
 
+func (bs *BaseStats) ToServerBaseStats() *server.BaseStats {
+	return &server.BaseStats{
+		HPGain:              bs.HPGain,
+		HPGainRate:          bs.HPGainRate,
+		MPGainRate:          bs.MPGainRate,
+		BagWeightGain:       bs.BagWeightGain,
+		WearWeightGain:      bs.WearWeightGain,
+		HandWeightGain:      bs.HandWeightGain,
+		MinAC:               uint8(bs.MinAC),
+		MaxAC:               uint8(bs.MaxAC),
+		MinMAC:              uint8(bs.MinMAC),
+		MaxMAC:              uint8(bs.MaxMAC),
+		MinDC:               uint8(bs.MinDC),
+		MaxDC:               uint8(bs.MaxDC),
+		MinMC:               uint8(bs.MinMC),
+		MaxMC:               uint8(bs.MaxMC),
+		MinSC:               uint8(bs.MinSC),
+		MaxSC:               uint8(bs.MaxSC),
+		StartAgility:        uint8(bs.StartAgility),
+		StartAccuracy:       uint8(bs.StartAccuracy),
+		StartCriticalRate:   uint8(bs.StartCriticalRate),
+		StartCriticalDamage: uint8(bs.StartCriticalDamage),
+		CritialRateGain:     bs.CritialRateGain,
+		CriticalDamageGain:  bs.CriticalDamageGain,
+	}
+}
+
 // LevelMaxExperience 玩家等级和最大经验值对应关系
 type LevelMaxExperience struct {
 	ID            int `gorm:"primary_key"` // 对应等级

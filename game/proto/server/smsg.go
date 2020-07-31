@@ -1213,7 +1213,34 @@ type ObjectSitDown struct{}
 
 type InTrapRock struct{}
 
-type BaseStatsInfo struct{}
+type BaseStats struct {
+	HPGain              float32
+	HPGainRate          float32
+	MPGainRate          float32
+	BagWeightGain       float32
+	WearWeightGain      float32
+	HandWeightGain      float32
+	MinAC               uint8
+	MaxAC               uint8
+	MinMAC              uint8
+	MaxMAC              uint8
+	MinDC               uint8
+	MaxDC               uint8
+	MinMC               uint8
+	MaxMC               uint8
+	MinSC               uint8
+	MaxSC               uint8
+	StartAgility        uint8
+	StartAccuracy       uint8
+	StartCriticalRate   uint8
+	StartCriticalDamage uint8
+	CritialRateGain     float32
+	CriticalDamageGain  float32
+}
+
+type BaseStatsInfo struct {
+	Stats BaseStats
+}
 
 type UserName struct {
 	ID   uint32
