@@ -37,6 +37,7 @@ type monster struct {
 	expOwnerTime time.Time
 	masterID     int       // 怪物主人 objectID
 	deleteTime   time.Time // 从 env.monsters 中删除的时间
+	behavior     *behavior // 怪物行为
 }
 
 func newMonster(respawnID int, mapID int, location cm.Point, info *orm.MonsterInfo) *monster {
@@ -71,6 +72,7 @@ func newMonster(respawnID int, mapID int, location cm.Point, info *orm.MonsterIn
 	m.mapID = mapID
 	m.location = location
 	m.direction = cm.RandomDirection()
+	m.behavior = newBehavior(m)
 	return m
 }
 
@@ -91,15 +93,14 @@ func (m *monster) update(now time.Time) {
 	if m.isDead && now.After(m.deleteTime) {
 		log.Debugf("怪物[%s,%d]死亡，从游戏环境删除", m.name, m.objectID)
 		m.broadcast(&server.ObjectRemove{ObjectID: uint32(m.objectID)})
-		mp := env.maps[m.mapID]
-		mp.deleteObject(m)
-		delete(env.monsters, m.objectID)
+		env.maps[m.mapID].deleteObject(m)
 		return
 	}
 	if m.expOwnerID != 0 && now.After(m.expOwnerTime) {
 		m.expOwnerID = 0
 		log.Debugln("monster expOwnerID = 0")
 	}
+	m.behavior.process(now)
 }
 
 // ChangeHP 怪物改变血量 amount 可以是负数(扣血)

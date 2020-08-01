@@ -1020,7 +1020,6 @@ func (p *player) pickUp(msg *client.PickUp) {
 	for i := range items {
 		item := items[i]
 		mp.deleteObject(item)
-		delete(env.items, item.objectID)
 		item.broadcast(&server.ObjectRemove{ObjectID: uint32(item.objectID)})
 	}
 }

@@ -94,6 +94,16 @@ func (m *mirMap) deleteObject(obj mapObject) (err error) {
 	}
 	c.deleteObject(obj)
 	m.aoi.deleteObject(obj)
+	switch obj := obj.(type) {
+	case *player:
+		delete(env.players, obj.objectID)
+	case *monster:
+		delete(env.monsters, obj.objectID)
+	case *item:
+		delete(env.items, obj.objectID)
+	default:
+		panic("deleteObject failed.")
+	}
 	return
 }
 

@@ -142,7 +142,6 @@ func (env *Environ) getMapObjects(ids []int) []mapObject {
 
 // Update 更新游戏状态
 func (env *Environ) Update(now time.Time) {
-	// log.Debugln("Update")
 	for _, mp := range env.maps {
 		mp.update(now)
 	}
@@ -460,7 +459,6 @@ func logout(s cellnet.Session, msg *client.LogOut) {
 		pdb.syncHPMP(p)
 
 		// 从游戏环境删除
-		delete(env.players, p.objectID)
 		env.maps[p.mapID].deleteObject(p)
 	}
 }
