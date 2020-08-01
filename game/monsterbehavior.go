@@ -2,16 +2,17 @@ package game
 
 import "time"
 
-type behavior struct {
+type behaviorTree struct {
 	monster *monster
+	// root    node
 }
 
-func newBehavior(m *monster) *behavior {
-	return &behavior{
+func newBehaviorTree(m *monster) *behaviorTree {
+	return &behaviorTree{
 		monster: m,
 	}
 }
 
-func (b *behavior) process(now time.Time) {
+func (bt *behaviorTree) process(now time.Time) {
 
 }

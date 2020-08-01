@@ -35,9 +35,9 @@ type monster struct {
 	maxSC        int
 	expOwnerID   int // 获得经验的玩家 objectID
 	expOwnerTime time.Time
-	masterID     int       // 怪物主人 objectID
-	deleteTime   time.Time // 从 env.monsters 中删除的时间
-	behavior     *behavior // 怪物行为
+	masterID     int           // 怪物主人 objectID
+	deleteTime   time.Time     // 从 env.monsters 中删除的时间
+	bt           *behaviorTree // 怪物行为树
 }
 
 func newMonster(respawnID int, mapID int, location cm.Point, info *orm.MonsterInfo) *monster {
@@ -72,7 +72,7 @@ func newMonster(respawnID int, mapID int, location cm.Point, info *orm.MonsterIn
 	m.mapID = mapID
 	m.location = location
 	m.direction = cm.RandomDirection()
-	m.behavior = newBehavior(m)
+	m.bt = newBehaviorTree(m)
 	return m
 }
 
@@ -100,7 +100,7 @@ func (m *monster) update(now time.Time) {
 		m.expOwnerID = 0
 		log.Debugln("monster expOwnerID = 0")
 	}
-	m.behavior.process(now)
+	m.bt.process(now)
 }
 
 // ChangeHP 怪物改变血量 amount 可以是负数(扣血)
