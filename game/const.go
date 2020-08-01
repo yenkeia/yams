@@ -32,3 +32,12 @@ const (
 	PearlBuyKey       = "[@PEARLBUY]"
 	BuyUsedKey        = "[@BUYUSED]"
 )
+
+type status int
+
+const (
+	SUCCESS status = 1
+	FAILED  status = 2
+	RUNNING status = 3
+	READY   status = 4
+)

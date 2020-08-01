@@ -100,7 +100,7 @@ func (m *monster) update(now time.Time) {
 		m.expOwnerID = 0
 		log.Debugln("monster expOwnerID = 0")
 	}
-	m.bt.process(now)
+	m.bt.update(now)
 }
 
 // ChangeHP 怪物改变血量 amount 可以是负数(扣血)
