@@ -187,6 +187,11 @@ func (m *monster) broadcastDamageIndicator(typ cm.DamageType, dmg int) {
 }
 
 // TODO
+func (m *monster) findTarget() bool {
+	return true
+}
+
+// TODO
 func (m *monster) attacked(atk attacker, dmg int, typ cm.DefenceType, isWeapon bool) int {
 	log.Debugf("monster[%s] attacked. attacker: [%s], damage: %d", m, atk, dmg)
 	armor := 0    // TODO
