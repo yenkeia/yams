@@ -134,11 +134,11 @@ func defaultRoot(m *monster) behavior {
 	seq := newSequenceNode(2 * time.Second)
 	seq.addChildren(
 		newConditionNode(func() bool {
-			log.Debugln(m.name + "monster find target")
+			// log.Debugln(m.name + "monster find target")
 			return m.findTarget()
 		}),
 		newActionNode(func() status {
-			log.Debugln(m.name + "action node execute..")
+			// log.Debugln(m.name + "action node execute..")
 			return SUCCESS
 		}),
 	)
