@@ -26,10 +26,6 @@ type node struct {
 	children []behavior
 }
 
-func (n *node) addChildren(nodes ...behavior) {
-	n.children = append(n.children, nodes...)
-}
-
 // 控制节点 - 选择
 // 顺序执行所有的子节点，当一个子节点执行结果为 SUCCESS 的时候终止执行并返回 SUCCESS
 // 选择节点可以被理解为一个或门（OR gate）
@@ -63,9 +59,10 @@ type sequenceNode struct {
 	node
 }
 
-func newSequenceNode(d time.Duration) *sequenceNode {
+func newSequenceNode(d time.Duration, children ...behavior) *sequenceNode {
 	res := new(sequenceNode)
 	res.children = make([]behavior, 0)
+	res.children = append(res.children, children...)
 	res.duration = d
 	res.tickTime = time.Now()
 	return res
@@ -125,14 +122,31 @@ func (n *actionNode) tick(now time.Time) status {
 
 func newRootNode(m *monster) behavior {
 	switch m.info.AI {
+	case 1, 2:
+		return deer(m)
 	default:
 		return defaultRoot(m)
 	}
 }
 
+func deer(m *monster) behavior {
+	return newSequenceNode(1*time.Second,
+		newConditionNode(func() bool {
+			// log.Debugln(m.name + "condition 1")
+			return m.hasTarget()
+		}),
+		newSequenceNode(1*time.Second,
+			newConditionNode(func() bool {
+				// log.Debugln(m.name + "condition 2")
+				return m.hasTarget()
+			}),
+			newActionNode(func() status { return SUCCESS }),
+		),
+	)
+}
+
 func defaultRoot(m *monster) behavior {
-	seq := newSequenceNode(2 * time.Second)
-	seq.addChildren(
+	return newSequenceNode(1*time.Second,
 		newConditionNode(func() bool {
 			// log.Debugln(m.name + "monster find target")
 			return m.findTarget()
@@ -142,5 +156,4 @@ func defaultRoot(m *monster) behavior {
 			return SUCCESS
 		}),
 	)
-	return seq
 }

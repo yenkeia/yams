@@ -38,6 +38,7 @@ type monster struct {
 	masterID     int           // 怪物主人 objectID
 	deleteTime   time.Time     // 从 env.monsters 中删除的时间
 	bt           *behaviorTree // 怪物行为树
+	targetID     int           // 攻击目标 objectID
 }
 
 func newMonster(respawnID int, mapID int, location cm.Point, info *orm.MonsterInfo) *monster {
@@ -188,6 +189,13 @@ func (m *monster) broadcastDamageIndicator(typ cm.DamageType, dmg int) {
 
 // TODO
 func (m *monster) findTarget() bool {
+	return true
+}
+
+func (m *monster) hasTarget() bool {
+	if m.targetID == 0 {
+		return false
+	}
 	return true
 }
 
