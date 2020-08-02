@@ -273,7 +273,7 @@ func (m *monster) die() {
 	m.deleteTime = mp.now.Add(10 * time.Second)
 	// 往地图中加入一个延迟动作，刷一个新的怪物
 	r := env.respawns[m.respawnID]
-	mp.actionList.pushDelayAction(cm.DelayedTypeSpawn, r.info.Interval*1000, func() {
+	mp.actionList.pushDelayAction(cm.DelayedTypeSpawn, time.Duration(r.info.Interval)*time.Second, func() {
 		r.spawnOneMonster()
 	})
 }

@@ -25,10 +25,10 @@ func newActionList() *actionList {
 	}
 }
 
-func (al *actionList) pushDelayAction(typ cm.DelayedType, delay int, cb delayedCallback) {
+func (al *actionList) pushDelayAction(typ cm.DelayedType, delay time.Duration, cb delayedCallback) {
 	al.ls.PushBack(&delayedAction{
 		delayedType: typ,
-		actionTime:  time.Now().Add(time.Millisecond * time.Duration(delay)),
+		actionTime:  time.Now().Add(delay),
 		callback:    cb,
 	})
 }

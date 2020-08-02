@@ -129,6 +129,19 @@ func newRootNode(m *monster) behavior {
 	}
 }
 
+func defaultRoot(m *monster) behavior {
+	return newSequenceNode(1*time.Second,
+		newConditionNode(func() bool {
+			// log.Debugln(m.name + "monster find target")
+			return m.findTarget()
+		}),
+		newActionNode(func() status {
+			// log.Debugln(m.name + "action node execute..")
+			return SUCCESS
+		}),
+	)
+}
+
 func deer(m *monster) behavior {
 	return newSequenceNode(1*time.Second,
 		newConditionNode(func() bool {
@@ -142,18 +155,5 @@ func deer(m *monster) behavior {
 			}),
 			newActionNode(func() status { return SUCCESS }),
 		),
-	)
-}
-
-func defaultRoot(m *monster) behavior {
-	return newSequenceNode(1*time.Second,
-		newConditionNode(func() bool {
-			// log.Debugln(m.name + "monster find target")
-			return m.findTarget()
-		}),
-		newActionNode(func() status {
-			// log.Debugln(m.name + "action node execute..")
-			return SUCCESS
-		}),
 	)
 }
