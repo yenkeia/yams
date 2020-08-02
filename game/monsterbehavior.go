@@ -22,15 +22,12 @@ type behavior interface {
 	tick(time.Time) status
 }
 
-func newRootNode(m *monster) behavior {
-	switch m.info.AI {
-	default:
-		return nil
-	}
-}
-
 type node struct {
 	children []behavior
+}
+
+func (n *node) addChild(b behavior) {
+	n.children = append(n.children, b)
 }
 
 // 控制节点 - 选择
@@ -100,4 +97,15 @@ type actionNode struct {
 
 func (n *actionNode) tick(now time.Time) status {
 	return n.fn()
+}
+
+func newRootNode(m *monster) behavior {
+	switch m.info.AI {
+	default:
+		return defaultRoot()
+	}
+}
+
+func defaultRoot() behavior {
+	return nil
 }
