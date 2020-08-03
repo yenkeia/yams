@@ -39,6 +39,10 @@ func (n *npc) getPosition() cm.Point {
 	return cm.Point{X: uint32(n.info.LocationX), Y: uint32(n.info.LocationY)}
 }
 
+func (n *npc) isBlocking() bool {
+	return true
+}
+
 func (n *npc) update(now time.Time) {
 	if now.After(n.turnTime) {
 		n.turnTime = now.Add(time.Second * time.Duration(cm.RandomInt(20, 60)))

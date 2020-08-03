@@ -25,6 +25,7 @@ type monster struct {
 	deleteTime   time.Time     // 从 env.monsters 中删除的时间
 	bt           *behaviorTree // 怪物行为树
 	targetID     int           // 攻击目标 objectID
+	moveTime     time.Time
 }
 
 func newMonster(respawnID int, mapID int, location cm.Point, info *orm.MonsterInfo) *monster {
@@ -63,6 +64,10 @@ func (m *monster) getPosition() cm.Point {
 	return m.location
 }
 
+func (m *monster) isBlocking() bool {
+	return !m.isDead
+}
+
 // 怪物定时轮询
 func (m *monster) update(now time.Time) {
 	if m.isDead && now.After(m.deleteTime) {
@@ -75,7 +80,9 @@ func (m *monster) update(now time.Time) {
 		m.expOwnerID = 0
 		log.Debugln("monster expOwnerID = 0")
 	}
-	m.bt.update(now)
+	if !m.isDead {
+		m.bt.update(now)
+	}
 }
 
 // ChangeHP 怪物改变血量 amount 可以是负数(扣血)
@@ -161,11 +168,11 @@ func (m *monster) broadcastDamageIndicator(typ cm.DamageType, dmg int) {
 	m.broadcast(&server.DamageIndicator{Damage: int32(dmg), Type: typ, ObjectID: uint32(m.objectID)})
 }
 
-func (m *monster) getAttackTarget(id int) attackTarget {
-	if m, ok := env.monsters[id]; ok {
+func (m *monster) getAttackTarget() attackTarget {
+	if m, ok := env.monsters[m.targetID]; ok {
 		return m
 	}
-	if p, ok := env.players[id]; ok {
+	if p, ok := env.players[m.targetID]; ok {
 		return p
 	}
 	return nil
@@ -188,7 +195,7 @@ func (m *monster) findTarget() bool {
 		}
 		return true // 继续循环 continue
 	})
-	if m.getAttackTarget(m.targetID) == nil || !found {
+	if m.getAttackTarget() == nil || !found {
 		m.targetID = 0
 	}
 	return found
@@ -289,4 +296,55 @@ func (m *monster) die() {
 // TODO 怪物掉落
 func (m *monster) drop() {
 
+}
+
+// 怪物向 destination 目标点走一步
+func (m *monster) moveTo(destination cm.Point) {
+	if m.location.Equal(destination) {
+		return
+	}
+	dir := cm.DirectionFromPoint(m.location, destination)
+	if m.walk(dir) {
+		return
+	}
+	switch cm.RandomInt(0, 1) { //No favour
+	case 0:
+		for i := 0; i < 7; i++ {
+			dir = dir.NextDirection()
+			if m.walk(dir) {
+				return
+			}
+		}
+	default:
+		for i := 0; i < 7; i++ {
+			dir = dir.PreviousDirection()
+			if m.walk(dir) {
+				return
+			}
+		}
+	}
+	// log.Debugf("monster[%s] moveTo %s", m.name, destination)
+}
+
+// 移动，成功返回 true
+func (m *monster) walk(dir cm.MirDirection) bool {
+	mp := env.maps[m.mapID]
+	if mp.now.Before(m.moveTime) {
+		return false
+	}
+	dest := m.location.NextPoint(dir, 1)
+	if !mp.canWalk(dest) {
+		return false
+	}
+	// log.Debugf("monster[%s],[%s] walk. 往[%s]方向, 点[%s]走一步", m.name, m.location, dir, dest)
+	mp.updateObject(m, dest)
+	m.location = dest
+	m.direction = dir
+	m.moveTime = m.moveTime.Add(time.Duration(int64(m.info.MoveSpeed)) * time.Millisecond)
+	m.broadcast(&server.ObjectWalk{
+		ObjectID:  uint32(m.objectID),
+		Direction: dir,
+		Location:  dest,
+	})
+	return true
 }

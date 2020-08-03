@@ -46,3 +46,31 @@ func RandomInt(low int, high int) int {
 func RandomDirection() MirDirection {
 	return MirDirection(RandomInt(0, MirDirectionCount))
 }
+
+// DirectionFromPoint 返回原点 source 到 dest 目标点的方向
+func DirectionFromPoint(source, dest Point) MirDirection {
+	if source.X < dest.X {
+		if source.Y < dest.Y {
+			return MirDirectionDownRight
+		}
+		if source.Y > dest.Y {
+			return MirDirectionUpRight
+		}
+		return MirDirectionRight
+	}
+	if source.X > dest.X {
+		if source.Y < dest.Y {
+			return MirDirectionDownLeft
+		}
+		if source.Y > dest.Y {
+
+			return MirDirectionUpLeft
+		}
+		return MirDirectionLeft
+	}
+	if source.Y < dest.Y {
+		return MirDirectionDown
+	} else {
+		return MirDirectionUp
+	}
+}

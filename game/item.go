@@ -42,6 +42,10 @@ func (i *item) getPosition() cm.Point {
 	return i.location
 }
 
+func (i *item) isBlocking() bool {
+	return false
+}
+
 func (i *item) drop(center cm.Point, distance int) (err error) {
 	ok := false
 	mp := env.maps[i.mapID]

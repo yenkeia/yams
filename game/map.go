@@ -118,14 +118,10 @@ func (mp *mirMap) updateObject(obj mapObject, pos2 cm.Point) (err error) {
 	// 更新在 aoi 中的位置
 	g1 := mp.aoi.getGridByPoint(pos1)
 	g2 := mp.aoi.getGridByPoint(pos2)
-	if g1.gID == g2.gID {
-		return
-	}
-	switch o := obj.(type) {
-	case *player:
-		o.enqueueAreaObjects(g1, g2)
-	case *monster:
-		o.broadcastInfo()
+	if mp.aoi.updateObject(obj, g1, g2) {
+		if o, ok := env.players[obj.getObjectID()]; ok {
+			o.enqueueAreaObjects(g1, g2)
+		}
 	}
 	return
 }
@@ -178,4 +174,18 @@ func (mp *mirMap) rangeObject(p cm.Point, depth int, fun func(mapObject) bool) {
 		}
 		return true
 	})
+}
+
+func (mp *mirMap) canWalk(point cm.Point) bool {
+	c := mp.getCell(point)
+	if c == nil || c.attribute != cm.CellAttributeWalk {
+		return false
+	}
+	for it := c.objects.Front(); it != nil; it = it.Next() {
+		o := it.Value.(mapObject)
+		if o.isBlocking() {
+			return false
+		}
+	}
+	return true
 }

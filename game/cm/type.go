@@ -70,6 +70,10 @@ func (p Point) NextPoint(direction MirDirection, step uint32) Point {
 	return Point{X: x, Y: y}
 }
 
+func (p Point) Equal(other Point) bool {
+	return p.X == other.X && p.Y == other.Y
+}
+
 func (p Point) String() string {
 	return fmt.Sprintf("%d,%d", p.X, p.Y)
 }
@@ -115,12 +119,82 @@ const (
 	MirDirectionCount                  = 8 // 方向个数
 )
 
-// NegativeDirection 反方向
-func (m MirDirection) NegativeDirection() MirDirection {
-	if m > 3 {
-		return m - 4
+func (d MirDirection) String() string {
+	switch d {
+	case MirDirectionUp:
+		return "↑↑↑"
+	case MirDirectionUpRight:
+		return "↗↗↗"
+	case MirDirectionRight:
+		return "→→→"
+	case MirDirectionDownRight:
+		return "↘↘↘"
+	case MirDirectionDown:
+		return "↓↓↓"
+	case MirDirectionDownLeft:
+		return "↙↙↙"
+	case MirDirectionLeft:
+		return "←←←"
+	case MirDirectionUpLeft:
+		return "↖↖↖"
 	}
-	return m + 4
+	return "???"
+}
+
+// NegativeDirection 反方向
+func (d MirDirection) NegativeDirection() MirDirection {
+	if d > 3 {
+		return d - 4
+	}
+	return d + 4
+}
+
+// NextDirection 顺时针的下一个方向
+func (d MirDirection) NextDirection() MirDirection {
+	switch d {
+	case MirDirectionUp:
+		return MirDirectionUpRight
+	case MirDirectionUpRight:
+		return MirDirectionRight
+	case MirDirectionRight:
+		return MirDirectionDownRight
+	case MirDirectionDownRight:
+		return MirDirectionDown
+	case MirDirectionDown:
+		return MirDirectionDownLeft
+	case MirDirectionDownLeft:
+		return MirDirectionLeft
+	case MirDirectionLeft:
+		return MirDirectionUpLeft
+	case MirDirectionUpLeft:
+		return MirDirectionUp
+	default:
+		return d
+	}
+}
+
+// PreviousDirection 上一个方向
+func (d MirDirection) PreviousDirection() MirDirection {
+	switch d {
+	case MirDirectionUp:
+		return MirDirectionUpLeft
+	case MirDirectionUpRight:
+		return MirDirectionUp
+	case MirDirectionRight:
+		return MirDirectionUpRight
+	case MirDirectionDownRight:
+		return MirDirectionRight
+	case MirDirectionDown:
+		return MirDirectionDownRight
+	case MirDirectionDownLeft:
+		return MirDirectionDown
+	case MirDirectionLeft:
+		return MirDirectionDownLeft
+	case MirDirectionUpLeft:
+		return MirDirectionLeft
+	default:
+		return d
+	}
 }
 
 type ItemType uint8

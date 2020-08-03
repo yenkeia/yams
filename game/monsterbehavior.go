@@ -136,7 +136,12 @@ func defaultRoot(m *monster) behavior {
 	return sequence(1*time.Second,
 		condition(m.findTarget),
 		action(func() status {
-			log.Debugf("monster[%s] found target. targetID: %d", m.name, m.targetID)
+			target := m.getAttackTarget()
+			if target == nil {
+				return FAILED
+			}
+			log.Debugf("monster[%s] found target. targetID: %d. from %s moveTo: %s", m.name, m.targetID, m.location, target.getPosition())
+			m.moveTo(target.getPosition())
 			return SUCCESS
 		}),
 	)

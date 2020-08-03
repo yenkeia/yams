@@ -1,6 +1,8 @@
 package game
 
-import "github.com/yenkeia/yams/game/cm"
+import (
+	"github.com/yenkeia/yams/game/cm"
+)
 
 type base struct {
 	objectID  int
@@ -14,18 +16,18 @@ type base struct {
 type mapObject interface {
 	getObjectID() int
 	getPosition() cm.Point
+	isBlocking() bool
 }
 
 // 攻击者
 type attacker interface {
 	attack(...interface{})
-	getAttackTarget(int) attackTarget
 }
 
 // 可以被攻击的对象
 type attackTarget interface {
 	// Attacked(attacker, damage, DefenceType , damageWeapon );
-	getObjectID() int
+	mapObject
 	attacked(attacker, int, cm.DefenceType, bool) int
 	isAttackTarget(attacker) bool
 }

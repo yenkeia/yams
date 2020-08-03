@@ -140,6 +140,10 @@ func (p *player) getPosition() cm.Point {
 	return p.location
 }
 
+func (p *player) isBlocking() bool {
+	return !p.isDead
+}
+
 func (p *player) update(now time.Time) {
 	p.actionList.execute(now)
 	p.updateRecovery(now)
@@ -1053,16 +1057,6 @@ func (p *player) attack(msg ...interface{}) {
 		obj := e.Value.(attackTarget)
 		p.actionList.pushDelayAction(cm.DelayedTypeDamage, 300, func() { p.completeAttack(obj, damageFinal, defence, true) })
 	}
-}
-
-func (p *player) getAttackTarget(id int) attackTarget {
-	if m, ok := env.monsters[id]; ok {
-		return m
-	}
-	if p, ok := env.players[id]; ok {
-		return p
-	}
-	return nil
 }
 
 func (p *player) completeAttack(args ...interface{}) {

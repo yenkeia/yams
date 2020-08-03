@@ -154,3 +154,13 @@ func (aoi *aoiManager) deleteObject(obj mapObject) {
 	grid := aoi.getGridByPoint(pos)
 	grid.remove(objID)
 }
+
+func (aoi *aoiManager) updateObject(obj mapObject, g1, g2 *aoiGrid) bool {
+	if g1.gID == g2.gID {
+		return false
+	}
+	objID := obj.getObjectID()
+	g1.remove(objID)
+	g2.add(objID)
+	return true
+}
