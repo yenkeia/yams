@@ -9,7 +9,7 @@ import (
 
 // item 是地图上显示的游戏物品
 type item struct {
-	baseObject
+	base
 	gold int
 	ui   *userItem
 }

@@ -10,7 +10,7 @@ import (
 )
 
 type monster struct {
-	baseObject
+	base
 	respawnID    int
 	info         *orm.MonsterInfo
 	isDead       bool
@@ -18,21 +18,7 @@ type monster struct {
 	poison       cm.PoisonType
 	isHidden     bool
 	hp           int
-	mp           int
-	level        int
-	petLevel     int
-	experience   int
 	maxHP        int
-	minAC        int
-	maxAC        int
-	minMAC       int
-	maxMAC       int
-	minDC        int
-	maxDC        int
-	minMC        int
-	maxMC        int
-	minSC        int
-	maxSC        int
 	expOwnerID   int // 获得经验的玩家 objectID
 	expOwnerTime time.Time
 	masterID     int           // 怪物主人 objectID
@@ -51,18 +37,6 @@ func newMonster(respawnID int, mapID int, location cm.Point, info *orm.MonsterIn
 		isHidden:     false,
 		hp:           info.HP,
 		maxHP:        info.HP,
-		level:        info.Level,
-		experience:   info.Experience,
-		minAC:        info.MinAC,
-		maxAC:        info.MaxAC,
-		minMAC:       info.MinMAC,
-		maxMAC:       info.MaxMAC,
-		minDC:        info.MinDC,
-		maxDC:        info.MaxDC,
-		minMC:        info.MinMC,
-		maxMC:        info.MaxMC,
-		minSC:        info.MinSC,
-		maxSC:        info.MaxSC,
 		expOwnerID:   0,
 		expOwnerTime: time.Now(),
 		masterID:     0,
@@ -187,9 +161,37 @@ func (m *monster) broadcastDamageIndicator(typ cm.DamageType, dmg int) {
 	m.broadcast(&server.DamageIndicator{Damage: int32(dmg), Type: typ, ObjectID: uint32(m.objectID)})
 }
 
-// TODO
+func (m *monster) getAttackTarget(id int) attackTarget {
+	if m, ok := env.monsters[id]; ok {
+		return m
+	}
+	if p, ok := env.players[id]; ok {
+		return p
+	}
+	return nil
+}
+
 func (m *monster) findTarget() bool {
-	return true
+	found := false
+	mp := env.maps[m.mapID]
+	mp.rangeObject(m.location, m.info.ViewRange, func(o mapObject) bool {
+		if o.getObjectID() == m.objectID {
+			return true
+		}
+		if target, ok := o.(attackTarget); ok {
+			if !target.isAttackTarget(m) {
+				return true
+			}
+			m.targetID = target.getObjectID()
+			found = true
+			return false // 找到目标 停止循环
+		}
+		return true // 继续循环 continue
+	})
+	if m.getAttackTarget(m.targetID) == nil || !found {
+		m.targetID = 0
+	}
+	return found
 }
 
 func (m *monster) hasTarget() bool {
@@ -235,8 +237,14 @@ func (m *monster) attacked(atk attacker, dmg int, typ cm.DefenceType, isWeapon b
 }
 
 // TODO
-func (m *monster) isAttackTarget(attacker) bool {
-	return true
+func (m *monster) isAttackTarget(atk attacker) bool {
+	switch atk.(type) {
+	case *player:
+		return true
+	case *monster:
+		return false
+	}
+	return false
 }
 
 // TODO
@@ -265,7 +273,7 @@ func (m *monster) die() {
 			return
 		}
 		log.Debugf("怪物[%s]死亡。击杀者[%s]", m.name, p.name)
-		p.winExp(m.experience, m.level)
+		p.winExp(m.info.Experience, m.info.Level)
 	}
 
 	// 设置怪物从 env.monsters 中删除的时间，在 monster.update 时候再删除

@@ -31,22 +31,22 @@ func newMirMap(width, height, version int) *mirMap {
 	}
 }
 
-func (m *mirMap) setCellAttribute(x, y int, attr cm.CellAttribute) {
+func (mp *mirMap) setCellAttribute(x, y int, attr cm.CellAttribute) {
 	c := new(cell)
 	c.attribute = attr
 	if attr == cm.CellAttributeWalk {
 		c.objects = list.New()
 	}
-	m.cells[x+y*m.width] = c
+	mp.cells[x+y*mp.width] = c
 }
 
-func (m *mirMap) update(now time.Time) {
-	m.now = now
-	m.actionList.execute(now)
+func (mp *mirMap) update(now time.Time) {
+	mp.now = now
+	mp.actionList.execute(now)
 }
 
-func (m *mirMap) broadcast(pos cm.Point, msg interface{}, excludeID int) {
-	aoiGrids := m.aoi.getSurroundGridsByPoint(pos)
+func (mp *mirMap) broadcast(pos cm.Point, msg interface{}, excludeID int) {
+	aoiGrids := mp.aoi.getSurroundGridsByPoint(pos)
 	for _, g := range aoiGrids {
 		objs := env.getMapObjects(g.getObjectIDs())
 		for _, o := range objs {
@@ -60,40 +60,40 @@ func (m *mirMap) broadcast(pos cm.Point, msg interface{}, excludeID int) {
 	}
 }
 
-func (m *mirMap) inMap(pos cm.Point) bool {
+func (mp *mirMap) inMap(pos cm.Point) bool {
 	x := int(pos.X)
 	y := int(pos.Y)
-	return x >= 0 && x < m.width && y >= 0 && y < m.height
+	return x >= 0 && x < mp.width && y >= 0 && y < mp.height
 }
 
-func (m *mirMap) getCell(pos cm.Point) *cell {
+func (mp *mirMap) getCell(pos cm.Point) *cell {
 	x := int(pos.X)
 	y := int(pos.Y)
-	if m.inMap(pos) {
-		return m.cells[x+y*m.width]
+	if mp.inMap(pos) {
+		return mp.cells[x+y*mp.width]
 	}
 	return nil
 }
 
-func (m *mirMap) addObject(obj mapObject) (err error) {
+func (mp *mirMap) addObject(obj mapObject) (err error) {
 	pos := obj.getPosition()
-	c := m.getCell(pos)
+	c := mp.getCell(pos)
 	if c == nil {
 		return fmt.Errorf("pos: %s is not walkable", obj.getPosition())
 	}
 	c.addObject(obj)
-	m.aoi.addObject(obj)
+	mp.aoi.addObject(obj)
 	return
 }
 
-func (m *mirMap) deleteObject(obj mapObject) (err error) {
+func (mp *mirMap) deleteObject(obj mapObject) (err error) {
 	pos := obj.getPosition()
-	c := m.getCell(pos)
+	c := mp.getCell(pos)
 	if c == nil {
 		return fmt.Errorf("pos: %s is not walkable", obj.getPosition())
 	}
 	c.deleteObject(obj)
-	m.aoi.deleteObject(obj)
+	mp.aoi.deleteObject(obj)
 	switch obj := obj.(type) {
 	case *player:
 		delete(env.players, obj.objectID)
@@ -108,16 +108,16 @@ func (m *mirMap) deleteObject(obj mapObject) (err error) {
 }
 
 // 更新对象在地图中的位置
-func (m *mirMap) updateObject(obj mapObject, pos2 cm.Point) (err error) {
+func (mp *mirMap) updateObject(obj mapObject, pos2 cm.Point) (err error) {
 	pos1 := obj.getPosition()
-	c1 := m.getCell(pos1)
-	c2 := m.getCell(pos2)
+	c1 := mp.getCell(pos1)
+	c2 := mp.getCell(pos2)
 	c1.deleteObject(obj)
 	c2.addObject(obj)
 
 	// 更新在 aoi 中的位置
-	g1 := m.aoi.getGridByPoint(pos1)
-	g2 := m.aoi.getGridByPoint(pos2)
+	g1 := mp.aoi.getGridByPoint(pos1)
+	g2 := mp.aoi.getGridByPoint(pos2)
 	if g1.gID == g2.gID {
 		return
 	}
@@ -131,29 +131,29 @@ func (m *mirMap) updateObject(obj mapObject, pos2 cm.Point) (err error) {
 }
 
 // TODO
-func (m *mirMap) canSpawnMonster(pos cm.Point) bool {
+func (mp *mirMap) canSpawnMonster(pos cm.Point) bool {
 	// 判断是否 cell walkable
 	// 判断是否已经有 player npc monster
 	return true
 }
 
 // 从p点开始（包含P），由内至外向周围遍历cell。回调函数返回false，停止遍历
-func (m *mirMap) rangeCell(p cm.Point, depth int, fun func(c *cell, x, y int) bool) {
+func (mp *mirMap) rangeCell(p cm.Point, depth int, fun func(c *cell, x, y int) bool) {
 	px, py := int(p.X), int(p.Y)
 	for d := 0; d <= depth; d++ {
 		for y := py - d; y <= py+d; y++ {
 			if y < 0 {
 				continue
 			}
-			if y >= m.height {
+			if y >= mp.height {
 				break
 			}
 			for x := px - d; x <= px+d; {
-				if x >= m.width {
+				if x >= mp.width {
 					break
 				}
 				if x >= 0 {
-					if !fun(m.getCell(cm.NewPoint(x, y)), x, y) {
+					if !fun(mp.getCell(cm.NewPoint(x, y)), x, y) {
 						return
 					}
 				}
@@ -165,4 +165,17 @@ func (m *mirMap) rangeCell(p cm.Point, depth int, fun func(c *cell, x, y int) bo
 			}
 		}
 	}
+}
+
+func (mp *mirMap) rangeObject(p cm.Point, depth int, fun func(mapObject) bool) {
+	mp.rangeCell(p, depth, func(c *cell, _, _ int) bool {
+		if c != nil && c.objects != nil {
+			for it := c.objects.Front(); it != nil; it = it.Next() {
+				if !fun(it.Value.(mapObject)) {
+					return false
+				}
+			}
+		}
+		return true
+	})
 }

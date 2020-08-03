@@ -14,7 +14,7 @@ import (
 )
 
 type player struct {
-	baseObject
+	base
 	session           *cellnet.Session
 	actionList        *actionList
 	gameStage         int
@@ -109,7 +109,7 @@ type recovery struct {
 
 func (p *player) String() string {
 	res := fmt.Sprintf(`
-	玩家: %s, 等级: %d, 位置: %s
+	玩家: %s, 等级: %d, 位置: %s, objectID: %d,
 	当前血量 hp: %d, maxHP: %d, mp: %d, maxMP: %d
 	当前经验值 experience: %d, maxExpericence: %d,
 	生命值回复 healthRecovery: %d, 魔法值回复 manaRecovery: %d
@@ -123,7 +123,7 @@ func (p *player) String() string {
 	敏捷agility: %d
 	暴击率criticalRate: %d, 暴击伤害criticalDamage: %d
 	currentBagWeight: %d, maxBagWeight: %d, maxWearWeight: %d, maxHandWeight: %d
-	`, p.name, p.level, p.location,
+	`, p.name, p.level, p.location, p.objectID,
 		p.hp, p.maxHP, p.mp, p.maxMP,
 		p.experience, p.maxExperience,
 		p.healthRecovery, p.manaRecovery, p.poisonRecovery,
@@ -1050,13 +1050,23 @@ func (p *player) attack(msg ...interface{}) {
 		return
 	}
 	for e := cell.objects.Front(); e != nil; e = e.Next() {
-		obj := e.Value.(attackableObject)
+		obj := e.Value.(attackTarget)
 		p.actionList.pushDelayAction(cm.DelayedTypeDamage, 300, func() { p.completeAttack(obj, damageFinal, defence, true) })
 	}
 }
 
+func (p *player) getAttackTarget(id int) attackTarget {
+	if m, ok := env.monsters[id]; ok {
+		return m
+	}
+	if p, ok := env.players[id]; ok {
+		return p
+	}
+	return nil
+}
+
 func (p *player) completeAttack(args ...interface{}) {
-	target := args[0].(attackableObject)
+	target := args[0].(attackTarget)
 	damage := args[1].(int)
 	defence := args[2].(cm.DefenceType)
 	damageWeapon := args[3].(bool)
@@ -1076,6 +1086,11 @@ func (p *player) completeAttack(args ...interface{}) {
 		}
 	}
 	*/
+}
+
+// TODO
+func (p *player) isAttackTarget(attacker) bool {
+	return true
 }
 
 // winExp 根据怪物等级为玩家增加经验

@@ -141,6 +141,7 @@ func (env *Environ) getMapObjects(ids []int) []mapObject {
 }
 
 // Update 更新游戏状态
+// TODO 不用轮询所有怪物/NPC，只轮询有玩家的区域内怪物/NPC
 func (env *Environ) Update(now time.Time) {
 	for _, mp := range env.maps {
 		mp.update(now)

@@ -9,7 +9,7 @@ import (
 )
 
 type npc struct {
-	baseObject
+	base
 	info     *orm.NPCInfo
 	turnTime time.Time
 	script   *npcScript

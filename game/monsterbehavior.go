@@ -136,7 +136,8 @@ func defaultRoot(m *monster) behavior {
 			return m.findTarget()
 		}),
 		newActionNode(func() status {
-			// log.Debugln(m.name + "action node execute..")
+			// log.Deln(m.name + "action node execute..")
+			// log.Debugbugf("monster[%s] found target. targetID: %d", m.name, m.targetID)
 			return SUCCESS
 		}),
 	)
