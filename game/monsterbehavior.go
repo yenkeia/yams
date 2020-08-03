@@ -59,7 +59,8 @@ type sequenceNode struct {
 	node
 }
 
-func newSequenceNode(d time.Duration, children ...behavior) *sequenceNode {
+// 构造方法
+func sequence(d time.Duration, children ...behavior) *sequenceNode {
 	res := new(sequenceNode)
 	res.children = make([]behavior, 0)
 	res.children = append(res.children, children...)
@@ -94,7 +95,8 @@ type conditionNode struct {
 	fn func() bool
 }
 
-func newConditionNode(fn func() bool) *conditionNode {
+// 构造方法
+func condition(fn func() bool) *conditionNode {
 	res := new(conditionNode)
 	res.fn = fn
 	return res
@@ -112,7 +114,8 @@ type actionNode struct {
 	fn func() status
 }
 
-func newActionNode(fn func() status) *actionNode {
+// 构造方法
+func action(fn func() status) *actionNode {
 	return &actionNode{fn: fn}
 }
 
@@ -122,39 +125,29 @@ func (n *actionNode) tick(now time.Time) status {
 
 func newRootNode(m *monster) behavior {
 	switch m.info.AI {
-	case 1, 2:
-		return deer(m)
+	// case 1, 2:
+	// 	return deer(m)
 	default:
 		return defaultRoot(m)
 	}
 }
 
 func defaultRoot(m *monster) behavior {
-	return newSequenceNode(1*time.Second,
-		newConditionNode(func() bool {
-			// log.Debugln(m.name + "monster find target")
-			return m.findTarget()
-		}),
-		newActionNode(func() status {
-			// log.Deln(m.name + "action node execute..")
-			// log.Debugbugf("monster[%s] found target. targetID: %d", m.name, m.targetID)
+	return sequence(1*time.Second,
+		condition(m.findTarget),
+		action(func() status {
+			log.Debugf("monster[%s] found target. targetID: %d", m.name, m.targetID)
 			return SUCCESS
 		}),
 	)
 }
 
 func deer(m *monster) behavior {
-	return newSequenceNode(1*time.Second,
-		newConditionNode(func() bool {
-			// log.Debugln(m.name + "condition 1")
-			return m.hasTarget()
-		}),
-		newSequenceNode(1*time.Second,
-			newConditionNode(func() bool {
-				// log.Debugln(m.name + "condition 2")
-				return m.hasTarget()
-			}),
-			newActionNode(func() status { return SUCCESS }),
+	return sequence(1*time.Second,
+		condition(m.hasTarget),
+		sequence(1*time.Second,
+			condition(m.hasTarget),
+			action(func() status { return SUCCESS }),
 		),
 	)
 }
