@@ -33,6 +33,16 @@ type selectNode struct {
 	node
 }
 
+func selectn(children ...behavior) *selectNode {
+	res := new(selectNode)
+	res.children = make([]behavior, 0)
+	res.children = append(res.children, children...)
+	// res.duration = 100 * time.Millisecond
+	res.duration = 1 * time.Second
+	res.tickTime = time.Now()
+	return res
+}
+
 func (n *selectNode) tick(now time.Time) status {
 	if !now.After(n.tickTime) {
 		return FAILED
@@ -60,11 +70,12 @@ type sequenceNode struct {
 }
 
 // 构造方法
-func sequence(d time.Duration, children ...behavior) *sequenceNode {
+func sequence(children ...behavior) *sequenceNode {
 	res := new(sequenceNode)
 	res.children = make([]behavior, 0)
 	res.children = append(res.children, children...)
-	res.duration = d
+	// res.duration = 100 * time.Millisecond
+	res.duration = 1 * time.Second
 	res.tickTime = time.Now()
 	return res
 }
@@ -119,6 +130,35 @@ func action(fn func() status) *actionNode {
 	return &actionNode{fn: fn}
 }
 
+// 向攻击目标移动
+func actionMoveToTarget(m *monster) *actionNode {
+	return action(func() status {
+		target := m.getAttackTarget()
+		if target == nil {
+			return FAILED
+		}
+		// log.Debugf("monster[%s] found target. targetID: %d. from %s moveTo: %s", m.name, m.targetID, m.location, target.getPosition())
+		m.moveTo(target.getPosition())
+		return SUCCESS
+	})
+}
+
+// 游荡和寻找攻击目标
+func actionWanderAndFindTarget(m *monster) *actionNode {
+	return action(func() status {
+		// log.Debugf("monster[%s] wander and find target", m.name)
+		m.findTarget()
+		return SUCCESS
+	})
+}
+
+func actionAttack(m *monster) *actionNode {
+	return action(func() status {
+		m.attack()
+		return SUCCESS
+	})
+}
+
 func (n *actionNode) tick(now time.Time) status {
 	return n.fn()
 }
@@ -133,24 +173,28 @@ func newRootNode(m *monster) behavior {
 }
 
 func defaultRoot(m *monster) behavior {
-	return sequence(1*time.Second,
-		condition(m.findTarget),
-		action(func() status {
-			target := m.getAttackTarget()
-			if target == nil {
-				return FAILED
-			}
-			log.Debugf("monster[%s] found target. targetID: %d. from %s moveTo: %s", m.name, m.targetID, m.location, target.getPosition())
-			m.moveTo(target.getPosition())
-			return SUCCESS
-		}),
+	return selectn(
+		sequence(
+			condition(m.hasTarget),
+			selectn(
+				sequence(
+					condition(m.inAttackRange),
+					action(func() status {
+						m.attack()
+						return SUCCESS
+					}),
+				),
+				actionMoveToTarget(m),
+			),
+		),
+		actionWanderAndFindTarget(m),
 	)
 }
 
 func deer(m *monster) behavior {
-	return sequence(1*time.Second,
+	return sequence(
 		condition(m.hasTarget),
-		sequence(1*time.Second,
+		sequence(
 			condition(m.hasTarget),
 			action(func() status { return SUCCESS }),
 		),

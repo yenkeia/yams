@@ -25,7 +25,8 @@ type monster struct {
 	deleteTime   time.Time     // 从 env.monsters 中删除的时间
 	bt           *behaviorTree // 怪物行为树
 	targetID     int           // 攻击目标 objectID
-	moveTime     time.Time
+	moveTime     time.Time     // TODO 现在的移动速度和攻击速度是在行为树里定义的，以后改成数据库里的值
+	attackTime   time.Time     // TODO
 }
 
 func newMonster(respawnID int, mapID int, location cm.Point, info *orm.MonsterInfo) *monster {
@@ -49,6 +50,8 @@ func newMonster(respawnID int, mapID int, location cm.Point, info *orm.MonsterIn
 	m.location = location
 	m.direction = cm.RandomDirection()
 	m.bt = newBehaviorTree(m)
+	m.moveTime = time.Now()
+	m.attackTime = time.Now()
 	return m
 }
 
@@ -205,6 +208,14 @@ func (m *monster) hasTarget() bool {
 	if m.targetID == 0 {
 		return false
 	}
+	target := m.getAttackTarget()
+	if target == nil {
+		m.targetID = 0
+		return false
+	}
+	if !cm.InRange(m.location, target.getPosition(), m.info.ViewRange) {
+		return false
+	}
 	return true
 }
 
@@ -256,7 +267,7 @@ func (m *monster) isAttackTarget(atk attacker) bool {
 
 // TODO
 func (m *monster) attack(...interface{}) {
-
+	log.Debugf("monster[%s] attack. target: %d", m.name, m.getAttackTarget().getObjectID())
 }
 
 func (m *monster) die() {
@@ -347,4 +358,14 @@ func (m *monster) walk(dir cm.MirDirection) bool {
 		Location:  dest,
 	})
 	return true
+}
+
+// 判断攻击目标是否在可攻击的范围内
+func (m *monster) inAttackRange() bool {
+	target := m.getAttackTarget()
+	if target == nil {
+		m.targetID = 0
+		return false
+	}
+	return !target.getPosition().Equal(m.location) && cm.InRange(m.location, target.getPosition(), 1)
 }
