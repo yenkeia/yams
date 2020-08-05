@@ -46,3 +46,13 @@ func (um *userMagic) ormUserMagic() *orm.UserMagic {
 		CastTime:    um.castTime,
 	}
 }
+
+func loadPlayerMagics(characterID int) []*userMagic {
+	res := make([]*userMagic, 0)
+	magics := make([]*orm.UserMagic, 0)
+	pdb.db.Table("user_magic").Where("character_id = ?", characterID).Find(&magics)
+	for _, m := range magics {
+		res = append(res, newUserMagicFromORM(m))
+	}
+	return res
+}

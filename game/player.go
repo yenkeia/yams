@@ -51,6 +51,7 @@ type player struct {
 	petMode           cm.PetMode
 	allowGroup        bool
 	sendedItemInfoIDs []int
+	magics            []*userMagic
 	dead              bool
 	callingNPC        int // obejctID
 	callingNPCKey     string
@@ -499,6 +500,7 @@ func (p *player) updateInfo(c *orm.Character) {
 	p.petMode = cm.PetModeBoth
 	p.allowGroup = true
 	p.sendedItemInfoIDs = make([]int, 0)
+	p.magics = loadPlayerMagics(p.characterID)
 }
 
 func (p *player) updateConcentration() {
