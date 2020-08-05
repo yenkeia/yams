@@ -16,11 +16,13 @@ type gameDatabase struct {
 	monsterInfos    []*orm.MonsterInfo
 	respawnInfos    []*orm.RespawnInfo
 	baseStats       []*orm.BaseStats
+	magicInfos      []*orm.MagicInfo
 	itemInfoMap     map[int]*orm.ItemInfo          // key: orm.ItemInfo.ID
 	itemInfoNameMap map[string]*orm.ItemInfo       // key: orm.ItemInfo.Name
 	monsterInfoMap  map[int]*orm.MonsterInfo       // key: orm.MonsterInfo.ID
 	baseStatsMap    map[cm.MirClass]*orm.BaseStats // 各职业基础属性
 	levelMaxExpMap  map[int]int                    // 玩家等级和最大经验对应关系
+	magicInfoMap    map[int]*orm.MagicInfo         // key: orm.MagicInfo.ID
 }
 
 func newGameDatabase() *gameDatabase {
@@ -37,11 +39,13 @@ func newGameDatabase() *gameDatabase {
 	db.Table("monster_info").Find(&gameData.monsterInfos)
 	db.Table("respawn_info").Find(&gameData.respawnInfos)
 	db.Table("base_stats").Find(&gameData.baseStats)
+	db.Table("magic_info").Find(&gameData.magicInfos)
 	gameData.itemInfoMap = make(map[int]*orm.ItemInfo)
 	gameData.monsterInfoMap = make(map[int]*orm.MonsterInfo)
 	gameData.itemInfoNameMap = make(map[string]*orm.ItemInfo)
 	gameData.baseStatsMap = make(map[cm.MirClass]*orm.BaseStats)
 	gameData.levelMaxExpMap = make(map[int]int)
+	gameData.magicInfoMap = make(map[int]*orm.MagicInfo)
 	for _, ii := range gameData.itemInfos {
 		gameData.itemInfoMap[ii.ID] = ii
 		gameData.itemInfoNameMap[ii.Name] = ii
@@ -64,6 +68,9 @@ func newGameDatabase() *gameDatabase {
 	db.Table("level_max_experience").Find(&levelExperience)
 	for _, i := range levelExperience {
 		gameData.levelMaxExpMap[i.ID] = i.MaxExperience
+	}
+	for _, m := range gameData.magicInfos {
+		gameData.magicInfoMap[m.ID] = m
 	}
 	return gameData
 }
