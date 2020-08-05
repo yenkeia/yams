@@ -78,3 +78,16 @@ type UserItem struct {
 	Freezing       int // uint8
 	PoisonAttack   int // uint8
 }
+
+// UserMagic ...
+type UserMagic struct {
+	ID          int `gorm:"primary_key"`
+	CharacterID int
+	MagicID     int
+	Spell       int // cm.Spell
+	Level       int // byte
+	Key         int `gorm:"Column:magic_key"` // byte
+	Experience  int // uint16
+	IsTempSpell bool
+	CastTime    int // int64
+}

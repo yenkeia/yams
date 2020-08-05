@@ -291,3 +291,28 @@ type LevelMaxExperience struct {
 	ID            int `gorm:"primary_key"` // 对应等级
 	MaxExperience int
 }
+
+// MagicInfo 魔法信息
+type MagicInfo struct {
+	ID              int `gorm:"primary_key"`
+	Name            string
+	Spell           int
+	BaseCost        int
+	LevelCost       int
+	Icon            int
+	Level1          int
+	Level2          int
+	Level3          int
+	Need1           int
+	Need2           int
+	Need3           int
+	DelayBase       int
+	DelayReduction  int
+	PowerBase       int
+	PowerBonus      int
+	MPowerBase      int
+	MPowerBonus     int
+	MagicRange      int
+	MultiplierBase  float32
+	MultiplierBonus float32
+}
