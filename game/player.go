@@ -906,7 +906,39 @@ func (p *player) removeItem(msg *client.RemoveItem) {
 
 func (p *player) removeSlotItem(msg *client.RemoveSlotItem) {}
 func (p *player) splitItem(msg *client.SplitItem)           {}
-func (p *player) useItem(msg *client.UseItem)               {}
+
+// TODO
+func (p *player) useItem(msg *client.UseItem) {
+	var err error
+	id := int(msg.UniqueID)
+	res := &server.UseItem{UniqueID: uint64(msg.UniqueID), Success: false}
+	index, item := p.getUserItemByObjectID(cm.MirGridTypeEquipment, id)
+	if item == nil || index == -1 || p.isDead {
+		p.enqueue(res)
+		return
+	}
+	switch item.info.Type {
+	case cm.ItemTypePotion:
+		// err = p.UserItemPotion(item)
+	case cm.ItemTypeScroll:
+		// err = p.UseItemScroll(item)
+	case cm.ItemTypeBook:
+		// err = p.GiveSkill(cm.Spell(info.Shape), 1)
+	case cm.ItemTypeScript:
+	}
+	if item.count > 1 {
+		item.count--
+	} else {
+		err = p.inventory.set(index, nil)
+	}
+	if err != nil {
+		log.Errorf("player[%s] useItem error: %s", p.name, err)
+	} else {
+		res.Success = true
+	}
+	p.refreshBagWeight()
+	p.enqueue(res)
+}
 
 func (p *player) dropItem(msg *client.DropItem) {
 	res := &server.DropItem{

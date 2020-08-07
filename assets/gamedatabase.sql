@@ -52,6 +52,7 @@ CREATE TABLE `npc_info` (
 
 INSERT INTO npc_info VALUES(1,1,'比奇省/边境村/传送员.txt','传送员',15,287,615);
 INSERT INTO npc_info VALUES(2,1,'比奇省/边境村/铁匠.txt','铁匠',0,297,612);
+INSERT INTO npc_info VALUES(3,1,'比奇省/边境村/杂货商贩.txt','杂货商贩',1,291,610);
 
 CREATE TABLE `item_info` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
