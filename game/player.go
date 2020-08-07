@@ -510,7 +510,6 @@ func (p *player) getClientMagics() []*server.ClientMagic {
 		delay := um.info.DelayBase - (um.level * um.info.DelayReduction)
 		castTime := 0
 		return &server.ClientMagic{
-			Name:       um.info.Name,
 			Spell:      um.spell,
 			BaseCost:   uint8(um.info.BaseCost),
 			LevelCost:  uint8(um.info.LevelCost),

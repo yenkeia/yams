@@ -305,6 +305,17 @@ func newCharacter(s cellnet.Session, msg *client.NewCharacter, env *Environ) {
 	}
 	// TODO 判断角色名字是否重复
 
+	allow := map[cm.MirClass]bool{
+		cm.MirClassWarrior: true,
+		cm.MirClassWizard:  true,
+		cm.MirClassTaoist:  true,
+	}
+	ok := allow[msg.Class]
+	if !ok {
+		s.Send(&server.NewCharacter{Result: uint8(3)})
+		return
+	}
+
 	c := &orm.Character{
 		Name:             msg.Name,
 		Level:            28,

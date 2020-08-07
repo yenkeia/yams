@@ -267,7 +267,7 @@ func (m *monster) isAttackTarget(atk attacker) bool {
 
 // TODO
 func (m *monster) attack(...interface{}) {
-	log.Debugf("monster[%s] attack. target: %d", m.name, m.getAttackTarget().getObjectID())
+	// log.Debugf("monster[%s] attack. target: %d", m.name, m.getAttackTarget().getObjectID())
 }
 
 func (m *monster) die() {

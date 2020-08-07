@@ -347,7 +347,6 @@ type UserItem struct {
 
 // ClientMagic 客户端显示技能
 type ClientMagic struct {
-	Name       string
 	Spell      cm.Spell
 	BaseCost   uint8
 	LevelCost  uint8
