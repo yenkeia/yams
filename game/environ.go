@@ -428,7 +428,7 @@ func startGame(s cellnet.Session, msg *client.StartGame) {
 		Credit:                    0,
 		HasExpandedStorage:        false,
 		ExpandedStorageExpiryTime: 0,
-		ClientMagics:              nil, // FIXME []*ClientMagic
+		ClientMagics:              p.getClientMagics(),
 	})
 	p.enqueue(&server.BaseStatsInfo{Stats: *gdb.baseStatsMap[p.class].ToServerBaseStats()})
 	p.enqueue(&server.TimeOfDay{Lights: cm.LightSettingDay})

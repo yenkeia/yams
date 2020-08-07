@@ -503,6 +503,38 @@ func (p *player) updateInfo(c *orm.Character) {
 	p.magics = loadPlayerMagics(p.characterID)
 }
 
+func (p *player) getClientMagics() []*server.ClientMagic {
+	res := make([]*server.ClientMagic, 0)
+	userMagicToClientMagic := func(um *userMagic) *server.ClientMagic {
+		//castTime := (CastTime != 0) && (SMain.Envir.Time > CastTime) ? SMain.Envir.Time - CastTime : 0
+		delay := um.info.DelayBase - (um.level * um.info.DelayReduction)
+		castTime := 0
+		return &server.ClientMagic{
+			Name:       um.info.Name,
+			Spell:      um.spell,
+			BaseCost:   uint8(um.info.BaseCost),
+			LevelCost:  uint8(um.info.LevelCost),
+			Icon:       uint8(um.info.Icon),
+			Level1:     uint8(um.info.Level1),
+			Level2:     uint8(um.info.Level2),
+			Level3:     uint8(um.info.Level3),
+			Need1:      uint16(um.info.Need1),
+			Need2:      uint16(um.info.Need2),
+			Need3:      uint16(um.info.Need3),
+			Level:      uint8(um.level),
+			Key:        uint8(um.key),
+			Experience: uint16(um.experience),
+			Delay:      int64(delay),
+			Range:      uint8(um.info.MagicRange),
+			CastTime:   int64(castTime),
+		}
+	}
+	for _, um := range p.magics {
+		res = append(res, userMagicToClientMagic(um))
+	}
+	return res
+}
+
 func (p *player) updateConcentration() {
 	p.enqueue(&server.SetConcentration{
 		ObjectID:    uint32(p.accountID),
