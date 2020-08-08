@@ -3,6 +3,7 @@ package game
 import (
 	"github.com/yenkeia/yams/game/cm"
 	"github.com/yenkeia/yams/game/orm"
+	"github.com/yenkeia/yams/game/proto/server"
 )
 
 type userMagic struct {
@@ -18,9 +19,23 @@ type userMagic struct {
 	castTime    int
 }
 
+func newUserMagic(info *orm.MagicInfo, level int, characterID int, spell cm.Spell) *userMagic {
+	return &userMagic{
+		info:        gdb.spellMagicInfoMap[spell],
+		characterID: characterID,
+		magicID:     info.ID, // int // info.ID
+		spell:       spell,   // cm.Spell
+		level:       level,   // int
+		key:         0,       // int
+		experience:  0,       // int
+		isTempSpell: false,   // bool
+		castTime:    0,       // int
+	}
+}
+
 func newUserMagicFromORM(um *orm.UserMagic) *userMagic {
 	return &userMagic{
-		info:        gdb.magicInfoMap[um.MagicID],
+		info:        gdb.spellMagicInfoMap[cm.Spell(um.Spell)],
 		id:          um.ID,
 		characterID: um.CharacterID,
 		magicID:     um.MagicID,         // int // info.ID
@@ -44,6 +59,30 @@ func (um *userMagic) ormUserMagic() *orm.UserMagic {
 		Experience:  um.experience,
 		IsTempSpell: um.isTempSpell,
 		CastTime:    um.castTime,
+	}
+}
+
+func (um *userMagic) toServerClientMagic() *server.ClientMagic {
+	//castTime := (CastTime != 0) && (SMain.Envir.Time > CastTime) ? SMain.Envir.Time - CastTime : 0
+	delay := um.info.DelayBase - (um.level * um.info.DelayReduction)
+	castTime := 0
+	return &server.ClientMagic{
+		Spell:      um.spell,
+		BaseCost:   uint8(um.info.BaseCost),
+		LevelCost:  uint8(um.info.LevelCost),
+		Icon:       uint8(um.info.Icon),
+		Level1:     uint8(um.info.Level1),
+		Level2:     uint8(um.info.Level2),
+		Level3:     uint8(um.info.Level3),
+		Need1:      uint16(um.info.Need1),
+		Need2:      uint16(um.info.Need2),
+		Need3:      uint16(um.info.Need3),
+		Level:      uint8(um.level),
+		Key:        uint8(um.key),
+		Experience: uint16(um.experience),
+		Delay:      int64(delay),
+		Range:      uint8(um.info.MagicRange),
+		CastTime:   int64(castTime),
 	}
 }
 

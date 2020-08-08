@@ -506,31 +506,8 @@ func (p *player) updateInfo(c *orm.Character) {
 
 func (p *player) getClientMagics() []*server.ClientMagic {
 	res := make([]*server.ClientMagic, 0)
-	userMagicToClientMagic := func(um *userMagic) *server.ClientMagic {
-		//castTime := (CastTime != 0) && (SMain.Envir.Time > CastTime) ? SMain.Envir.Time - CastTime : 0
-		delay := um.info.DelayBase - (um.level * um.info.DelayReduction)
-		castTime := 0
-		return &server.ClientMagic{
-			Spell:      um.spell,
-			BaseCost:   uint8(um.info.BaseCost),
-			LevelCost:  uint8(um.info.LevelCost),
-			Icon:       uint8(um.info.Icon),
-			Level1:     uint8(um.info.Level1),
-			Level2:     uint8(um.info.Level2),
-			Level3:     uint8(um.info.Level3),
-			Need1:      uint16(um.info.Need1),
-			Need2:      uint16(um.info.Need2),
-			Need3:      uint16(um.info.Need3),
-			Level:      uint8(um.level),
-			Key:        uint8(um.key),
-			Experience: uint16(um.experience),
-			Delay:      int64(delay),
-			Range:      uint8(um.info.MagicRange),
-			CastTime:   int64(castTime),
-		}
-	}
 	for _, um := range p.magics {
-		res = append(res, userMagicToClientMagic(um))
+		res = append(res, um.toServerClientMagic())
 	}
 	return res
 }
@@ -930,15 +907,16 @@ func (p *player) useItem(msg *client.UseItem) {
 		p.enqueue(res)
 		return
 	}
-	if item.count > 1 {
-		item.count--
-	} else {
-		err = p.inventory.set(index, nil)
-	}
 	if err != nil {
 		log.Errorf("player[%s] useItem error: %s", p.name, err)
 	} else {
+		if item.count > 1 {
+			item.count--
+		} else {
+			err = p.inventory.set(index, nil)
+		}
 		res.Success = true
+		p.receiveChat("恭喜你学会了新技能", cm.ChatTypeHint)
 	}
 	p.refreshBagWeight()
 	p.enqueue(res)
@@ -979,9 +957,24 @@ func (p *player) useItemScroll(ui *userItem) (err error) {
 	return errors.New("暂不支持卷轴")
 }
 
-// TODO 使用技能书
+// 使用技能书
 func (p *player) giveSkill(spell cm.Spell, level int) (err error) {
-	return errors.New("暂不支持技能书")
+	info := gdb.spellMagicInfoMap[spell]
+	if info == nil {
+		return fmt.Errorf("没有找到技能, spell: %d", spell)
+	}
+	for _, um := range p.magics {
+		if um.spell == spell {
+			p.receiveChat("你已经学习该技能", cm.ChatTypeSystem)
+			return fmt.Errorf("玩家[%s]已经学会该技能", p.name)
+		}
+	}
+	um := newUserMagic(info, level, p.characterID, spell)
+	um.id = pdb.addSkill(um)
+	p.magics = append(p.magics, um)
+	p.enqueue(&server.NewMagic{Magic: um.toServerClientMagic()})
+	p.refreshStats()
+	return nil
 }
 
 func (p *player) dropItem(msg *client.DropItem) {
@@ -1318,12 +1311,25 @@ func (p *player) buyItem(msg *client.BuyItem) {
 	}
 }
 
-func (p *player) craftItem(msg *client.CraftItem)                                 {}
-func (p *player) sellItem(msg *client.SellItem)                                   {}
-func (p *player) repairItem(msg *client.RepairItem)                               {}
-func (p *player) buyItemBack(msg *client.BuyItemBack)                             {}
-func (p *player) sRepairItem(msg *client.SRepairItem)                             {}
-func (p *player) magicKey(msg *client.MagicKey)                                   {}
+func (p *player) craftItem(msg *client.CraftItem)     {}
+func (p *player) sellItem(msg *client.SellItem)       {}
+func (p *player) repairItem(msg *client.RepairItem)   {}
+func (p *player) buyItemBack(msg *client.BuyItemBack) {}
+func (p *player) sRepairItem(msg *client.SRepairItem) {}
+
+func (p *player) magicKey(msg *client.MagicKey) {
+	key := int(msg.Key)
+	for _, um := range p.magics {
+		if um.spell == msg.Spell {
+			um.key = key
+			pdb.syncMagicKey(p.characterID, um.spell, key)
+		} else if um.key == int(msg.Key) {
+			um.key = 0
+			pdb.syncMagicKey(p.characterID, um.spell, 0)
+		}
+	}
+}
+
 func (p *player) magic(msg *client.Magic)                                         {}
 func (p *player) switchGroup(msg *client.SwitchGroup)                             {}
 func (p *player) addMember(msg *client.AddMember)                                 {}

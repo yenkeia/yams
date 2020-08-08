@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
+	"github.com/yenkeia/yams/game/cm"
+	"github.com/yenkeia/yams/game/orm"
 )
 
 type playerDatabase struct {
@@ -48,4 +50,23 @@ func (d *playerDatabase) syncExperience(p *player) {
 func (d *playerDatabase) syncHPMP(p *player) {
 	d.setCharacterAttr(p, "hp", p.hp)
 	d.setCharacterAttr(p, "mp", p.mp)
+}
+
+func (d *playerDatabase) addSkill(um *userMagic) int {
+	tmp := &orm.UserMagic{
+		CharacterID: um.characterID,
+		MagicID:     um.magicID,
+		Spell:       um.info.Spell,
+		Level:       um.level,
+		Key:         um.key,
+		Experience:  um.experience,
+		IsTempSpell: um.isTempSpell,
+		CastTime:    um.castTime,
+	}
+	d.db.Table("user_magic").Create(tmp)
+	return tmp.ID
+}
+
+func (d *playerDatabase) syncMagicKey(characterID int, spell cm.Spell, key int) {
+	d.db.Table("user_magic").Where("character_id = ? and spell = ?", characterID, spell).Update("magic_key", key)
 }

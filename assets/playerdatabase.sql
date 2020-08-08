@@ -87,6 +87,7 @@ CREATE TABLE `user_magic` (
     `character_id` int(11) DEFAULT NULL,
     `magic_id` int(11) DEFAULT NULL,
     `spell` int(11) DEFAULT NULL,
+    `level` int(11) DEFAULT NULL,
     `magic_key` int(11) DEFAULT NULL,
     `experience` int(11) DEFAULT NULL,
     `is_temp_spell` tinyint(1) DEFAULT NULL,

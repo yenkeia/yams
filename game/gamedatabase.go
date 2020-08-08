@@ -10,19 +10,19 @@ import (
 )
 
 type gameDatabase struct {
-	mapInfos        []*orm.MapInfo
-	npcInfos        []*orm.NPCInfo
-	itemInfos       []*orm.ItemInfo
-	monsterInfos    []*orm.MonsterInfo
-	respawnInfos    []*orm.RespawnInfo
-	baseStats       []*orm.BaseStats
-	magicInfos      []*orm.MagicInfo
-	itemInfoMap     map[int]*orm.ItemInfo          // key: orm.ItemInfo.ID
-	itemInfoNameMap map[string]*orm.ItemInfo       // key: orm.ItemInfo.Name
-	monsterInfoMap  map[int]*orm.MonsterInfo       // key: orm.MonsterInfo.ID
-	baseStatsMap    map[cm.MirClass]*orm.BaseStats // 各职业基础属性
-	levelMaxExpMap  map[int]int                    // 玩家等级和最大经验对应关系
-	magicInfoMap    map[int]*orm.MagicInfo         // key: orm.MagicInfo.ID
+	mapInfos          []*orm.MapInfo
+	npcInfos          []*orm.NPCInfo
+	itemInfos         []*orm.ItemInfo
+	monsterInfos      []*orm.MonsterInfo
+	respawnInfos      []*orm.RespawnInfo
+	baseStats         []*orm.BaseStats
+	magicInfos        []*orm.MagicInfo
+	itemInfoMap       map[int]*orm.ItemInfo          // key: orm.ItemInfo.ID
+	itemInfoNameMap   map[string]*orm.ItemInfo       // key: orm.ItemInfo.Name
+	monsterInfoMap    map[int]*orm.MonsterInfo       // key: orm.MonsterInfo.ID
+	baseStatsMap      map[cm.MirClass]*orm.BaseStats // 各职业基础属性
+	levelMaxExpMap    map[int]int                    // 玩家等级和最大经验对应关系
+	spellMagicInfoMap map[cm.Spell]*orm.MagicInfo    // key: orm.MagicInfo.Spell
 }
 
 func newGameDatabase() *gameDatabase {
@@ -45,7 +45,7 @@ func newGameDatabase() *gameDatabase {
 	gameData.itemInfoNameMap = make(map[string]*orm.ItemInfo)
 	gameData.baseStatsMap = make(map[cm.MirClass]*orm.BaseStats)
 	gameData.levelMaxExpMap = make(map[int]int)
-	gameData.magicInfoMap = make(map[int]*orm.MagicInfo)
+	gameData.spellMagicInfoMap = make(map[cm.Spell]*orm.MagicInfo)
 	for _, ii := range gameData.itemInfos {
 		gameData.itemInfoMap[ii.ID] = ii
 		gameData.itemInfoNameMap[ii.Name] = ii
@@ -70,7 +70,7 @@ func newGameDatabase() *gameDatabase {
 		gameData.levelMaxExpMap[i.ID] = i.MaxExperience
 	}
 	for _, m := range gameData.magicInfos {
-		gameData.magicInfoMap[m.ID] = m
+		gameData.spellMagicInfoMap[cm.Spell(m.Spell)] = m
 	}
 	return gameData
 }
