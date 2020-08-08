@@ -1,6 +1,7 @@
 package game
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"strings"
@@ -153,7 +154,7 @@ func (p *player) update(now time.Time) {
 // 处理玩家自身回复，药水回复
 func (p *player) updateRecovery(now time.Time) {
 	rec := &p.recovery
-	if rec.hpPotValue != 0 && rec.hpPotNextTime.Before(now) {
+	if rec.hpPotValue != 0 && rec.hpPotNextTime.Before(now) && p.hp != p.maxHP {
 		p.changeHP(rec.hpPotPerValue)
 		rec.hpPotTickTime++
 		if rec.hpPotTickTime >= rec.hpPotTickNum {
@@ -162,7 +163,7 @@ func (p *player) updateRecovery(now time.Time) {
 			rec.hpPotNextTime = now.Add(rec.hpPotDuration)
 		}
 	}
-	if rec.mpPotValue != 0 && rec.mpPotNextTime.Before(now) {
+	if rec.mpPotValue != 0 && rec.mpPotNextTime.Before(now) && p.mp != p.maxMP {
 		p.changeMP(rec.mpPotPerValue)
 		rec.mpPotTickTime++
 		if rec.mpPotTickTime >= rec.mpPotTickNum {
@@ -907,24 +908,27 @@ func (p *player) removeItem(msg *client.RemoveItem) {
 func (p *player) removeSlotItem(msg *client.RemoveSlotItem) {}
 func (p *player) splitItem(msg *client.SplitItem)           {}
 
-// TODO
 func (p *player) useItem(msg *client.UseItem) {
 	var err error
 	id := int(msg.UniqueID)
 	res := &server.UseItem{UniqueID: uint64(msg.UniqueID), Success: false}
-	index, item := p.getUserItemByObjectID(cm.MirGridTypeEquipment, id)
+	index, item := p.getUserItemByObjectID(cm.MirGridTypeInventory, id)
+	log.Debugf("index: %d, item: %s", index, item)
 	if item == nil || index == -1 || p.isDead {
 		p.enqueue(res)
 		return
 	}
 	switch item.info.Type {
 	case cm.ItemTypePotion:
-		// err = p.UserItemPotion(item)
+		err = p.useItemPotion(item)
 	case cm.ItemTypeScroll:
-		// err = p.UseItemScroll(item)
+		err = p.useItemScroll(item)
 	case cm.ItemTypeBook:
-		// err = p.GiveSkill(cm.Spell(info.Shape), 1)
+		err = p.giveSkill(cm.Spell(item.info.Shape), 1)
 	case cm.ItemTypeScript:
+		log.Errorln("不支持 item type script")
+		p.enqueue(res)
+		return
 	}
 	if item.count > 1 {
 		item.count--
@@ -938,6 +942,46 @@ func (p *player) useItem(msg *client.UseItem) {
 	}
 	p.refreshBagWeight()
 	p.enqueue(res)
+}
+
+// 使用药水
+func (p *player) useItemPotion(ui *userItem) (err error) {
+	switch ui.info.Shape {
+	case 0: // NormalPotion 一般药水
+		now := env.maps[p.mapID].now
+		log.Debugf("useItemPotion, hpPotValue: %d, hpPotPerValue: %d", p.recovery.hpPotValue, p.recovery.hpPotPerValue)
+		if ui.info.HP > 0 {
+			p.recovery.hpPotValue = ui.info.HP                           // 回复总值
+			p.recovery.hpPotPerValue = ui.info.HP / 3                    // 一次回复多少
+			p.recovery.hpPotNextTime = now.Add(p.recovery.hpPotDuration) // 下次生效时间
+			p.recovery.hpPotTickNum = 3                                  // 总共跳几次
+			p.recovery.hpPotTickTime = 0                                 // 当前第几跳
+		}
+		if ui.info.MP > 0 {
+			p.recovery.mpPotValue = ui.info.MP
+			p.recovery.mpPotPerValue = ui.info.MP / 3
+			p.recovery.mpPotNextTime = now.Add(p.recovery.mpPotDuration)
+			p.recovery.mpPotTickNum = 3
+			p.recovery.mpPotTickTime = 0
+		}
+		log.Debugf("useItemPotion, hpPotValue: %d, hpPotPerValue: %d", p.recovery.hpPotValue, p.recovery.hpPotPerValue)
+	case 1: // SunPotion 太阳水
+		p.changeHP(ui.info.HP)
+		p.changeMP(ui.info.MP)
+	default:
+		return fmt.Errorf("不支持物品类型 userItem.info.Shape: %d", ui.info.Shape)
+	}
+	return nil
+}
+
+// TODO 使用卷轴
+func (p *player) useItemScroll(ui *userItem) (err error) {
+	return errors.New("暂不支持卷轴")
+}
+
+// TODO 使用技能书
+func (p *player) giveSkill(spell cm.Spell, level int) (err error) {
+	return errors.New("暂不支持技能书")
 }
 
 func (p *player) dropItem(msg *client.DropItem) {

@@ -1,6 +1,8 @@
 package game
 
 import (
+	"fmt"
+
 	"github.com/yenkeia/yams/game/orm"
 	"github.com/yenkeia/yams/game/proto/server"
 )
@@ -41,6 +43,10 @@ type userItem struct {
 	poisonAttack   int
 	bools          int
 	strong         int
+}
+
+func (ui *userItem) String() string {
+	return fmt.Sprintf("userItem: %s, objectID: %d", ui.info.Name, ui.objectID)
 }
 
 // newUserItem 新建一个游戏内部使用的 userItem

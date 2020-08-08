@@ -165,8 +165,8 @@ func (n *actionNode) tick(now time.Time) status {
 
 func newRootNode(m *monster) behavior {
 	switch m.info.AI {
-	// case 1, 2:
-	// 	return deer(m)
+	case 1, 2:
+		return deer(m)
 	default:
 		return defaultRoot(m)
 	}
@@ -191,12 +191,7 @@ func defaultRoot(m *monster) behavior {
 	)
 }
 
+// TODO
 func deer(m *monster) behavior {
-	return sequence(
-		condition(m.hasTarget),
-		sequence(
-			condition(m.hasTarget),
-			action(func() status { return SUCCESS }),
-		),
-	)
+	return sequence()
 }
