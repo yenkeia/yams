@@ -6,6 +6,7 @@ import (
 	"github.com/yenkeia/yams/game/proto/server"
 )
 
+// userMagic 是玩家已经学会的的技能
 type userMagic struct {
 	info        *orm.MagicInfo
 	id          int // orm.UserMagic.ID
@@ -86,12 +87,12 @@ func (um *userMagic) toServerClientMagic() *server.ClientMagic {
 	}
 }
 
-func loadPlayerMagics(characterID int) []*userMagic {
-	res := make([]*userMagic, 0)
+func loadPlayerMagics(characterID int) map[cm.Spell]*userMagic {
+	res := make(map[cm.Spell]*userMagic)
 	magics := make([]*orm.UserMagic, 0)
 	pdb.db.Table("user_magic").Where("character_id = ?", characterID).Find(&magics)
 	for _, m := range magics {
-		res = append(res, newUserMagicFromORM(m))
+		res[cm.Spell(m.Spell)] = newUserMagicFromORM(m)
 	}
 	return res
 }

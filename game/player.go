@@ -53,7 +53,7 @@ type player struct {
 	allowGroup        bool
 	allowTrade        bool
 	sendedItemInfoIDs []int
-	magics            []*userMagic
+	magics            map[cm.Spell]*userMagic
 	dead              bool
 	callingNPC        int // obejctID
 	callingNPCKey     string
@@ -973,7 +973,7 @@ func (p *player) giveSkill(spell cm.Spell, level int) (err error) {
 	}
 	um := newUserMagic(info, level, p.characterID, spell)
 	um.id = pdb.addSkill(um)
-	p.magics = append(p.magics, um)
+	p.magics[um.spell] = um
 	p.enqueue(&server.NewMagic{Magic: um.toServerClientMagic()})
 	p.refreshStats()
 	return nil
@@ -1357,7 +1357,82 @@ func (p *player) magicKey(msg *client.MagicKey) {
 	}
 }
 
-func (p *player) magic(msg *client.Magic)                                         {}
+func (p *player) magic(msg *client.Magic) {
+	var (
+		ok     bool
+		err    error
+		um     *userMagic
+		cast   bool
+		target mapObject
+		spell  cm.Spell
+	)
+	spell = msg.Spell
+
+	// if !p.canCast() {
+	um, ok = p.magics[spell]
+	if !ok {
+		p.enqueue(&server.UserLocation{Location: p.location, Direction: p.direction})
+		return
+	}
+	info := gdb.spellMagicInfoMap[spell]
+	cost := info.BaseCost + info.LevelCost*um.level
+	if cost > p.mp {
+		p.enqueue(&server.UserLocation{Location: p.location, Direction: p.direction})
+		return
+	}
+	p.direction = msg.Direction
+	p.changeMP(-cost)
+	targetID := int(msg.TargetID)
+	env.maps[p.mapID].rangeObject(msg.Location, 1, func(o mapObject) bool {
+		if o.getObjectID() == targetID {
+			target = o
+			return false
+		}
+		return true
+	})
+	_, ok = magicConfigs[spell]
+	if !ok {
+		p.receiveChat("技能还没实现", cm.ChatTypeSystem)
+		return
+	}
+	// TODO
+	ctx := &magicContext{
+		// Spell:       spell,
+		// Magic:       magic,
+		// Target:      target,
+		// Player:      p,
+		// TargetPoint: targetLocation,
+	}
+	targetID, err = startMagic(ctx)
+	cast = true // TODO
+	if err != nil {
+		cast = false
+		p.receiveChat(err.Error(), cm.ChatTypeSystem)
+	}
+	p.enqueue(&server.UserLocation{Location: p.location, Direction: p.direction})
+	p.enqueue(&server.Magic{
+		Spell:    msg.Spell,
+		TargetID: uint32(targetID),
+		TargetX:  int32(target.getPosition().X),
+		TargetY:  int32(target.getPosition().Y),
+		Cast:     cast,
+		Level:    uint8(um.level),
+	})
+	p.broadcast(&server.ObjectMagic{
+		ObjectID:      uint32(p.objectID),
+		LocationX:     int32(p.location.X),
+		LocationY:     int32(p.location.Y),
+		Direction:     p.direction,
+		Spell:         msg.Spell,
+		TargetID:      uint32(targetID),
+		TargetX:       int32(target.getPosition().X),
+		TargetY:       int32(target.getPosition().Y),
+		Cast:          cast,
+		Level:         uint8(um.level),
+		SelfBroadcast: false,
+	})
+}
+
 func (p *player) switchGroup(msg *client.SwitchGroup)                             {}
 func (p *player) addMember(msg *client.AddMember)                                 {}
 func (p *player) delMember(msg *client.DelMember)                                 {}
