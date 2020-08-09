@@ -51,6 +51,7 @@ type player struct {
 	attackMode        cm.AttackMode
 	petMode           cm.PetMode
 	allowGroup        bool
+	allowTrade        bool
 	sendedItemInfoIDs []int
 	magics            []*userMagic
 	dead              bool
@@ -500,6 +501,7 @@ func (p *player) updateInfo(c *orm.Character) {
 	p.attackMode = cm.AttackModeAll
 	p.petMode = cm.PetModeBoth
 	p.allowGroup = true
+	p.allowTrade = false
 	p.sendedItemInfoIDs = make([]int, 0)
 	p.magics = loadPlayerMagics(p.characterID)
 }
@@ -1130,10 +1132,35 @@ func (p *player) pickUp(msg *client.PickUp) {
 	}
 }
 
-func (p *player) inspect(msg *client.Inspect)         {}
-func (p *player) changeAMode(msg *client.ChangeAMode) {}
-func (p *player) changePMode(msg *client.ChangePMode) {}
-func (p *player) changeTrade(msg *client.ChangeTrade) {}
+func (p *player) inspect(msg *client.Inspect) {
+	id := int(msg.ObjectID)
+	o := env.players[id]
+	p.enqueue(&server.PlayerInspect{
+		Name:      o.name,
+		GuildName: o.guildName,
+		GuildRank: o.guildRankName,
+		Equipment: o.equipment.serverUserItems(),
+		Class:     o.class,
+		Gender:    o.gender,
+		Hair:      uint8(o.hair),
+		Level:     uint16(o.level),
+		LoverName: "",
+	})
+}
+
+func (p *player) changeAMode(msg *client.ChangeAMode) {
+	p.attackMode = msg.Mode
+	p.enqueue(&server.ChangeAMode{Mode: p.attackMode})
+}
+
+func (p *player) changePMode(msg *client.ChangePMode) {
+	p.petMode = msg.Mode
+	p.enqueue(&server.ChangePMode{Mode: p.petMode})
+}
+
+func (p *player) changeTrade(msg *client.ChangeTrade) {
+	p.allowTrade = msg.AllowTrade
+}
 
 func (p *player) attack(msg ...interface{}) {
 	p.direction = msg[0].(*client.Attack).Direction
