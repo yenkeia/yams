@@ -137,6 +137,10 @@ func (env *Environ) getMapObjects(ids []int) []mapObject {
 			objs = append(objs, i)
 			continue
 		}
+		if s, ok := env.spells[id]; ok {
+			objs = append(objs, s)
+			continue
+		}
 	}
 	return objs
 }

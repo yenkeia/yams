@@ -429,6 +429,8 @@ func (p *player) enqueueMapObject(obj mapObject) {
 		})
 	case *item:
 		p.enqueue(o.getItemObjectInfo())
+	case *spell:
+		p.enqueue(o.getSpellObjectInfo())
 	}
 }
 

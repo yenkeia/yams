@@ -61,16 +61,20 @@ func (s *spell) broadcast(msg interface{}) {
 	env.maps[s.mapID].broadcast(s.location, msg, s.objectID)
 }
 
-// TODO
-func (s *spell) broadcastInfo() {
+func (s *spell) getSpellObjectInfo() interface{} {
 	switch s.spell {
 	case cm.SpellHealing:
+		panic("TODO spellHealing")
 	default:
-		s.broadcast(&server.ObjectSpell{
+		return &server.ObjectSpell{
 			ObjectID:  uint32(s.objectID),
 			Location:  s.location,
 			Spell:     s.spell,
 			Direction: s.direction,
-		})
+		}
 	}
+}
+
+func (s *spell) broadcastInfo() {
+	s.broadcast(s.getSpellObjectInfo())
 }
