@@ -1,6 +1,8 @@
 package game
 
 import (
+	"time"
+
 	"github.com/yenkeia/yams/game/cm"
 )
 
@@ -16,7 +18,8 @@ type base struct {
 type mapObject interface {
 	getObjectID() int
 	getPosition() cm.Point
-	isBlocking() bool
+	isBlocking() bool // 玩家是否能穿过
+	update(time.Time)
 }
 
 // 攻击者

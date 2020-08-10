@@ -42,6 +42,7 @@ type Environ struct {
 	players  map[int]*player  // player.objectID: player
 	monsters map[int]*monster // monster.objectID: monster
 	items    map[int]*item    // item.objectID: item
+	spells   map[int]*spell   // spell.objectID: spell
 }
 
 // NewEnviron 初始化
@@ -55,6 +56,7 @@ func NewEnviron(c *Config) *Environ {
 	e.players = make(map[int]*player)
 	e.monsters = make(map[int]*monster)
 	e.items = make(map[int]*item)
+	e.spells = make(map[int]*spell)
 	e.initMap()
 	e.initNPC()
 	e.initRespawn() // 怪物刷新
@@ -99,7 +101,6 @@ func (env *Environ) initNPC() {
 	for _, ni := range gdb.npcInfos {
 		n := newNPC(ni)
 		n.objectID = env.newObjectID()
-		env.npcs[n.objectID] = n
 		m := env.maps[n.info.MapID]
 		m.addObject(n)
 	}
@@ -154,6 +155,9 @@ func (env *Environ) Update(now time.Time) {
 	}
 	for _, m := range env.monsters {
 		m.update(now)
+	}
+	for _, s := range env.spells {
+		s.update(now)
 	}
 }
 
@@ -453,7 +457,6 @@ func startGame(s cellnet.Session, msg *client.StartGame) {
 	log.Debugf("玩家登陆游戏, p.name: %s", p.name)
 
 	// 加入到游戏环境
-	env.players[p.objectID] = p
 	mp.addObject(p)
 }
 

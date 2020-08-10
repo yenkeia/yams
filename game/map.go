@@ -81,6 +81,18 @@ func (mp *mirMap) addObject(obj mapObject) (err error) {
 	if c == nil {
 		return fmt.Errorf("pos: %s is not walkable", obj.getPosition())
 	}
+	switch obj := obj.(type) {
+	case *player:
+		env.players[obj.objectID] = obj
+	case *monster:
+		env.monsters[obj.objectID] = obj
+	case *npc:
+		env.npcs[obj.objectID] = obj
+	case *item:
+		env.items[obj.objectID] = obj
+	case *spell:
+		env.spells[obj.objectID] = obj
+	}
 	c.addObject(obj)
 	mp.aoi.addObject(obj)
 	return
@@ -99,8 +111,12 @@ func (mp *mirMap) deleteObject(obj mapObject) (err error) {
 		delete(env.players, obj.objectID)
 	case *monster:
 		delete(env.monsters, obj.objectID)
+	case *npc:
+		delete(env.npcs, obj.objectID)
 	case *item:
 		delete(env.items, obj.objectID)
+	case *spell:
+		delete(env.spells, obj.objectID)
 	default:
 		panic("deleteObject failed.")
 	}
@@ -178,7 +194,7 @@ func (mp *mirMap) rangeObject(p cm.Point, depth int, fun func(mapObject) bool) {
 
 func (mp *mirMap) canWalk(point cm.Point) bool {
 	c := mp.getCell(point)
-	if c == nil || c.attribute != cm.CellAttributeWalk {
+	if !c.isValid() {
 		return false
 	}
 	for it := c.objects.Front(); it != nil; it = it.Next() {
@@ -188,4 +204,12 @@ func (mp *mirMap) canWalk(point cm.Point) bool {
 		}
 	}
 	return true
+}
+
+func (mp *mirMap) validPoint(p cm.Point) bool {
+	c := mp.getCell(p)
+	if c == nil {
+		return false
+	}
+	return c.isValid()
 }

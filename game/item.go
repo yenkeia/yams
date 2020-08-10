@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/yenkeia/yams/game/cm"
 	"github.com/yenkeia/yams/game/proto/server"
@@ -46,6 +47,10 @@ func (i *item) isBlocking() bool {
 	return false
 }
 
+func (i *item) update(now time.Time) {
+	// 清理地图物品
+}
+
 func (i *item) drop(center cm.Point, distance int) (err error) {
 	ok := false
 	mp := env.maps[i.mapID]
@@ -56,7 +61,6 @@ func (i *item) drop(center cm.Point, distance int) (err error) {
 		ok = true
 		i.location = cm.NewPoint(x, y)
 		mp.addObject(i)
-		env.items[i.objectID] = i
 		i.broadcast(i.getItemObjectInfo())
 		return false
 	})

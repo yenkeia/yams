@@ -23,7 +23,6 @@ func (r *respawn) spawnOneMonster() bool {
 		}
 		m := newMonster(r.info.ID, mp.info.ID, cm.NewPoint(x, y), gdb.monsterInfoMap[r.info.MonsterID])
 
-		env.monsters[m.objectID] = m
 		mp.addObject(m)
 
 		m.broadcastInfo()
