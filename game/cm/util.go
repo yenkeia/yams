@@ -70,9 +70,8 @@ func DirectionFromPoint(source, dest Point) MirDirection {
 	}
 	if source.Y < dest.Y {
 		return MirDirectionDown
-	} else {
-		return MirDirectionUp
 	}
+	return MirDirectionUp
 }
 
 // AbsInt 绝对值
@@ -83,7 +82,20 @@ func AbsInt(i int) int {
 	return i
 }
 
+// MaxInt ..
+func MaxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 // InRange 判断 a, b 两个坐标是否在距离 i 范围内
 func InRange(a, b Point, i int) bool {
 	return AbsInt(int(a.X)-int(b.X)) <= i && AbsInt(int(a.Y)-int(b.Y)) <= i
+}
+
+// MaxDistance ..
+func MaxDistance(p1, p2 Point) int {
+	return MaxInt(AbsInt(int(p1.X)-int(p2.X)), AbsInt(int(p1.Y)-int(p2.Y)))
 }

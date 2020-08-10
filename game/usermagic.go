@@ -1,6 +1,8 @@
 package game
 
 import (
+	"math"
+
 	"github.com/yenkeia/yams/game/cm"
 	"github.com/yenkeia/yams/game/orm"
 	"github.com/yenkeia/yams/game/proto/server"
@@ -95,4 +97,26 @@ func loadPlayerMagics(characterID int) map[cm.Spell]*userMagic {
 		res[cm.Spell(m.Spell)] = newUserMagicFromORM(m)
 	}
 	return res
+}
+
+func (um *userMagic) getDamage(damageBase int) int {
+	return damageBase + um.getPower(um.mPower())
+}
+
+func (um *userMagic) mPower() int {
+	if um.info.MPowerBonus > 0 {
+		return cm.RandomInt(um.info.MPowerBase, um.info.MPowerBonus+um.info.MPowerBase-1)
+	}
+	return um.info.MPowerBase
+}
+
+func (um *userMagic) getPower(power int) int {
+	return int(math.Round((float64(power)/4.0)*float64(um.level+1) + float64(um.defPower())))
+}
+
+func (um *userMagic) defPower() int {
+	if um.info.MPowerBonus > 0 {
+		return cm.RandomInt(um.info.PowerBase, um.info.PowerBonus+um.info.PowerBase-1)
+	}
+	return um.info.MPowerBase
 }

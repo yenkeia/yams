@@ -1359,12 +1359,13 @@ func (p *player) magicKey(msg *client.MagicKey) {
 
 func (p *player) magic(msg *client.Magic) {
 	var (
-		ok     bool
-		err    error
-		um     *userMagic
-		cast   bool
-		target mapObject
-		spell  cm.Spell
+		ok             bool
+		err            error
+		um             *userMagic
+		cast           bool
+		target         attackTarget
+		spell          cm.Spell
+		targetLocation cm.Point
 	)
 	spell = msg.Spell
 
@@ -1385,26 +1386,27 @@ func (p *player) magic(msg *client.Magic) {
 	targetID := int(msg.TargetID)
 	env.maps[p.mapID].rangeObject(msg.Location, 1, func(o mapObject) bool {
 		if o.getObjectID() == targetID {
-			target = o
+			target = o.(attackTarget)
 			return false
 		}
 		return true
 	})
-	_, ok = magicConfigs[spell]
-	if !ok {
-		p.receiveChat("技能还没实现", cm.ChatTypeSystem)
-		return
+	targetLocation = msg.Location
+	if target != nil {
+		targetLocation = target.getPosition()
 	}
-	// TODO
 	ctx := &magicContext{
-		// Spell:       spell,
-		// Magic:       magic,
-		// Target:      target,
-		// Player:      p,
-		// TargetPoint: targetLocation,
+		player:      p,
+		spell:       spell,
+		target:      target,
+		targetPoint: msg.Location,
 	}
+	// cast 代表是否释放成功
+	// targetID 上面 msg.TargetID 只是用来获取攻击目标 id
+	// 		这里返回的 targetID 如果是 0 代表未击中目标，返回 msg.TargetID 表示击中目标造成伤害
+	// err 是提示打印日志用的，和游戏逻辑无关
 	targetID, err = startMagic(ctx)
-	cast = true // TODO
+	cast = true
 	if err != nil {
 		cast = false
 		p.receiveChat(err.Error(), cm.ChatTypeSystem)
@@ -1413,8 +1415,8 @@ func (p *player) magic(msg *client.Magic) {
 	p.enqueue(&server.Magic{
 		Spell:    msg.Spell,
 		TargetID: uint32(targetID),
-		TargetX:  int32(target.getPosition().X),
-		TargetY:  int32(target.getPosition().Y),
+		TargetX:  int32(targetLocation.X),
+		TargetY:  int32(targetLocation.Y),
 		Cast:     cast,
 		Level:    uint8(um.level),
 	})
@@ -1425,8 +1427,8 @@ func (p *player) magic(msg *client.Magic) {
 		Direction:     p.direction,
 		Spell:         msg.Spell,
 		TargetID:      uint32(targetID),
-		TargetX:       int32(target.getPosition().X),
-		TargetY:       int32(target.getPosition().Y),
+		TargetX:       int32(targetLocation.X),
+		TargetY:       int32(targetLocation.Y),
 		Cast:          cast,
 		Level:         uint8(um.level),
 		SelfBroadcast: false,

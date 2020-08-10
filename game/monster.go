@@ -221,6 +221,9 @@ func (m *monster) hasTarget() bool {
 
 // TODO
 func (m *monster) attacked(atk attacker, dmg int, typ cm.DefenceType, isWeapon bool) int {
+	if m.isDead {
+		return 0
+	}
 	log.Debugf("monster[%s] attacked. attacker: [%s], damage: %d", m, atk, dmg)
 	armor := 0    // TODO
 	damage := dmg // TODO
@@ -256,6 +259,9 @@ func (m *monster) attacked(atk attacker, dmg int, typ cm.DefenceType, isWeapon b
 
 // TODO
 func (m *monster) isAttackTarget(atk attacker) bool {
+	if m.isDead {
+		return false
+	}
 	switch atk.(type) {
 	case *player:
 		return true
