@@ -134,9 +134,17 @@ func hellFire(ctx *magicContext) {
 	})
 }
 
-// TODO
 func thunderBolt(ctx *magicContext) {
-
+	p := ctx.player
+	t := ctx.target
+	m := p.magics[ctx.spell]
+	if t == nil || !t.isAttackTarget(p) {
+		return
+	}
+	value := m.getDamage(p.getAttackPower(p.minMC, p.maxMC))
+	p.actionList.pushDelayAction(cm.DelayedTypeMagic, time.Duration(time.Millisecond*500), func() {
+		t.attacked(p, value, cm.DefenceTypeMAC, false)
+	})
 }
 
 // TODO
