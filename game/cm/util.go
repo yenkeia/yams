@@ -99,3 +99,8 @@ func InRange(a, b Point, i int) bool {
 func MaxDistance(p1, p2 Point) int {
 	return MaxInt(AbsInt(int(p1.X)-int(p2.X)), AbsInt(int(p1.Y)-int(p2.Y)))
 }
+
+// PointMove ..
+func PointMove(p Point, dir MirDirection, step int) Point {
+	return p.NextPoint(dir, uint32(step))
+}

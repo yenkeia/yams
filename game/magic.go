@@ -107,9 +107,31 @@ func poisoning(ctx *magicContext) {
 
 }
 
-// TODO
 func hellFire(ctx *magicContext) {
-
+	p := ctx.player
+	m := p.magics[ctx.spell]
+	mp := env.maps[p.mapID]
+	loc := p.location
+	value := m.getDamage(p.getAttackPower(p.minMC, p.maxMC))
+	mp.actionList.pushDelayAction(cm.DelayedTypeMagic, time.Duration(500*time.Millisecond), func() {
+		dir := p.direction
+		points := []cm.Point{}
+		for i := 0; i < 4; i++ {
+			point := cm.PointMove(loc, dir, i+1)
+			points = append(points, point)
+		}
+		for _, point := range points {
+			if !mp.validPoint(point) {
+				return
+			}
+			c := mp.getCell(point)
+			for it := c.objects.Front(); it != nil; it = it.Next() {
+				if t, ok := it.Value.(attackTarget); ok {
+					t.attacked(p, value, cm.DefenceTypeMAC, false)
+				}
+			}
+		}
+	})
 }
 
 // TODO
@@ -167,7 +189,7 @@ func fireWall(ctx *magicContext) {
 		dir := cm.MirDirectionUp
 		points := []cm.Point{}
 		for i := 0; i < 4; i++ {
-			point := location.NextPoint(dir, 1)
+			point := cm.PointMove(location, dir, 1)
 			dir = dir.NextDirection().NextDirection()
 			points = append(points, point)
 		}
