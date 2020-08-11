@@ -71,6 +71,30 @@ func (m *monster) isBlocking() bool {
 	return !m.isDead
 }
 
+// TODO
+func (m *monster) isFriendlyTarget(atk attacker) bool {
+	return false
+}
+
+// TODO
+func (m *monster) isAttackTarget(atk attacker) bool {
+	if m.isDead {
+		return false
+	}
+	switch atk.(type) {
+	case *player:
+		return true
+	case *monster:
+		return false
+	}
+	return false
+}
+
+// TODO
+func (m *monster) attack(...interface{}) {
+	// log.Debugf("monster[%s] attack. target: %d", m.name, m.getAttackTarget().getObjectID())
+}
+
 // 怪物定时轮询
 func (m *monster) update(now time.Time) {
 	if m.isDead && now.After(m.deleteTime) {
@@ -101,6 +125,8 @@ func (m *monster) changeHP(amount int) {
 	if value <= 0 {
 		m.die()
 		m.hp = 0
+	} else if value >= m.maxHP {
+		m.hp = m.maxHP
 	} else {
 		m.hp = value
 	}
@@ -256,26 +282,6 @@ func (m *monster) attacked(atk attacker, dmg int, typ cm.DefenceType, isWeapon b
 	m.changeHP(-value)
 	return 0
 }
-
-// TODO
-func (m *monster) isAttackTarget(atk attacker) bool {
-	if m.isDead {
-		return false
-	}
-	switch atk.(type) {
-	case *player:
-		return true
-	case *monster:
-		return false
-	}
-	return false
-}
-
-// TODO
-func (m *monster) attack(...interface{}) {
-	// log.Debugf("monster[%s] attack. target: %d", m.name, m.getAttackTarget().getObjectID())
-}
-
 func (m *monster) die() {
 	if m.isDead {
 		return

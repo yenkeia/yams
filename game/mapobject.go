@@ -32,5 +32,7 @@ type attackTarget interface {
 	// Attacked(attacker, damage, DefenceType , damageWeapon );
 	mapObject
 	attacked(attacker, int, cm.DefenceType, bool) int
-	isAttackTarget(attacker) bool
+	isAttackTarget(attacker) bool   // 目标是攻击者的队友或宠物
+	isFriendlyTarget(attacker) bool // 目标是攻击者的攻击对象
+	changeHP(int)                   // 改变血量，如果传入负数表示扣血
 }

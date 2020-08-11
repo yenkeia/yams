@@ -147,6 +147,16 @@ func (p *player) isBlocking() bool {
 	return !p.isDead
 }
 
+// TODO
+func (p *player) isAttackTarget(attacker) bool {
+	return true
+}
+
+// TODO
+func (p *player) isFriendlyTarget(atk attacker) bool {
+	return false
+}
+
 func (p *player) update(now time.Time) {
 	p.actionList.execute(now)
 	p.updateRecovery(now)
@@ -1211,11 +1221,6 @@ func (p *player) completeAttack(args ...interface{}) {
 		}
 	}
 	*/
-}
-
-// TODO
-func (p *player) isAttackTarget(attacker) bool {
-	return true
 }
 
 // winExp 根据怪物等级为玩家增加经验

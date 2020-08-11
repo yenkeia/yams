@@ -66,22 +66,30 @@ func startMagic(ctx *magicContext) (targetID int, err error) {
 }
 
 func fireBall(ctx *magicContext) {
-	player := ctx.player
-	target := ctx.target
-	magic := ctx.player.magics[ctx.spell]
-	if target == nil || !target.isAttackTarget(ctx.player) {
+	p := ctx.player
+	t := ctx.target
+	m := ctx.player.magics[ctx.spell]
+	if t == nil || !t.isAttackTarget(p) {
 		return
 	}
-	damage := magic.getDamage(player.getAttackPower(player.minMC, player.maxMC))
-	delay := cm.MaxDistance(player.location, target.getPosition())*50 + 500
-	player.actionList.pushDelayAction(cm.DelayedTypeMagic, time.Duration(delay)*time.Millisecond, func() {
-		target.attacked(player, damage, cm.DefenceTypeMAC, false)
+	damage := m.getDamage(p.getAttackPower(p.minMC, p.maxMC))
+	delay := cm.MaxDistance(p.location, t.getPosition())*50 + 500
+	p.actionList.pushDelayAction(cm.DelayedTypeMagic, time.Duration(delay)*time.Millisecond, func() {
+		t.attacked(p, damage, cm.DefenceTypeMAC, false)
 	})
 }
 
-// TODO
 func healing(ctx *magicContext) {
-
+	p := ctx.player
+	t := ctx.target
+	m := p.magics[ctx.spell]
+	if t == nil || !t.isFriendlyTarget(p) {
+		return
+	}
+	value := m.getDamage(p.getAttackPower(p.minSC, p.maxSC)*2) + p.level
+	p.actionList.pushDelayAction(cm.DelayedTypeMagic, time.Duration(500*time.Millisecond), func() {
+		t.changeHP(value)
+	})
 }
 
 // TODO
@@ -149,13 +157,12 @@ func soulShield(ctx *magicContext) {
 
 }
 
-// TODO
 func fireWall(ctx *magicContext) {
-	player := ctx.player
-	magic := ctx.player.magics[ctx.spell]
+	p := ctx.player
+	m := p.magics[ctx.spell]
 	location := ctx.targetPoint
-	value := magic.getDamage(player.getAttackPower(player.minMC, player.maxMC))
-	mp := env.maps[player.mapID]
+	value := m.getDamage(p.getAttackPower(p.minMC, p.maxMC))
+	mp := env.maps[p.mapID]
 	mp.actionList.pushDelayAction(cm.DelayedTypeMagic, time.Millisecond*time.Duration(500), func() {
 		dir := cm.MirDirectionUp
 		points := []cm.Point{}
@@ -180,7 +187,7 @@ func fireWall(ctx *magicContext) {
 				if cast {
 					expireTime := mp.now.Add(time.Millisecond * time.Duration((10+value/2)*1000))
 					tickSpeed := time.Duration(2000 * time.Millisecond)
-					s := newSpell(player.objectID, ctx.spell, value, mp.info.ID, point, tickSpeed, expireTime)
+					s := newSpell(p.objectID, ctx.spell, value, mp.info.ID, point, tickSpeed, expireTime)
 					mp.addObject(s)
 					s.broadcastInfo()
 				}
