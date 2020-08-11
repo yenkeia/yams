@@ -22,8 +22,41 @@ func startMagic(ctx *magicContext) (targetID int, err error) {
 		}
 	}
 	switch ctx.spell {
-	case cm.SpellFireBall:
+	case cm.SpellFireBall, // 火球术
+		cm.SpellGreatFireBall, // 大火球
+		cm.SpellFrostCrunch:   // 寒冰掌
 		fireBall(ctx)
+	case cm.SpellHealing: // 治愈术
+		healing(ctx)
+	case cm.SpellRepulsion, // 抗拒火环
+		cm.SpellEnergyRepulsor: // 气功波
+		repulsion(ctx)
+	case cm.SpellElectricShock: // 诱惑之光
+		electricShock(ctx)
+	case cm.SpellPoisoning: // 施毒术
+		poisoning(ctx)
+	case cm.SpellHellFire: // 地狱火
+		hellFire(ctx)
+	case cm.SpellThunderBolt: // 雷电术
+		thunderBolt(ctx)
+	case cm.SpellSoulFireBall: //灵魂火符
+		soulFireBall(ctx)
+	case cm.SpellSummonSkeleton: //召唤骷髅
+		summonSkeleton(ctx)
+	case cm.SpellTeleport: // 瞬息移动
+		teleport(ctx)
+	case cm.SpellHiding: // 隐身术
+		hiding(ctx)
+	case cm.SpellFury: // 血龙剑法
+		fury(ctx)
+	case cm.SpellFireBang, // 爆裂火焰
+		cm.SpellIceStorm: // 冰咆哮
+		fireBang(ctx)
+	case cm.SpellMassHiding: // 集体隐身术
+		massHiding(ctx)
+	case cm.SpellSoulShield, // 幽灵盾
+		cm.SpellBlessedArmour: // 神圣战甲术
+		soulShield(ctx)
 	case cm.SpellFireWall:
 		fireWall(ctx)
 	default:
@@ -46,6 +79,77 @@ func fireBall(ctx *magicContext) {
 	})
 }
 
+// TODO
+func healing(ctx *magicContext) {
+
+}
+
+// TODO
+func repulsion(ctx *magicContext) {
+
+}
+
+// TODO
+func electricShock(ctx *magicContext) {
+
+}
+
+// TODO
+func poisoning(ctx *magicContext) {
+
+}
+
+// TODO
+func hellFire(ctx *magicContext) {
+
+}
+
+// TODO
+func thunderBolt(ctx *magicContext) {
+
+}
+
+// TODO
+func soulFireBall(ctx *magicContext) {
+
+}
+
+// TODO
+func summonSkeleton(ctx *magicContext) {
+
+}
+
+// TODO
+func teleport(ctx *magicContext) {
+
+}
+
+// TODO
+func hiding(ctx *magicContext) {
+
+}
+
+// TODO
+func fury(ctx *magicContext) {
+
+}
+
+// TODO
+func fireBang(ctx *magicContext) {
+
+}
+
+// TODO
+func massHiding(ctx *magicContext) {
+
+}
+
+// TODO
+func soulShield(ctx *magicContext) {
+
+}
+
+// TODO
 func fireWall(ctx *magicContext) {
 	player := ctx.player
 	magic := ctx.player.magics[ctx.spell]
