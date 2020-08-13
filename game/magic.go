@@ -102,9 +102,40 @@ func electricShock(ctx *magicContext) {
 
 }
 
-// TODO
 func poisoning(ctx *magicContext) {
-
+	p := ctx.player
+	t := ctx.target
+	m := ctx.player.magics[ctx.spell]
+	if t == nil || !t.isAttackTarget(p) {
+		return
+	}
+	item := p.getPoison(1)
+	if item == nil {
+		return
+	}
+	value := m.getDamage(p.getAttackPower(p.minSC, p.maxSC))
+	p.consumeItem(item, 1)
+	p.actionList.pushDelayAction(cm.DelayedTypeMagic, time.Duration(500*time.Millisecond), func() {
+		tickSec := (value * 2) + ((m.level + 1) * 7) // 总共持续多少秒
+		switch item.info.Shape {
+		case 1:
+			t.applyPoison(newPoison(
+				time.Duration(2000*time.Millisecond), // 时间间隔2秒
+				tickSec/2,                            // 持续多少秒 / 时间间隔2秒 = 要跳多少次
+				p.objectID,
+				cm.PoisonTypeGreen,
+				value/15+m.level+1+cm.RandomInt(0, p.poisonAttack-1),
+			), p)
+		case 2:
+			t.applyPoison(newPoison(
+				time.Duration(2000*time.Millisecond), // 时间间隔2秒
+				tickSec/2,                            // 持续多少秒 / 时间间隔2秒 = 要跳多少次
+				p.objectID,
+				cm.PoisonTypeRed,
+				0,
+			), p)
+		}
+	})
 }
 
 func hellFire(ctx *magicContext) {

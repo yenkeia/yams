@@ -19,10 +19,10 @@ type player struct {
 	session           *cellnet.Session
 	actionList        *actionList
 	gameStage         int
-	accountID         int // account.ID
-	characterID       int // character.ID 保存数据库用
-	bindLocation      cm.Point
-	bindMapID         int
+	accountID         int      // account.ID
+	characterID       int      // character.ID 保存数据库用
+	bindLocation      cm.Point // 绑定的位置，复活用
+	bindMapID         int      // 绑定的地图，复活用
 	isDead            bool
 	hp                int
 	mp                int
@@ -88,6 +88,7 @@ type player struct {
 	holy              int
 	freezing          int
 	poisonAttack      int
+	poisons           *poisonList // 身上的中毒效果
 }
 
 type recovery struct {
@@ -516,6 +517,7 @@ func (p *player) updateInfo(c *orm.Character) {
 	p.allowTrade = false
 	p.sendedItemInfoIDs = make([]int, 0)
 	p.magics = loadPlayerMagics(p.characterID)
+	p.poisons = newPoisonList()
 }
 
 func (p *player) getClientMagics() []*server.ClientMagic {
@@ -1525,3 +1527,39 @@ func (p *player) cancelItemRental(msg *client.CancelItemRental)                 
 func (p *player) itemRentalLockFee(msg *client.ItemRentalLockFee)                 {}
 func (p *player) itemRentalLockItem(msg *client.ItemRentalLockItem)               {}
 func (p *player) confirmItemRental(msg *client.ConfirmItemRental)                 {}
+
+// getPoison 获取玩家身上装备的毒药
+func (p *player) getPoison(count int) *userItem {
+	for _, userItem := range p.equipment.items {
+		if userItem == nil {
+			continue
+		}
+		if userItem.info.Type == cm.ItemTypeAmulet && userItem.count >= count {
+			if userItem.info.Shape == 1 || userItem.info.Shape == 2 {
+				return userItem
+			}
+		}
+	}
+	return nil
+}
+
+// consumeItem 减少物品数量
+func (p *player) consumeItem(ui *userItem, count int) {
+	bag := p.equipment
+	idx, item := p.getUserItemByObjectID(cm.MirGridTypeEquipment, ui.objectID)
+	if idx == -1 || item.objectID != ui.objectID {
+		bag = p.inventory
+		idx, item = p.getUserItemByObjectID(cm.MirGridTypeInventory, ui.objectID)
+	}
+	if idx == -1 || item.objectID != ui.objectID {
+		// 没该物品
+		return
+	}
+	p.enqueue(&server.DeleteItem{UniqueID: uint64(ui.objectID), Count: uint32(count)})
+	bag.useCount(idx, count)
+}
+
+// TODO
+func (p *player) applyPoison(*poison, attacker) {
+
+}

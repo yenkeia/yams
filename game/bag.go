@@ -116,3 +116,7 @@ func (b *bag) setCount(index int, count int) {
 	}
 	return
 }
+
+func (b *bag) useCount(i int, c int) {
+	b.setCount(i, b.items[i].count-c)
+}

@@ -1,6 +1,7 @@
 package game
 
 import (
+	"container/list"
 	"fmt"
 	"time"
 
@@ -11,22 +12,40 @@ import (
 
 type monster struct {
 	base
-	respawnID    int
-	info         *orm.MonsterInfo
-	isDead       bool
-	isSkeleton   bool
-	poison       cm.PoisonType
-	isHidden     bool
-	hp           int
-	maxHP        int
-	expOwnerID   int // 获得经验的玩家 objectID
-	expOwnerTime time.Time
-	masterID     int           // 怪物主人 objectID
-	deleteTime   time.Time     // 从 env.monsters 中删除的时间
-	bt           *behaviorTree // 怪物行为树
-	targetID     int           // 攻击目标 objectID
-	moveTime     time.Time     // TODO 现在的移动速度和攻击速度是在行为树里定义的，以后改成数据库里的值
-	attackTime   time.Time     // TODO
+	respawnID     int
+	info          *orm.MonsterInfo
+	isDead        bool
+	isSkeleton    bool
+	poison        cm.PoisonType
+	isHidden      bool
+	hp            int
+	maxHP         int
+	minAC         int
+	maxAC         int
+	minMAC        int
+	maxMAC        int
+	minDC         int
+	maxDC         int
+	minMC         int
+	maxMC         int
+	minSC         int
+	maxSC         int
+	accuracy      int
+	agility       int
+	moveSpeed     int
+	attackSpeed   int
+	armourRate    float32
+	damageRate    float32
+	expOwnerID    int // 获得经验的玩家 objectID
+	expOwnerTime  time.Time
+	masterID      int           // 怪物主人 objectID
+	deleteTime    time.Time     // 从 env.monsters 中删除的时间
+	bt            *behaviorTree // 怪物行为树
+	targetID      int           // 攻击目标 objectID
+	moveTime      time.Time     // TODO 现在的移动速度和攻击速度是在行为树里定义的，以后改成数据库里的值
+	attackTime    time.Time     // TODO
+	poisons       *poisonList   // 怪物身上的中毒效果
+	currentPoison cm.PoisonType
 }
 
 func newMonster(respawnID int, mapID int, location cm.Point, info *orm.MonsterInfo) *monster {
@@ -42,6 +61,22 @@ func newMonster(respawnID int, mapID int, location cm.Point, info *orm.MonsterIn
 		expOwnerID:   0,
 		expOwnerTime: time.Now(),
 		masterID:     0,
+		minAC:        info.MinAC,
+		maxAC:        info.MaxAC,
+		minMAC:       info.MinMAC,
+		maxMAC:       info.MaxMAC,
+		minDC:        info.MinDC,
+		maxDC:        info.MaxDC,
+		minMC:        info.MinMC,
+		maxMC:        info.MaxMC,
+		minSC:        info.MinSC,
+		maxSC:        info.MaxSC,
+		accuracy:     info.Accuracy,
+		agility:      info.Agility,
+		moveSpeed:    info.MoveSpeed,
+		attackSpeed:  info.AttackSpeed,
+		armourRate:   1.0,
+		damageRate:   1.0,
 	}
 	m.objectID = env.newObjectID()
 	m.name = info.Name
@@ -52,6 +87,7 @@ func newMonster(respawnID int, mapID int, location cm.Point, info *orm.MonsterIn
 	m.bt = newBehaviorTree(m)
 	m.moveTime = time.Now()
 	m.attackTime = time.Now()
+	m.poisons = newPoisonList()
 	return m
 }
 
@@ -95,6 +131,17 @@ func (m *monster) attack(...interface{}) {
 	// log.Debugf("monster[%s] attack. target: %d", m.name, m.getAttackTarget().getObjectID())
 }
 
+// getDefencePower 获取防御值
+func (m *monster) getDefencePower(min, max int) int {
+	if min < 0 {
+		min = 0
+	}
+	if min > max {
+		max = min
+	}
+	return cm.RandomInt(min, max)
+}
+
 // 怪物定时轮询
 func (m *monster) update(now time.Time) {
 	if m.isDead && now.After(m.deleteTime) {
@@ -110,6 +157,46 @@ func (m *monster) update(now time.Time) {
 	if !m.isDead {
 		m.bt.update(now)
 	}
+	m.processPoison(now)
+}
+
+func (m *monster) processPoison(now time.Time) {
+	if m.isDead {
+		return
+	}
+	ptype := cm.PoisonTypeNone
+	l := m.poisons.l
+	var next *list.Element
+	for e := l.Front(); e != nil; e = next {
+		next = e.Next()
+		ps := e.Value.(*poison)
+		// if poison.Owner == nil || poison.TickCnt > poison.TickNum {
+		if ps.tickTime >= ps.tickNum {
+			l.Remove(e)
+			continue
+		}
+		if now.After(ps.tickNextTime) {
+			ps.tickNextTime = ps.tickNextTime.Add(ps.tickDuration)
+			ps.tickTime++
+			if ps.poisonType == cm.PoisonTypeGreen || ps.poisonType == cm.PoisonTypeBleeding {
+				if ps.poisonType == cm.PoisonTypeBleeding {
+					m.broadcast(&server.ObjectEffect{ObjectID: uint32(m.objectID), Effect: cm.SpellEffectBleeding, EffectType: 0})
+				}
+				m.changeHP(-ps.value)
+				m.broadcastDamageIndicator(cm.DamageTypeHit, -ps.value)
+			}
+		}
+		switch ps.poisonType {
+		case cm.PoisonTypeRed:
+			m.armourRate -= 0.5
+		}
+		ptype |= ps.poisonType
+	}
+	if ptype == m.currentPoison {
+		return
+	}
+	m.currentPoison = ptype
+	m.broadcast(&server.ObjectPoisoned{ObjectID: uint32(m.objectID), Poison: ptype})
 }
 
 // ChangeHP 怪物改变血量 amount 可以是负数(扣血)
@@ -380,4 +467,27 @@ func (m *monster) inAttackRange() bool {
 		return false
 	}
 	return !target.getPosition().Equal(m.location) && cm.InRange(m.location, target.getPosition(), 1)
+}
+
+func (m *monster) applyPoison(ps *poison, atk attacker) {
+	ignoreDefence := false
+	owner, ok := env.players[ps.ownerID]
+	if !ok {
+		return
+	}
+	if owner.isAttackTarget(m) {
+		m.targetID = ps.ownerID
+	}
+	if !ignoreDefence && (ps.poisonType == cm.PoisonTypeGreen) {
+		armour := m.getDefencePower(m.minMAC, m.maxMAC)
+		if ps.value < armour {
+			ps.poisonType = cm.PoisonTypeNone
+		} else {
+			ps.value -= armour
+		}
+	}
+	if ps.poisonType == cm.PoisonTypeNone {
+		return
+	}
+	m.poisons.add(ps)
 }
