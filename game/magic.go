@@ -65,6 +65,7 @@ func startMagic(ctx *magicContext) (targetID int, err error) {
 	return
 }
 
+// 火球/大火球/寒冰掌
 func fireBall(ctx *magicContext) {
 	p := ctx.player
 	t := ctx.target
@@ -79,6 +80,7 @@ func fireBall(ctx *magicContext) {
 	})
 }
 
+// 治愈术
 func healing(ctx *magicContext) {
 	p := ctx.player
 	t := ctx.target
@@ -92,16 +94,17 @@ func healing(ctx *magicContext) {
 	})
 }
 
-// TODO
+// TODO 抗拒火环/气功波
 func repulsion(ctx *magicContext) {
 
 }
 
-// TODO
+// TODO 诱惑之光
 func electricShock(ctx *magicContext) {
 
 }
 
+// 施毒术
 func poisoning(ctx *magicContext) {
 	p := ctx.player
 	t := ctx.target
@@ -138,6 +141,7 @@ func poisoning(ctx *magicContext) {
 	})
 }
 
+// 地狱火
 func hellFire(ctx *magicContext) {
 	p := ctx.player
 	m := p.magics[ctx.spell]
@@ -165,6 +169,7 @@ func hellFire(ctx *magicContext) {
 	})
 }
 
+// 雷电术
 func thunderBolt(ctx *magicContext) {
 	p := ctx.player
 	t := ctx.target
@@ -178,46 +183,47 @@ func thunderBolt(ctx *magicContext) {
 	})
 }
 
-// TODO
+// TODO 灵魂火符
 func soulFireBall(ctx *magicContext) {
 
 }
 
-// TODO
+// TODO 召唤骷髅
 func summonSkeleton(ctx *magicContext) {
 
 }
 
-// TODO
+// TODO 瞬息移动
 func teleport(ctx *magicContext) {
 
 }
 
-// TODO
+// TODO 隐身术
 func hiding(ctx *magicContext) {
 
 }
 
-// TODO
+// TODO 血龙剑法
 func fury(ctx *magicContext) {
 
 }
 
-// TODO
+// TODO 爆裂火焰/冰咆哮
 func fireBang(ctx *magicContext) {
 
 }
 
-// TODO
+// TODO 集体隐身术
 func massHiding(ctx *magicContext) {
 
 }
 
-// TODO
+// TODO 幽灵盾/神圣战甲术
 func soulShield(ctx *magicContext) {
 
 }
 
+// 火墙
 func fireWall(ctx *magicContext) {
 	p := ctx.player
 	m := p.magics[ctx.spell]
