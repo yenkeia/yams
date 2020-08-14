@@ -89,6 +89,7 @@ type player struct {
 	freezing          int
 	poisonAttack      int
 	poisons           *poisonList // 身上的中毒效果
+	buffs             *buffList   // 身上的 buff
 }
 
 type recovery struct {
@@ -161,6 +162,7 @@ func (p *player) isFriendlyTarget(atk attacker) bool {
 func (p *player) update(now time.Time) {
 	p.actionList.execute(now)
 	p.updateRecovery(now)
+	p.processBuffs(now)
 }
 
 // 处理玩家自身回复，药水回复
@@ -188,6 +190,25 @@ func (p *player) updateRecovery(now time.Time) {
 		rec.recoveryNextTime = now.Add(rec.recoveryDuration)
 		p.changeHP(int(float32(p.maxHP)*0.03) + 1 + p.healthRecovery)
 		p.changeMP(int(float32(p.maxMP)*0.03) + 1 + p.manaRecovery)
+	}
+}
+
+func (p *player) processBuffs(now time.Time) {
+	refresh := false
+	for e := p.buffs.ls.Front(); e != nil; e = e.Next() {
+		buff := e.Value.(*buff)
+		if now.Before(buff.expireTime) || buff.infinite || buff.paused {
+			continue
+		}
+		p.buffs.removeBuff(buff.buffType)
+		p.enqueue(&server.RemoveBuff{Type: buff.buffType, ObjectID: uint32(p.objectID)})
+		if buff.visible {
+			p.broadcast(&server.RemoveBuff{Type: buff.buffType, ObjectID: uint32(p.objectID)})
+		}
+		refresh = true
+	}
+	if refresh {
+		p.refreshStats()
 	}
 }
 
@@ -518,6 +539,7 @@ func (p *player) updateInfo(c *orm.Character) {
 	p.sendedItemInfoIDs = make([]int, 0)
 	p.magics = loadPlayerMagics(p.characterID)
 	p.poisons = newPoisonList()
+	p.buffs = newBuffList()
 }
 
 func (p *player) getClientMagics() []*server.ClientMagic {
@@ -1543,6 +1565,19 @@ func (p *player) getPoison(count int) *userItem {
 	return nil
 }
 
+// getAmulet 获取玩家身上装备的护身符
+func (p *player) getAmulet(count int) *userItem {
+	for _, ui := range p.equipment.items {
+		if ui == nil {
+			continue
+		}
+		if ui.info.Type == cm.ItemTypeAmulet && ui.count >= count {
+			return ui
+		}
+	}
+	return nil
+}
+
 // consumeItem 减少物品数量
 func (p *player) consumeItem(ui *userItem, count int) {
 	bag := p.equipment
@@ -1562,4 +1597,38 @@ func (p *player) consumeItem(ui *userItem, count int) {
 // TODO
 func (p *player) applyPoison(*poison, attacker) {
 
+}
+
+func (p *player) addBuff(b *buff) {
+	if p.buffs.has(b.buffType) {
+		return
+	}
+	p.buffs.addBuff(b)
+	casterName := ""
+	if b.casterID != 0 {
+		if caster, ok := env.players[b.casterID]; ok {
+			casterName = caster.name
+		}
+	}
+	if b.values == nil {
+		b.values = []int{}
+	}
+	values := []int32{}
+	for _, v := range b.values {
+		values = append(values, int32(v))
+	}
+	msg := &server.AddBuff{
+		Type:     b.buffType,
+		Caster:   casterName,
+		Expire:   b.expireTime.Unix(),
+		Values:   values,
+		Infinite: b.infinite,
+		ObjectID: uint32(p.objectID),
+		Visible:  b.visible,
+	}
+	p.enqueue(msg)
+	if b.visible {
+		p.broadcast(msg)
+	}
+	p.refreshStats()
 }

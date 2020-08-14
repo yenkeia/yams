@@ -198,9 +198,24 @@ func teleport(ctx *magicContext) {
 
 }
 
-// TODO 隐身术
+// 隐身术
 func hiding(ctx *magicContext) {
-
+	p := ctx.player
+	m := p.magics[ctx.spell]
+	item := p.getAmulet(1)
+	if item == nil {
+		return
+	}
+	p.consumeItem(item, 1)
+	value := p.getAttackPower(p.minSC, p.maxSC) + (m.level+1)*5
+	p.actionList.pushDelayAction(cm.DelayedTypeMagic, time.Duration(500*time.Millisecond), func() {
+		if p.buffs.has(cm.BuffTypeHiding) {
+			return
+		}
+		mp := env.maps[p.mapID]
+		p.addBuff(newBuff(cm.BuffTypeHiding, p.objectID, mp.now.Add(time.Duration(value*1000)*time.Millisecond), []int{}))
+		// LevelMagic(magic);
+	})
 }
 
 // TODO 血龙剑法
