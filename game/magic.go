@@ -57,8 +57,72 @@ func startMagic(ctx *magicContext) (targetID int, err error) {
 	case cm.SpellSoulShield, // 幽灵盾
 		cm.SpellBlessedArmour: // 神圣战甲术
 		soulShield(ctx)
-	case cm.SpellFireWall:
+	case cm.SpellFireWall: // 火墙
 		fireWall(ctx)
+	case cm.SpellLightning: // 疾光电影
+		lightning(ctx)
+	case cm.SpellMassHealing: // 群体治疗术
+		massHealing(ctx)
+	case cm.SpellShoulderDash: // 野蛮冲撞
+		shoulderDash(ctx)
+	case cm.SpellThunderStorm, cm.SpellFlameField: // 地狱雷光/火龙气焰
+		thunderStorm(ctx)
+	case cm.SpellMagicShield: // 魔法盾
+		magicShield(ctx)
+	case cm.SpellFlameDisruptor: // 火龙术
+		flameDisruptor(ctx)
+	case cm.SpellTurnUndead: // 圣言术
+		turnUndead(ctx)
+	case cm.SpellMagicBooster: // 深延术
+		magicBooster(ctx)
+	case cm.SpellVampirism: // 嗜血术
+		vampirism(ctx)
+	case cm.SpellSummonShinsu: // 召唤神兽
+		summonShinsu(ctx)
+	case cm.SpellPurification: // 净化术
+		purification(ctx)
+	case cm.SpellLionRoar: // 狮子吼
+		lionRoar(ctx)
+	case cm.SpellRevelation: // 心灵启示
+		revelation(ctx)
+	case cm.SpellPoisonCloud: // 毒云
+		poisonCloud(ctx)
+	case cm.SpellEntrapment: // 捕绳剑
+		entrapment(ctx)
+	case cm.SpellBladeAvalanche: // 攻破斩
+		bladeAvalanche(ctx)
+	case cm.SpellSlashingBurst: // 日闪
+		slashingBurst(ctx)
+	case cm.SpellRage: // 剑气爆
+		rage(ctx)
+	case cm.SpellMirroring: // 分身术
+		mirroring(ctx)
+	case cm.SpellBlizzard: // 天霜冰环
+		blizzard(ctx)
+	case cm.SpellMeteorStrike: // 流星火雨
+		meteorStrike(ctx)
+	case cm.SpellIceThrust: // 冰焰术
+		iceThrust(ctx)
+	case cm.SpellProtectionField: // 护身气幕
+		protectionField(ctx)
+	case cm.SpellPetEnhancer: // 血龙水
+		petEnhancer(ctx)
+	case cm.SpellTrapHexagon: // 困魔咒
+		trapHexagon(ctx)
+	case cm.SpellReincarnation: // 复活术
+		reincarnation(ctx)
+	case cm.SpellCurse: // 诅咒术
+		curse(ctx)
+	case cm.SpellSummonHolyDeva: // 召唤月灵
+		summonHolyDeva(ctx)
+	case cm.SpellHallucination: // 迷魂术
+		hallucination(ctx)
+	case cm.SpellEnergyShield: // 阴阳盾
+		energyShield(ctx)
+	case cm.SpellUltimateEnhancer: // 无极真气
+		ultimateEnhancer(ctx)
+	case cm.SpellPlague: // 瘟疫
+		plague(ctx)
 	default:
 		return 0, fmt.Errorf("技能暂未实现")
 	}
@@ -277,3 +341,116 @@ func fireWall(ctx *magicContext) {
 		}
 	})
 }
+
+// TODO 疾光电影
+func lightning(ctx *magicContext) {}
+
+// TODO 疾光电影
+func massHealing(ctx *magicContext) {}
+
+// TODO 野蛮冲撞
+func shoulderDash(ctx *magicContext) {}
+
+// TODO 地狱雷光/火龙气焰
+func thunderStorm(ctx *magicContext) {
+	// if (spell == Spell.FlameField)
+	//     SpellTime = Envir.Time + 2499; //Spell Delay
+	// if (spell == Spell.StormEscape)
+	//     //Start teleport.
+	//     ActionList.Add(new DelayedAction(DelayedType.Magic, Envir.Time + 749, magic, location));
+	// break;
+}
+
+// TODO 魔法盾
+func magicShield(ctx *magicContext) {
+	//     ActionList.Add(new DelayedAction(DelayedType.Magic, Envir.Time + 500, magic, magic.GetPower(GetAttackPower(MinMC, MaxMC) + 15)));
+}
+
+// TODO 火龙术
+func flameDisruptor(ctx *magicContext) {}
+
+// TODO 圣言术
+func turnUndead(ctx *magicContext) {}
+
+// TODO 深延术
+func magicBooster(ctx *magicContext) {}
+
+// TODO 嗜血术
+func vampirism(ctx *magicContext) {}
+
+// TODO 召唤神兽
+func summonShinsu(ctx *magicContext) {}
+
+// TODO 净化术
+func purification(ctx *magicContext) {
+	//     if (target == null)
+	//     {
+	//         target = this;
+	//         targetID = ObjectID;
+	//     }
+}
+
+// TODO 狮子吼
+func lionRoar(ctx *magicContext) {
+	//     CurrentMap.ActionList.Add(new DelayedAction(DelayedType.Magic, Envir.Time + 500, this, magic, CurrentLocation));
+}
+
+// TODO 心灵启示
+func revelation(ctx *magicContext) {}
+
+// TODO 毒云
+func poisonCloud(ctx *magicContext) {}
+
+// TODO 捕绳剑
+func entrapment(ctx *magicContext) {}
+
+// TODO 攻破斩
+func bladeAvalanche(ctx *magicContext) {}
+
+// TODO 日闪
+func slashingBurst(ctx *magicContext) {}
+
+// TODO 剑气爆
+func rage(ctx *magicContext) {}
+
+// TODO 分身术
+func mirroring(ctx *magicContext) {}
+
+// TODO 天霜冰环
+func blizzard(ctx *magicContext) {}
+
+// TODO 流星火雨
+func meteorStrike(ctx *magicContext) {}
+
+// TODO 冰焰术
+func iceThrust(ctx *magicContext) {}
+
+// TODO 护身气幕
+func protectionField(ctx *magicContext) {}
+
+// TODO 血龙水
+func petEnhancer(ctx *magicContext) {}
+
+// TODO 困魔咒
+func trapHexagon(ctx *magicContext) {}
+
+// TODO 复活术
+func reincarnation(ctx *magicContext) {}
+
+// TODO 诅咒术
+func curse(ctx *magicContext) {}
+
+// TODO 召唤月灵
+func summonHolyDeva(ctx *magicContext) {}
+
+// TODO 迷魂术
+func hallucination(ctx *magicContext) {}
+
+// TODO 阴阳盾
+func energyShield(ctx *magicContext) {}
+
+// TODO 无极真气
+func ultimateEnhancer(ctx *magicContext) {}
+
+// TODO 瘟疫
+func plague(ctx *magicContext) {}
