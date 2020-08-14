@@ -16,80 +16,83 @@ import (
 
 type player struct {
 	base
-	session           *cellnet.Session
-	actionList        *actionList
-	gameStage         int
-	accountID         int      // account.ID
-	characterID       int      // character.ID 保存数据库用
-	bindLocation      cm.Point // 绑定的位置，复活用
-	bindMapID         int      // 绑定的地图，复活用
-	isDead            bool
-	hp                int
-	mp                int
-	recovery          recovery
-	maxHP             int
-	maxMP             int
-	level             int
-	experience        int
-	maxExperience     int
-	guildName         string
-	guildRankName     string
-	class             cm.MirClass
-	gender            cm.MirGender
-	hair              int
-	light             int
-	looksWeapon       int
-	looksWeaponEffect int
-	looksArmour       int
-	looksWings        int
-	gold              int
-	inventory         *bag // 46
-	equipment         *bag // 14
-	questInventory    *bag // 40
-	storage           *bag // 80
-	trade             *bag // 10	交易框的索引是从上到下的，背包是从左到右
-	attackMode        cm.AttackMode
-	petMode           cm.PetMode
-	allowGroup        bool
-	allowTrade        bool
-	sendedItemInfoIDs []int
-	magics            map[cm.Spell]*userMagic
-	dead              bool
-	callingNPC        int // obejctID
-	callingNPCKey     string
-	minAC             int // 物理防御力
-	maxAC             int
-	minMAC            int // 魔法防御力
-	maxMAC            int
-	minDC             int // 攻击力
-	maxDC             int
-	minMC             int // 魔法力
-	maxMC             int
-	minSC             int // 道术力
-	maxSC             int
-	accuracy          int
-	agility           int
-	criticalRate      int
-	criticalDamage    int
-	currentBagWeight  int
-	maxBagWeight      int
-	maxWearWeight     int
-	maxHandWeight     int
-	attackSpeed       int
-	luck              int
-	lifeOnHit         int
-	hpDrainRate       int // hp 流失率
-	reflect           int
-	magicResist       int
-	poisonResist      int
-	healthRecovery    int
-	manaRecovery      int
-	poisonRecovery    int
-	holy              int
-	freezing          int
-	poisonAttack      int
-	poisons           *poisonList // 身上的中毒效果
-	buffs             *buffList   // 身上的 buff
+	session               *cellnet.Session
+	actionList            *actionList
+	gameStage             int
+	accountID             int      // account.ID
+	characterID           int      // character.ID 保存数据库用
+	bindLocation          cm.Point // 绑定的位置，复活用
+	bindMapID             int      // 绑定的地图，复活用
+	isDead                bool
+	hp                    int
+	mp                    int
+	recovery              recovery
+	maxHP                 int
+	maxMP                 int
+	level                 int
+	experience            int
+	maxExperience         int
+	guildName             string
+	guildRankName         string
+	class                 cm.MirClass
+	gender                cm.MirGender
+	hair                  int
+	light                 int
+	looksWeapon           int
+	looksWeaponEffect     int
+	looksArmour           int
+	looksWings            int
+	gold                  int
+	inventory             *bag // 46
+	equipment             *bag // 14
+	questInventory        *bag // 40
+	storage               *bag // 80
+	trade                 *bag // 10	交易框的索引是从上到下的，背包是从左到右
+	attackMode            cm.AttackMode
+	petMode               cm.PetMode
+	allowGroup            bool
+	allowTrade            bool
+	sendedItemInfoIDs     []int
+	magics                map[cm.Spell]*userMagic
+	dead                  bool
+	callingNPC            int // obejctID
+	callingNPCKey         string
+	minAC                 int // 物理防御力
+	maxAC                 int
+	minMAC                int // 魔法防御力
+	maxMAC                int
+	minDC                 int // 攻击力
+	maxDC                 int
+	minMC                 int // 魔法力
+	maxMC                 int
+	minSC                 int // 道术力
+	maxSC                 int
+	accuracy              int
+	agility               int
+	criticalRate          int
+	criticalDamage        int
+	currentBagWeight      int
+	maxBagWeight          int
+	maxWearWeight         int
+	maxHandWeight         int
+	attackSpeed           int
+	luck                  int
+	lifeOnHit             int
+	hpDrainRate           int // hp 流失率
+	reflect               int
+	magicResist           int
+	poisonResist          int
+	healthRecovery        int
+	manaRecovery          int
+	poisonRecovery        int
+	holy                  int
+	freezing              int
+	poisonAttack          int
+	poisons               *poisonList // 身上的中毒效果
+	buffs                 *buffList   // 身上的 buff
+	hasMagicShield        bool        // 魔法盾技能
+	magicShieldLevel      int         // 魔法盾等级
+	magicShieldExpireTime time.Time   // 魔法盾过期时间
 }
 
 type recovery struct {
@@ -161,12 +164,19 @@ func (p *player) isFriendlyTarget(atk attacker) bool {
 
 func (p *player) update(now time.Time) {
 	p.actionList.execute(now)
-	p.updateRecovery(now)
+	p.processRecovery(now)
 	p.processBuffs(now)
+	// 魔法盾
+	if p.hasMagicShield && now.After(p.magicShieldExpireTime) {
+		p.hasMagicShield = false
+		p.magicShieldLevel = 0
+		env.maps[p.mapID].broadcast(p.location, &server.ObjectEffect{ObjectID: uint32(p.objectID), Effect: cm.SpellEffectMagicShieldDown}, 0)
+		p.buffs.removeBuff(cm.BuffTypeMagicShield)
+	}
 }
 
 // 处理玩家自身回复，药水回复
-func (p *player) updateRecovery(now time.Time) {
+func (p *player) processRecovery(now time.Time) {
 	rec := &p.recovery
 	if rec.hpPotValue != 0 && rec.hpPotNextTime.Before(now) && p.hp != p.maxHP {
 		p.changeHP(rec.hpPotPerValue)
@@ -1308,6 +1318,12 @@ func (p *player) die() {
 	p.isDead = true
 	p.enqueue(&server.Death{Direction: p.direction, LocationX: int32(p.location.X), LocationY: int32(p.location.Y)})
 	p.broadcast(&server.ObjectDied{ObjectID: uint32(p.objectID), Direction: p.direction, LocationX: int32(p.location.X), LocationY: int32(p.location.Y), Type: 0})
+	// 魔法盾
+	if p.hasMagicShield {
+		p.hasMagicShield = false
+		env.maps[p.mapID].broadcast(p.location, &server.ObjectEffect{ObjectID: uint32(p.objectID), Effect: cm.SpellEffectMagicShieldDown}, 0)
+		p.buffs.removeBuff(cm.BuffTypeMagicShield)
+	}
 }
 
 func (p *player) rangeAttack(msg *client.RangeAttack) {}

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/yenkeia/yams/game/cm"
+	"github.com/yenkeia/yams/game/proto/server"
 )
 
 type magicContext struct {
@@ -361,9 +362,23 @@ func thunderStorm(ctx *magicContext) {
 	// break;
 }
 
-// TODO 魔法盾
+// 魔法盾
 func magicShield(ctx *magicContext) {
-	//     ActionList.Add(new DelayedAction(DelayedType.Magic, Envir.Time + 500, magic, magic.GetPower(GetAttackPower(MinMC, MaxMC) + 15)));
+	p := ctx.player
+	m := p.magics[ctx.spell]
+	value := m.getPower(p.getAttackPower(p.minMC, p.maxMC) + 15)
+	p.actionList.pushDelayAction(cm.DelayedTypeMagic, time.Duration(500*time.Millisecond), func() {
+		if p.hasMagicShield {
+			return
+		}
+		p.hasMagicShield = true
+		mp := env.maps[p.mapID]
+		p.magicShieldExpireTime = mp.now.Add(time.Duration(value*1000) * time.Millisecond)
+		p.magicShieldLevel = m.level
+		mp.broadcast(p.location, &server.ObjectEffect{ObjectID: uint32(p.objectID), Effect: cm.SpellEffectMagicShieldUp}, 0)
+		p.buffs.addBuff(newBuff(cm.BuffTypeMagicShield, p.objectID, p.magicShieldExpireTime, []int{p.magicShieldLevel}))
+		// LevelMagic(magic);
+	})
 }
 
 // TODO 火龙术
