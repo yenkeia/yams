@@ -419,11 +419,53 @@ func fireWall(ctx *magicContext) {
 	})
 }
 
-// TODO 疾光电影
-func lightning(ctx *magicContext) {}
+// 疾光电影
+func lightning(ctx *magicContext) {
+	p := ctx.player
+	m := p.magics[ctx.spell]
+	mp := env.maps[p.mapID]
+	value := m.getDamage(p.getAttackPower(p.minMC, p.maxMC))
+	location := p.location
+	mp.actionList.pushDelayAction(cm.DelayedTypeMagic, time.Duration(500)*time.Millisecond, func() {
+		for i := 0; i < 6; i++ {
+			location = cm.PointMove(location, p.direction, 1)
+			if !mp.validPoint(location) {
+				continue
+			}
+			cell := mp.getCell(location)
+			if cell.objects == nil {
+				continue
+			}
+			for it := cell.objects.Front(); it != nil; it = it.Next() {
+				target := it.Value.(attackTarget)
+				if !target.isAttackTarget(p) {
+					continue
+				}
+				target.attacked(p, value, cm.DefenceTypeMAC, false)
+			}
+		}
+	})
+}
 
-// TODO 疾光电影
-func massHealing(ctx *magicContext) {}
+// 群体治疗术
+func massHealing(ctx *magicContext) {
+	p := ctx.player
+	m := p.magics[ctx.spell]
+	mp := env.maps[p.mapID]
+	value := m.getDamage(p.getAttackPower(p.minSC, p.maxSC))
+	mp.actionList.pushDelayAction(cm.DelayedTypeMagic, time.Duration(500)*time.Millisecond, func() {
+		mp.rangeCell(ctx.targetPoint, 1, func(c *cell, x, y int) bool {
+			for it := c.objects.Front(); it != nil; it = it.Next() {
+				if target, ok := it.Value.(attackTarget); ok {
+					if target.isFriendlyTarget(p) {
+						target.changeHP(value)
+					}
+				}
+			}
+			return true
+		})
+	})
+}
 
 // TODO 野蛮冲撞
 func shoulderDash(ctx *magicContext) {}
