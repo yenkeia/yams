@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"unicode"
 )
 
 // GetFiles 返回目录下所有文件路径
@@ -103,4 +104,39 @@ func MaxDistance(p1, p2 Point) int {
 // PointMove ..
 func PointMove(p Point, dir MirDirection, step int) Point {
 	return p.NextPoint(dir, uint32(step))
+}
+
+// SplitString 按空格拆分字符串。如果加了引号，那么认为是一个字符串
+func SplitString(s string) []string {
+	ret := []string{}
+	start := 0
+	var stat rune
+	r := []rune(s)
+	for i := 0; i < len(r); i++ {
+		if unicode.IsSpace(r[i]) {
+			if stat == 1 {
+				ret = append(ret, string(r[start:i]))
+				stat = 0
+			}
+		} else if r[i] == '\'' || r[i] == '"' {
+			if stat == r[i] {
+				ret = append(ret, string(r[start:i]))
+				stat = 0
+			} else {
+				if stat == 0 {
+					stat = r[i]
+					start = i + 1
+				}
+			}
+		} else {
+			if stat == 0 {
+				start = i
+				stat = 1
+			}
+		}
+	}
+	if stat != 0 {
+		ret = append(ret, string(r[start:]))
+	}
+	return ret
 }

@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"io/ioutil"
 	"strings"
 
 	"github.com/jinzhu/gorm"
@@ -23,6 +24,7 @@ type gameDatabase struct {
 	baseStatsMap      map[cm.MirClass]*orm.BaseStats // 各职业基础属性
 	levelMaxExpMap    map[int]int                    // 玩家等级和最大经验对应关系
 	spellMagicInfoMap map[cm.Spell]*orm.MagicInfo    // key: orm.MagicInfo.Spell
+	dropInfoMap       map[string][]*dropInfo         // key: orm.MonsterInfo.Name, value: 怪物掉落物品列表
 }
 
 func newGameDatabase() *gameDatabase {
@@ -46,6 +48,7 @@ func newGameDatabase() *gameDatabase {
 	gameData.baseStatsMap = make(map[cm.MirClass]*orm.BaseStats)
 	gameData.levelMaxExpMap = make(map[int]int)
 	gameData.spellMagicInfoMap = make(map[cm.Spell]*orm.MagicInfo)
+	gameData.dropInfoMap = make(map[string][]*dropInfo)
 	for _, ii := range gameData.itemInfos {
 		gameData.itemInfoMap[ii.ID] = ii
 		gameData.itemInfoNameMap[ii.Name] = ii
@@ -71,6 +74,21 @@ func newGameDatabase() *gameDatabase {
 	}
 	for _, m := range gameData.magicInfos {
 		gameData.spellMagicInfoMap[cm.Spell(m.Spell)] = m
+	}
+	// 怪物物品掉落
+	dropDir := conf.Assets + "/Drops/"
+	files, err := ioutil.ReadDir(dropDir)
+	if err != nil {
+		panic(err)
+	}
+	for _, file := range files {
+		dropInfos, err := loadDropFile(dropDir+file.Name(), gameData.itemInfoNameMap)
+		if err != nil {
+			panic(err)
+		}
+		tmp := []rune(file.Name())
+		name := string(tmp[:len(tmp)-4])
+		gameData.dropInfoMap[name] = dropInfos
 	}
 	return gameData
 }
