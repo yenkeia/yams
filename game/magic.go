@@ -41,7 +41,10 @@ func startMagic(ctx *magicContext) (targetID int, err error) {
 	case cm.SpellThunderBolt: // 雷电术
 		thunderBolt(ctx)
 	case cm.SpellSoulFireBall: //灵魂火符
-		soulFireBall(ctx)
+		ok := soulFireBall(ctx)
+		if !ok {
+			targetID = 0
+		}
 	case cm.SpellSummonSkeleton: //召唤骷髅
 		summonSkeleton(ctx)
 	case cm.SpellTeleport: // 瞬息移动
@@ -248,9 +251,25 @@ func thunderBolt(ctx *magicContext) {
 	})
 }
 
-// TODO 灵魂火符
-func soulFireBall(ctx *magicContext) {
-
+// 灵魂火符
+func soulFireBall(ctx *magicContext) bool {
+	p := ctx.player
+	t := ctx.target
+	m := p.magics[ctx.spell]
+	item := p.getAmulet(1)
+	if item == nil {
+		return false
+	}
+	if t == nil || !t.isAttackTarget(p) {
+		return false
+	}
+	value := m.getDamage(p.getAttackPower(p.minSC, p.maxSC))
+	delay := cm.MaxDistance(p.location, t.getPosition())*50 + 500
+	p.actionList.pushDelayAction(cm.DelayedTypeMagic, time.Duration(delay)*time.Millisecond, func() {
+		t.attacked(p, value, cm.DefenceTypeMAC, false)
+	})
+	p.consumeItem(item, 1)
+	return true
 }
 
 // TODO 召唤骷髅
@@ -258,9 +277,30 @@ func summonSkeleton(ctx *magicContext) {
 
 }
 
-// TODO 瞬息移动
+// 瞬息移动
 func teleport(ctx *magicContext) {
-
+	p := ctx.player
+	m := p.magics[ctx.spell]
+	p.actionList.pushDelayAction(cm.DelayedTypeMagic, time.Duration(200)*time.Millisecond, func() {
+		bindMap := env.maps[p.bindMapID]
+		bindLocation := p.bindLocation
+		currentMap := env.maps[p.mapID]
+		mapSizeX := bindMap.width / (m.level + 1)
+		mapSizeY := bindMap.height / (m.level + 1)
+		if currentMap.info.NoTeleport {
+			p.receiveChat("无法在这里传送。", cm.ChatTypeSystem)
+			return
+		}
+		for i := 0; i < 200; i++ {
+			newLocation := cm.NewPoint(
+				int(bindLocation.X)+cm.RandomInt(-mapSizeX, mapSizeX-1),
+				int(bindLocation.Y)+cm.RandomInt(-mapSizeY, mapSizeY-1),
+			)
+			if p.teleport(bindMap, newLocation) {
+				break
+			}
+		}
+	})
 }
 
 // 隐身术

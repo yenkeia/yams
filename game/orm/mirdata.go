@@ -16,23 +16,23 @@ type MapInfo struct {
 	Light           int
 	MapDarkLight    int
 	MineIndex       int
-	NoTeleport      int
-	NoReconnect     int
-	NoRandom        int
-	NoEscape        int
-	NoRecall        int
-	NoDrug          int
-	NoPosition      int
-	NoFight         int
-	NoThrowItem     int
-	NoDropPlayer    int
-	NoDropMonster   int
-	NoNames         int
-	NoMount         int
-	NeedBridle      int
-	Fight           int
-	Fire            int
-	Lightning       int
+	NoTeleport      bool
+	NoReconnect     bool
+	NoRandom        bool
+	NoEscape        bool
+	NoRecall        bool
+	NoDrug          bool
+	NoPosition      bool
+	NoFight         bool
+	NoThrowItem     bool
+	NoDropPlayer    bool
+	NoDropMonster   bool
+	NoNames         bool
+	NoMount         bool
+	NeedBridle      bool
+	Fight           bool
+	Fire            bool
+	Lightning       bool
 	NoTownTeleport  int
 	NoReincarnation int
 	NoReconnectMap  string

@@ -1648,3 +1648,34 @@ func (p *player) addBuff(b *buff) {
 	}
 	p.refreshStats()
 }
+
+func (p *player) teleport(mp *mirMap, loc cm.Point) bool {
+	oldMap := env.maps[p.mapID]
+	newMap := mp
+	if newMap == nil || !newMap.validPoint(loc) {
+		return false
+	}
+	oldMap.deleteObject(p)
+	p.broadcast(&server.ObjectTeleportOut{ObjectID: uint32(p.objectID), Type: 0})
+	p.broadcast(&server.ObjectRemove{ObjectID: uint32(p.objectID)})
+	p.mapID = newMap.info.ID
+	p.location = loc
+	newMap.addObject(p)
+	p.broadcast(p.getObjectPlayer())
+	p.broadcast(&server.ObjectTeleportIn{ObjectID: uint32(p.objectID), Type: 0})
+	p.broadcastHealthChange()
+	p.enqueue(&server.MapChanged{
+		FileName:     newMap.info.Filename,
+		Title:        newMap.info.Title,
+		MiniMap:      uint16(newMap.info.MiniMap),
+		BigMap:       uint16(newMap.info.BigMap),
+		Lights:       cm.LightSetting(newMap.info.Light),
+		Location:     p.location,
+		Direction:    p.direction,
+		MapDarkLight: uint8(newMap.info.MapDarkLight),
+		Music:        uint16(newMap.info.Music),
+	})
+	p.enqueueAreaObjects(nil, newMap.aoi.getGridByPoint(p.location))
+	p.enqueue(&server.ObjectTeleportIn{ObjectID: uint32(p.objectID), Type: 0})
+	return true
+}
