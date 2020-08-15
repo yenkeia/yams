@@ -499,14 +499,31 @@ func massHealing(ctx *magicContext) {
 // TODO 野蛮冲撞
 func shoulderDash(ctx *magicContext) {}
 
-// TODO 地狱雷光/火龙气焰
+// 地狱雷光/火龙气焰
 func thunderStorm(ctx *magicContext) {
+	p := ctx.player
+	m := p.magics[ctx.spell]
+	mp := env.maps[p.mapID]
+	value := m.getDamage(p.getAttackPower(p.minMC, p.maxMC))
+	mp.actionList.pushDelayAction(cm.DelayedTypeMagic, time.Duration(500)*time.Microsecond, func() {
+		mp.rangeCell(p.location, 2, func(c *cell, x, y int) bool {
+			for it := c.objects.Front(); it != nil; it = it.Next() {
+				if target, ok := it.Value.(attackTarget); ok {
+					if target.isAttackTarget(p) {
+						// TODO !target.isUndead ? value / 10 : value
+						if target.attacked(p, value, cm.DefenceTypeMAC, false) > 0 {
+							// if target.isUndead applyPoison
+						}
+					}
+				}
+			}
+			return true
+		})
+	})
+	// TODO
+	// 应该是冷却时间
 	// if (spell == Spell.FlameField)
 	//     SpellTime = Envir.Time + 2499; //Spell Delay
-	// if (spell == Spell.StormEscape)
-	//     //Start teleport.
-	//     ActionList.Add(new DelayedAction(DelayedType.Magic, Envir.Time + 749, magic, location));
-	// break;
 }
 
 // 魔法盾
