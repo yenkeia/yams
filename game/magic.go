@@ -328,9 +328,40 @@ func fury(ctx *magicContext) {
 
 }
 
-// TODO 爆裂火焰/冰咆哮
+// 爆裂火焰/冰咆哮
 func fireBang(ctx *magicContext) {
-
+	p := ctx.player
+	m := p.magics[ctx.spell]
+	value := m.getDamage(p.getAttackPower(p.minMC, p.maxMC))
+	mp := env.maps[p.mapID]
+	mp.actionList.pushDelayAction(cm.DelayedTypeMagic, time.Duration(500*time.Millisecond), func() {
+		location := ctx.targetPoint
+		for y := location.Y - 1; y <= location.Y+1; y++ {
+			if y < 0 {
+				continue
+			}
+			if y >= uint32(mp.height) {
+				break
+			}
+			for x := location.X - 1; x <= location.X+1; x++ {
+				if x < 0 {
+					continue
+				}
+				if x >= uint32(mp.width) {
+					break
+				}
+				cell := mp.getCell(cm.Point{X: x, Y: y})
+				if !cell.isValid() || cell.objects == nil {
+					continue
+				}
+				for it := cell.objects.Front(); it != nil; it = it.Next() {
+					if target, ok := it.Value.(attackTarget); ok {
+						target.attacked(p, value, cm.DefenceTypeMAC, false)
+					}
+				}
+			}
+		}
+	})
 }
 
 // TODO 集体隐身术
