@@ -22,6 +22,7 @@ func startMagic(ctx *magicContext) (targetID int, err error) {
 			targetID = ctx.target.getObjectID()
 		}
 	}
+	cast := true
 	switch ctx.spell {
 	case cm.SpellFireBall, // 火球术
 		cm.SpellGreatFireBall, // 大火球
@@ -41,10 +42,7 @@ func startMagic(ctx *magicContext) (targetID int, err error) {
 	case cm.SpellThunderBolt: // 雷电术
 		thunderBolt(ctx)
 	case cm.SpellSoulFireBall: //灵魂火符
-		ok := soulFireBall(ctx)
-		if !ok {
-			targetID = 0
-		}
+		cast = soulFireBall(ctx)
 	case cm.SpellSummonSkeleton: //召唤骷髅
 		summonSkeleton(ctx)
 	case cm.SpellTeleport: // 瞬息移动
@@ -60,7 +58,7 @@ func startMagic(ctx *magicContext) (targetID int, err error) {
 		massHiding(ctx)
 	case cm.SpellSoulShield, // 幽灵盾
 		cm.SpellBlessedArmour: // 神圣战甲术
-		soulShield(ctx)
+		cast = soulShield(ctx)
 	case cm.SpellFireWall: // 火墙
 		fireWall(ctx)
 	case cm.SpellLightning: // 疾光电影
@@ -129,6 +127,9 @@ func startMagic(ctx *magicContext) (targetID int, err error) {
 		plague(ctx)
 	default:
 		return 0, fmt.Errorf("技能暂未实现")
+	}
+	if !cast {
+		targetID = 0
 	}
 	return
 }
@@ -374,9 +375,37 @@ func massHiding(ctx *magicContext) {
 	})
 }
 
-// TODO 幽灵盾/神圣战甲术
-func soulShield(ctx *magicContext) {
-
+// 幽灵盾/神圣战甲术
+func soulShield(ctx *magicContext) (cast bool) {
+	p := ctx.player
+	m := p.magics[ctx.spell]
+	mp := env.maps[p.mapID]
+	item := p.getAmulet(1)
+	if item == nil {
+		return
+	}
+	delay := cm.MaxDistance(p.location, ctx.targetPoint)*50 + 500
+	value := p.getAttackPower(p.minSC, p.maxSC)*4 + (m.level+1)*50
+	buffType := cm.BuffTypeBlessedArmour
+	if m.spell == cm.SpellSoulShield {
+		buffType = cm.BuffTypeSoulShield
+	}
+	expireTime := mp.now.Add(time.Duration(value*1000) * time.Millisecond)
+	mp.actionList.pushDelayAction(cm.DelayedTypeMagic, time.Duration(delay)*time.Millisecond, func() {
+		mp.rangeCell(ctx.targetPoint, 3, func(c *cell, x, y int) bool {
+			for it := c.objects.Front(); it != nil; it = it.Next() {
+				if target, ok := it.Value.(attackTarget); ok {
+					if target.isFriendlyTarget(p) {
+						// target.AddBuff(new Buff { Type = type, Caster = player, ExpireTime = Envir.Time + value * 1000, Values = new int[] { target.Level / 7 + 4 } });
+						target.addBuff(newBuff(buffType, p.objectID, expireTime, []int{m.level * 6}))
+					}
+				}
+			}
+			return true
+		})
+	})
+	p.consumeItem(item, 1)
+	return true
 }
 
 // 火墙
