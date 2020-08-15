@@ -557,8 +557,20 @@ func lionRoar(ctx *magicContext) {
 	//     CurrentMap.ActionList.Add(new DelayedAction(DelayedType.Magic, Envir.Time + 500, this, magic, CurrentLocation));
 }
 
-// TODO 心灵启示
-func revelation(ctx *magicContext) {}
+// 心灵启示
+func revelation(ctx *magicContext) {
+	p := ctx.player
+	// m := p.magics[ctx.spell]
+	t := ctx.target
+	if t == nil {
+		return
+	}
+	// value := p.getAttackPower(p.minSC, p.maxSC) + m.getPower(m.mPower())
+	p.actionList.pushDelayAction(cm.DelayedTypeMagic, time.Duration(500)*time.Millisecond, func() {
+		// target.RevTime = Envir.Time + value*1000
+		t.broadcastHealthChange()
+	})
+}
 
 // TODO 毒云
 func poisonCloud(ctx *magicContext) {}

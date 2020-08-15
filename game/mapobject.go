@@ -37,4 +37,5 @@ type attackTarget interface {
 	changeHP(int)                   // 改变血量，如果传入负数表示扣血
 	applyPoison(*poison, attacker)
 	addBuff(*buff)
+	broadcastHealthChange()
 }
