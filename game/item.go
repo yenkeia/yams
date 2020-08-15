@@ -15,22 +15,20 @@ type item struct {
 	ui   *userItem
 }
 
-func newItem(mapID int, location cm.Point, ui *userItem) *item {
+func newItem(mapID int, ui *userItem) *item {
 	i := new(item)
 	i.objectID = env.newObjectID()
 	i.name = ui.info.Name
 	i.nameColor = cm.ColorWhite
 	i.mapID = mapID
-	i.location = location
 	i.ui = ui
 	return i
 }
 
-func newItemGold(mapID int, location cm.Point, gold int) *item {
+func newItemGold(mapID int, gold int) *item {
 	i := new(item)
 	i.objectID = env.newObjectID()
 	i.mapID = mapID
-	i.location = location
 	i.gold = gold
 	return i
 }

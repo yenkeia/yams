@@ -403,9 +403,37 @@ func (m *monster) die() {
 	})
 }
 
-// TODO 怪物掉落
+// 怪物掉落
 func (m *monster) drop() {
-
+	dropInfos, ok := gdb.dropInfoMap[m.name]
+	if !ok {
+		return
+	}
+	items := make([]*item, 0)
+	for _, drop := range dropInfos {
+		// FIXME 任务还没做 任务相关的物品就不掉落
+		if drop.isQuest {
+			continue
+		}
+		if cm.RandomInt(0, drop.high-1) > drop.low {
+			continue
+		}
+		if drop.itemName == "Gold" {
+			items = append(items, newItemGold(m.mapID, drop.count))
+			continue
+		}
+		info := gdb.itemInfoNameMap[drop.itemName]
+		if info == nil {
+			continue
+		}
+		items = append(items, newItem(m.mapID, newUserItem(info)))
+	}
+	for _, i := range items {
+		err := i.drop(m.location, 3)
+		if err != nil {
+			log.Warnln(err)
+		}
+	}
 }
 
 // 怪物向 destination 目标点走一步

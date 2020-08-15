@@ -1038,7 +1038,7 @@ func (p *player) dropItem(msg *client.DropItem) {
 		return
 	}
 	var err error
-	obj := newItem(p.mapID, p.location, userItem)
+	obj := newItem(p.mapID, userItem)
 	if err = obj.drop(p.location, 1); err != nil {
 		p.receiveChat(err.Error(), cm.ChatTypeSystem)
 		p.enqueue(res)
@@ -1063,7 +1063,7 @@ func (p *player) dropGold(msg *client.DropGold) {
 	if p.gold < amount {
 		return
 	}
-	obj := newItemGold(p.mapID, p.location, amount)
+	obj := newItemGold(p.mapID, amount)
 	if err := obj.drop(p.location, 3); err != nil {
 		p.receiveChat(err.Error(), cm.ChatTypeSystem)
 		return
