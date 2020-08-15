@@ -45,7 +45,8 @@ type monster struct {
 	moveTime      time.Time     // TODO 现在的移动速度和攻击速度是在行为树里定义的，以后改成数据库里的值
 	attackTime    time.Time     // TODO
 	poisons       *poisonList   // 怪物身上的中毒效果
-	currentPoison cm.PoisonType
+	currentPoison cm.PoisonType // 当前中毒效果
+	buffs         *buffList     // 身上的 buff
 }
 
 func newMonster(respawnID int, mapID int, location cm.Point, info *orm.MonsterInfo) *monster {
@@ -88,6 +89,7 @@ func newMonster(respawnID int, mapID int, location cm.Point, info *orm.MonsterIn
 	m.moveTime = time.Now()
 	m.attackTime = time.Now()
 	m.poisons = newPoisonList()
+	m.buffs = newBuffList()
 	return m
 }
 
@@ -158,6 +160,7 @@ func (m *monster) update(now time.Time) {
 		m.bt.update(now)
 	}
 	m.processPoison(now)
+	m.processBuff(now)
 }
 
 func (m *monster) processPoison(now time.Time) {
@@ -197,6 +200,11 @@ func (m *monster) processPoison(now time.Time) {
 	}
 	m.currentPoison = ptype
 	m.broadcast(&server.ObjectPoisoned{ObjectID: uint32(m.objectID), Poison: ptype})
+}
+
+// TODO
+func (m *monster) processBuff(now time.Time) {
+
 }
 
 // ChangeHP 怪物改变血量 amount 可以是负数(扣血)
@@ -518,4 +526,18 @@ func (m *monster) applyPoison(ps *poison, atk attacker) {
 		return
 	}
 	m.poisons.add(ps)
+}
+
+func (m *monster) addBuff(newBuff *buff) {
+	hasBuff := false
+	m.buffs.rangeBuff(func(b *buff) bool {
+		if b.buffType == newBuff.buffType {
+			hasBuff = true
+			return false // 停止循环
+		}
+		return true
+	})
+	if !hasBuff {
+		m.buffs.addBuff(newBuff)
+	}
 }

@@ -334,39 +334,44 @@ func fireBang(ctx *magicContext) {
 	m := p.magics[ctx.spell]
 	value := m.getDamage(p.getAttackPower(p.minMC, p.maxMC))
 	mp := env.maps[p.mapID]
+	location := ctx.targetPoint
 	mp.actionList.pushDelayAction(cm.DelayedTypeMagic, time.Duration(500*time.Millisecond), func() {
-		location := ctx.targetPoint
-		for y := location.Y - 1; y <= location.Y+1; y++ {
-			if y < 0 {
-				continue
-			}
-			if y >= uint32(mp.height) {
-				break
-			}
-			for x := location.X - 1; x <= location.X+1; x++ {
-				if x < 0 {
-					continue
-				}
-				if x >= uint32(mp.width) {
-					break
-				}
-				cell := mp.getCell(cm.Point{X: x, Y: y})
-				if !cell.isValid() || cell.objects == nil {
-					continue
-				}
-				for it := cell.objects.Front(); it != nil; it = it.Next() {
-					if target, ok := it.Value.(attackTarget); ok {
-						target.attacked(p, value, cm.DefenceTypeMAC, false)
-					}
+		mp.rangeCell(location, 1, func(c *cell, x, y int) bool {
+			for it := c.objects.Front(); it != nil; it = it.Next() {
+				if target, ok := it.Value.(attackTarget); ok {
+					target.attacked(p, value, cm.DefenceTypeMAC, false)
 				}
 			}
-		}
+			return true
+		})
 	})
 }
 
-// TODO 集体隐身术
+// 集体隐身术
 func massHiding(ctx *magicContext) {
-
+	p := ctx.player
+	m := p.magics[ctx.spell]
+	mp := env.maps[p.mapID]
+	location := ctx.targetPoint
+	item := p.getAmulet(1)
+	if item == nil {
+		return
+	}
+	delay := cm.MaxDistance(p.location, location)*50 + 500
+	value := p.getAttackPower(p.minSC, p.maxSC)/2 + (m.level+1)*2
+	expireTime := mp.now.Add(time.Duration(value * 1000))
+	mp.actionList.pushDelayAction(cm.DelayedTypeMagic, time.Duration(delay)*time.Millisecond, func() {
+		mp.rangeCell(location, 1, func(c *cell, x, y int) bool {
+			for it := c.objects.Front(); it != nil; it = it.Next() {
+				if target, ok := it.Value.(attackTarget); ok {
+					if target.isFriendlyTarget(p) {
+						target.addBuff(newBuff(cm.BuffTypeHiding, p.objectID, expireTime, []int{}))
+					}
+				}
+			}
+			return true
+		})
+	})
 }
 
 // TODO 幽灵盾/神圣战甲术

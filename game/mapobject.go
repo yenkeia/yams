@@ -36,4 +36,5 @@ type attackTarget interface {
 	isFriendlyTarget(attacker) bool // 目标是攻击者的攻击对象
 	changeHP(int)                   // 改变血量，如果传入负数表示扣血
 	applyPoison(*poison, attacker)
+	addBuff(*buff)
 }

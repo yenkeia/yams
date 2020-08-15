@@ -75,3 +75,12 @@ func (bl *buffList) removeBuff(buffType cm.BuffType) {
 		buf.expireTime = time.Now()
 	}
 }
+
+func (bl *buffList) rangeBuff(fn func(b *buff) bool) {
+	for it := bl.ls.Front(); it != nil; it = it.Next() {
+		buf := it.Value.(*buff)
+		if !fn(buf) {
+			return
+		}
+	}
+}
