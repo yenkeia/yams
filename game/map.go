@@ -78,7 +78,7 @@ func (mp *mirMap) getCell(pos cm.Point) *cell {
 func (mp *mirMap) addObject(obj mapObject) (err error) {
 	pos := obj.getPosition()
 	c := mp.getCell(pos)
-	if c == nil {
+	if c == nil || !c.isValid() {
 		return fmt.Errorf("pos: %s is not walkable", obj.getPosition())
 	}
 	switch obj := obj.(type) {
@@ -101,7 +101,7 @@ func (mp *mirMap) addObject(obj mapObject) (err error) {
 func (mp *mirMap) deleteObject(obj mapObject) (err error) {
 	pos := obj.getPosition()
 	c := mp.getCell(pos)
-	if c == nil {
+	if c == nil || !c.isValid() {
 		return fmt.Errorf("pos: %s is not walkable", obj.getPosition())
 	}
 	c.deleteObject(obj)
@@ -126,6 +126,7 @@ func (mp *mirMap) deleteObject(obj mapObject) (err error) {
 // 更新对象在地图中的位置
 func (mp *mirMap) updateObject(obj mapObject, pos2 cm.Point) (err error) {
 	pos1 := obj.getPosition()
+	// FIXME 检测 c1 / c2 是否合法
 	c1 := mp.getCell(pos1)
 	c2 := mp.getCell(pos2)
 	c1.deleteObject(obj)
@@ -181,7 +182,7 @@ func (mp *mirMap) rangeCell(p cm.Point, depth int, fun func(c *cell, x, y int) b
 
 func (mp *mirMap) rangeObject(p cm.Point, depth int, fun func(mapObject) bool) {
 	mp.rangeCell(p, depth, func(c *cell, _, _ int) bool {
-		if c != nil && c.objects != nil {
+		if c != nil && c.isValid() && c.objects != nil {
 			for it := c.objects.Front(); it != nil; it = it.Next() {
 				if !fun(it.Value.(mapObject)) {
 					return false

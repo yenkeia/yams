@@ -481,6 +481,9 @@ func (p *player) broadcast(msg interface{}) {
 }
 
 func (p *player) broadcastPlayerUpdate() {
+	log.Debugf("player[%s] broadcastPlayerUpdate", p.name)
+	log.Debugf("Light:%d Weapon:%d WeaponEffect:%d Armor:%d WingEffect:%d",
+		p.light, p.looksWeapon, p.looksWeaponEffect, p.looksArmour, p.looksWings)
 	p.broadcast(&server.PlayerUpdate{
 		ObjectID:     uint32(p.objectID),
 		Light:        uint8(p.light),

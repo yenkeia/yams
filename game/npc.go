@@ -65,9 +65,8 @@ func (n *npc) loadGoods() {
 
 func (n *npc) processSpecial(p *player, key string) {
 	switch key {
-	case BuyKey:
 	case SellKey:
-	case BuySellKey:
+	case BuyKey, BuySellKey:
 		ls := make([]*server.UserItem, 0)
 		for _, good := range n.goods {
 			p.enqueueItemInfo(good.info.ID)
