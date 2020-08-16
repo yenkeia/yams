@@ -79,6 +79,10 @@ func (b *bag) moveTo(from, to int, tobag *bag) error {
 	return nil
 }
 
+func (b *bag) get(i int) *userItem {
+	return b.items[i]
+}
+
 func (b *bag) set(i int, ui *userItem) (err error) {
 	if ui != nil {
 		if b.items[i] != nil {

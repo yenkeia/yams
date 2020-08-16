@@ -839,21 +839,158 @@ func (p *player) moveItem(msg *client.MoveItem) {
 	p.enqueue(res)
 }
 
-func (p *player) storeItem(msg *client.StoreItem)                   {}
-func (p *player) depositRefineItem(msg *client.DepositRefineItem)   {}
+func (p *player) storeItem(msg *client.StoreItem) {
+	from := int(msg.From)
+	to := int(msg.To)
+	res := &server.StoreItem{
+		From:    int32(from),
+		To:      int32(to),
+		Success: false,
+	}
+	/*
+		if p.CallingNPC == nil || !util.StringEqualFold(p.CallingNPCPage, StorageKey) || !cm.InRange(p.CurrentLocation, p.CallingNPC.GetPoint(), DataRange) {
+			p.Enqueue(res)
+			return
+		}
+	*/
+	if from > len(p.inventory.items) || to > len(p.storage.items) {
+		p.enqueue(res)
+		return
+	}
+	item := p.inventory.get(from)
+	if cm.HasFlagUint16(uint16(item.info.Bind), cm.BindModeDontStore) {
+		p.enqueue(res)
+		return
+	}
+	err := p.inventory.moveTo(from, to, p.storage)
+	if err != nil {
+		log.Infoln(err)
+		p.enqueue(res)
+		return
+	}
+	res.Success = true
+	p.enqueue(res)
+}
+
+func (p *player) depositRefineItem(msg *client.DepositRefineItem) {}
+
 func (p *player) retrieveRefineItem(msg *client.RetrieveRefineItem) {}
 
 func (p *player) refineCancel(msg *client.RefineCancel) {
 	p.callingNPC = 0
 }
 
-func (p *player) refineItem(msg *client.RefineItem)               {}
-func (p *player) checkRefine(msg *client.CheckRefine)             {}
-func (p *player) replaceWedRing(msg *client.ReplaceWedRing)       {}
-func (p *player) depositTradeItem(msg *client.DepositTradeItem)   {}
+func (p *player) refineItem(msg *client.RefineItem) {}
+
+func (p *player) checkRefine(msg *client.CheckRefine) {}
+
+func (p *player) replaceWedRing(msg *client.ReplaceWedRing) {}
+
+func (p *player) depositTradeItem(msg *client.DepositTradeItem) {}
+
 func (p *player) retrieveTradeItem(msg *client.RetrieveTradeItem) {}
-func (p *player) takeBackItem(msg *client.TakeBackItem)           {}
-func (p *player) mergeItem(msg *client.MergeItem)                 {}
+
+func (p *player) takeBackItem(msg *client.TakeBackItem) {}
+
+// 合并物品 比如药水, splitItem 的反向操作
+func (p *player) mergeItem(msg *client.MergeItem) {
+	gridFrom := msg.GridFrom
+	gridTo := msg.GridTo
+	fromID := int(msg.IDFrom)
+	toID := int(msg.IDTo)
+	res := &server.MergeItem{
+		GridFrom: gridFrom,
+		GridTo:   gridTo,
+		IDFrom:   uint64(fromID),
+		IDTo:     uint64(toID),
+		Success:  false,
+	}
+	var arrayFrom []*userItem
+	var bagFrom *bag
+	switch gridFrom {
+	case cm.MirGridTypeInventory:
+		bagFrom = p.inventory
+	case cm.MirGridTypeStorage:
+		bagFrom = p.storage
+	case cm.MirGridTypeEquipment:
+		bagFrom = p.equipment
+	// case cm.MirGridTypeFishing:
+	default:
+		p.enqueue(res)
+		return
+	}
+	arrayFrom = bagFrom.items
+
+	var arrayTo []*userItem
+	var bagTo *bag
+	switch gridTo {
+	case cm.MirGridTypeInventory:
+		bagTo = p.inventory
+	case cm.MirGridTypeStorage:
+		bagTo = p.storage
+	case cm.MirGridTypeEquipment:
+		bagTo = p.equipment
+	// case cm.MirGridTypeFishing:
+	default:
+		p.enqueue(res)
+		return
+	}
+	arrayTo = bagTo.items
+
+	var tempFrom *userItem
+	var indexFrom int
+	index := -1
+	for i := 0; i < len(arrayFrom); i++ {
+		if arrayFrom[i] == nil || arrayFrom[i].id != fromID {
+			continue
+		}
+		index = i
+		tempFrom = arrayFrom[i]
+		indexFrom = i
+		break
+	}
+	if tempFrom == nil || tempFrom.info.StackSize == 1 || index == -1 {
+		p.enqueue(res)
+		return
+	}
+
+	var tempTo *userItem
+	var indexTo int
+	for i := 0; i < len(arrayTo); i++ {
+		if arrayTo[i] == nil || arrayTo[i].id != toID {
+			continue
+		}
+		tempTo = arrayTo[i]
+		indexTo = i
+		break
+	}
+	if tempTo == nil || tempTo.info != tempFrom.info || tempTo.count == tempTo.info.StackSize {
+		p.enqueue(res)
+		return
+	}
+	if tempTo.info.Type != cm.ItemTypeAmulet && (gridFrom == cm.MirGridTypeEquipment || gridTo == cm.MirGridTypeEquipment) {
+		p.enqueue(res)
+		return
+	}
+	if tempTo.info.Type != cm.ItemTypeBait && (gridFrom == cm.MirGridTypeFishing || gridTo == cm.MirGridTypeFishing) {
+		p.enqueue(res)
+		return
+	}
+	if tempFrom.count <= tempTo.info.StackSize-tempTo.count {
+		tempTo.count += tempFrom.count
+		bagTo.setCount(indexTo, tempTo.count)
+		bagFrom.setCount(indexFrom, 0)
+		arrayFrom[index] = nil
+	} else {
+		tempFrom.count -= tempTo.info.StackSize - tempTo.count
+		tempTo.count = tempTo.info.StackSize
+		bagTo.setCount(indexTo, tempTo.count)
+		bagFrom.setCount(indexFrom, tempFrom.count)
+	}
+	res.Success = true
+	p.enqueue(res)
+	p.refreshStats()
+}
 
 // 穿装备
 func (p *player) equipItem(msg *client.EquipItem) {
@@ -931,8 +1068,11 @@ func (p *player) removeItem(msg *client.RemoveItem) {
 }
 
 func (p *player) removeSlotItem(msg *client.RemoveSlotItem) {}
-func (p *player) splitItem(msg *client.SplitItem)           {}
 
+// 分离物品 比如一组20个魔法药, 分离成2组10个魔法药, mergeItem 反向操作
+func (p *player) splitItem(msg *client.SplitItem) {}
+
+// 使用物品
 func (p *player) useItem(msg *client.UseItem) {
 	var err error
 	id := int(msg.UniqueID)
@@ -1326,8 +1466,13 @@ func (p *player) die() {
 	}
 }
 
-func (p *player) rangeAttack(msg *client.RangeAttack) {}
-func (p *player) harvest(msg *client.Harvest)         {}
+func (p *player) rangeAttack(msg *client.RangeAttack) {
+
+}
+
+func (p *player) harvest(msg *client.Harvest) {
+
+}
 
 func (p *player) callNPC(msg *client.CallNPC) {
 	// fmt.Println("->", msg.Key) // [@Main]
@@ -1385,11 +1530,25 @@ func (p *player) buyItem(msg *client.BuyItem) {
 	}
 }
 
-func (p *player) craftItem(msg *client.CraftItem)     {}
-func (p *player) sellItem(msg *client.SellItem)       {}
-func (p *player) repairItem(msg *client.RepairItem)   {}
-func (p *player) buyItemBack(msg *client.BuyItemBack) {}
-func (p *player) sRepairItem(msg *client.SRepairItem) {}
+func (p *player) craftItem(msg *client.CraftItem) {
+
+}
+
+func (p *player) sellItem(msg *client.SellItem) {
+
+}
+
+func (p *player) repairItem(msg *client.RepairItem) {
+
+}
+
+func (p *player) buyItemBack(msg *client.BuyItemBack) {
+
+}
+
+func (p *player) sRepairItem(msg *client.SRepairItem) {
+
+}
 
 func (p *player) magicKey(msg *client.MagicKey) {
 	key := int(msg.Key)

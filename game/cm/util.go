@@ -140,3 +140,7 @@ func SplitString(s string) []string {
 	}
 	return ret
 }
+
+func HasFlagUint16(a, b uint16) bool {
+	return a&b != 0
+}
