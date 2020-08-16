@@ -38,3 +38,7 @@ Special repair.
 9
 
 [Trade]
+兽皮腰带
+铁腰带
+青铜腰带
+钢铁腰带

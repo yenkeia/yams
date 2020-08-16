@@ -6,7 +6,7 @@
 
 # TODO
 
-- 客户端 MirCore-Client Common.UserItem 剩下的字段补全
+- 装备属性检查（法神头 天尊头
 
 # 介绍
 
