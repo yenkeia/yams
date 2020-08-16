@@ -1083,6 +1083,7 @@ type ObjectName struct {
 	Name     string
 }
 
+// TODO
 type UserStorage struct {
 	Storage []*UserItem `codec:"emptyflag"`
 }
@@ -1159,6 +1160,7 @@ type ObjectHidden struct {
 	Hidden   bool
 }
 
+// TODO encode
 type RefreshItem struct {
 	Item UserItem
 }

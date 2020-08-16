@@ -86,6 +86,10 @@ func (*mirCodec) Encode(msgObj interface{}, ctx cellnet.ContextSet) (data interf
 		return encodeTradeItem(res)
 	case *server.NPCGoods:
 		return encodeNPCGoods(res)
+	case *server.GainedItem:
+		return encodeGainItem(res)
+	// case *server.UserStorage:
+	// 	return encodeUserStorage(res)
 	default:
 		return encode(msgObj)
 	}
@@ -114,6 +118,11 @@ func (w *wrapper) Write(obj interface{}) {
 	}
 	bytes := data.([]byte)
 	w.buf = append(w.buf, bytes...)
+}
+
+func (w *wrapper) encodeUserItem(msg *server.UserItem) {
+	w.Write(msg)
+	w.buf = append(w.buf, []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 0, 0}...)
 }
 
 func encodeUserInformation(msg *server.UserInformation) (data interface{}, err error) {
@@ -155,7 +164,7 @@ func encodeUserInformation(msg *server.UserInformation) (data interface{}, err e
 			if !hasUserItem {
 				continue
 			}
-			writer.Write(ui.Inventory[i])
+			writer.encodeUserItem(ui.Inventory[i])
 		}
 	}
 
@@ -175,7 +184,7 @@ func encodeUserInformation(msg *server.UserInformation) (data interface{}, err e
 			if !hasUserItem {
 				continue
 			}
-			writer.Write(ui.Equipment[i])
+			writer.encodeUserItem(ui.Equipment[i])
 		}
 	}
 
@@ -195,7 +204,7 @@ func encodeUserInformation(msg *server.UserInformation) (data interface{}, err e
 			if !hasUserItem {
 				continue
 			}
-			writer.Write(ui.QuestInventory[i])
+			writer.encodeUserItem(ui.QuestInventory[i])
 		}
 	}
 	writer.Write(ui.Gold)
@@ -219,7 +228,7 @@ func encodeSplitItem(msg *server.SplitItem) (data interface{}, err error) {
 	writer := &wrapper{buf: make([]byte, 0)}
 	if msg.Item != nil {
 		writer.Write(true)
-		writer.Write(msg.Item)
+		writer.encodeUserItem(msg.Item)
 	} else {
 		writer.Write(false)
 	}
@@ -246,7 +255,7 @@ func encodePlayerInspect(msg *server.PlayerInspect) (data interface{}, err error
 		if !hasUserItem {
 			continue
 		}
-		writer.Write(pi.Equipment[i])
+		writer.encodeUserItem(pi.Equipment[i])
 	}
 
 	writer.Write(pi.Class)
@@ -339,7 +348,7 @@ func encodeTradeItem(msg *server.TradeItem) (data interface{}, err error) {
 			writer.Write(false)
 		} else {
 			writer.Write(true)
-			writer.Write(ui)
+			writer.encodeUserItem(ui)
 		}
 	}
 	return writer.buf, nil
@@ -351,9 +360,15 @@ func encodeNPCGoods(msg *server.NPCGoods) (data interface{}, err error) {
 	writer.Write(int32(length))
 	for i := 0; i < length; i++ {
 		ui := msg.Goods[i]
-		writer.Write(ui)
+		writer.encodeUserItem(ui)
 	}
 	writer.Write(msg.Rate)
 	writer.Write(msg.Type)
+	return writer.buf, nil
+}
+
+func encodeGainItem(msg *server.GainedItem) (data interface{}, err error) {
+	writer := &wrapper{buf: make([]byte, 0)}
+	writer.encodeUserItem(msg.Item)
 	return writer.buf, nil
 }
