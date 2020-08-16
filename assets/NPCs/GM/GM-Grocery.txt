@@ -1,0 +1,27 @@
+[@Main]
+#SAY
+Hello {<$USERNAME>/KHAKI}, my name is {<$NPCNAME>/KHAKI}.
+I see you're holding: {<$火把>/CORAL}
+ 
+<Buy/@Buy> Grocery
+<Sell/@Sell> Grocery
+
+[@Buy]
+#SAY
+Buy.
+ 
+<Back/@Main>
+
+[@Sell]
+#SAY
+Sell.
+ 
+<Back/@Main>
+
+
+[Types]
+8
+12
+17
+
+[Trade]

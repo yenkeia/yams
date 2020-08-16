@@ -1,0 +1,40 @@
+[@Main]
+#SAY
+Hello {<$USERNAME>/KHAKI}, my name is {<$NPCNAME>/KHAKI}.
+I see you're wearing: {<$BOOTS>/CORAL}
+ 
+<Buy/@Buy> Boot
+<Sell/@Sell> Boot
+<Repair/@Repair> Boot
+<Special Repair/@SRepair> Boot
+
+
+[@Buy]
+#SAY
+Buy.
+ 
+<Back/@Main>
+
+[@Sell]
+#SAY
+Sell.
+ 
+<Back/@Main>
+
+[@Repair]
+#SAY
+Repair.
+ 
+<Back/@Main>
+
+[@SRepair]
+#SAY
+Special repair.
+ 
+<Back/@Main>
+
+
+[Types]
+10
+
+[Trade]

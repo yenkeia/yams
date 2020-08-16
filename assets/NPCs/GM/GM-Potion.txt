@@ -1,0 +1,29 @@
+[@Main]
+#SAY
+Hello {<$USERNAME>/KHAKI}, my name is {<$NPCNAME>/KHAKI}.
+I see you have {<$HP> | <$MAXHP> HP/RED} and {<$MP> | <$MAXMP> MP/ROYALBLUE}
+ 
+<Buy/@Buy> Potion
+<Sell/@Sell> Potion
+ 
+Tip: Use {@superman/LIMEGREEN} for an infinite amount of HP and MP.
+
+
+[@Buy]
+#SAY
+Buy.
+ 
+<Back/@Main>
+
+
+[@Sell]
+#SAY
+Sell.
+ 
+<Back/@Main>
+
+
+[Types]
+13
+
+[Trade]

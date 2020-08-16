@@ -37,7 +37,8 @@ CREATE TABLE IF NOT EXISTS `map_info` (
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
-INSERT INTO map_info VALUES(1,'0','比奇省',101,135,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'',0,0);
+-- INSERT INTO map_info VALUES(1,'0','比奇省',101,135,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'',0,0);
+INSERT INTO map_info VALUES(1,'r001','GameMaster',42,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'',0,0);
 
 CREATE TABLE `npc_info` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -50,9 +51,30 @@ CREATE TABLE `npc_info` (
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
-INSERT INTO npc_info VALUES(1,1,'比奇省/边境村/传送员.txt','传送员',15,287,615);
-INSERT INTO npc_info VALUES(2,1,'比奇省/边境村/铁匠.txt','铁匠',0,297,612);
-INSERT INTO npc_info VALUES(3,1,'比奇省/边境村/杂货商贩.txt','杂货商贩',1,291,610);
+INSERT INTO npc_info VALUES(1,1,'GM/GM-Armor.txt','Armor_衣服',7,93,96);
+INSERT INTO npc_info VALUES(2,1,'GM/GM-Awakening.txt','Awakening_觉醒',0,94,105);
+INSERT INTO npc_info VALUES(3,1,'GM/GM-Belt.txt','Belt_腰带',9,95,96);
+INSERT INTO npc_info VALUES(4,1,'GM/GM-Book.txt','Book_书籍',2,91,99);
+INSERT INTO npc_info VALUES(5,1,'GM/GM-Boot.txt','Boot_靴子',8,94,96);
+INSERT INTO npc_info VALUES(6,1,'GM/GM-Bracelet.txt','Bracelet_手镯',5,90,96);
+INSERT INTO npc_info VALUES(7,1,'GM/GM-CraftingMaterial.txt','CraftingMaterial_合成材料',3,102,105);
+INSERT INTO npc_info VALUES(8,1,'GM/GM-Fishing.txt','Fishing_钓鱼',14,103,105);
+INSERT INTO npc_info VALUES(9,1,'GM/GM-GameStuff.txt','GameStuff_游戏内材料',18,95,105);
+INSERT INTO npc_info VALUES(10,1,'GM/GM-Gem.txt','Gem_宝石',13,93,99);
+INSERT INTO npc_info VALUES(11,1,'GM/GM-Grocery.txt','Grocery_杂货',1,106,99);
+INSERT INTO npc_info VALUES(12,1,'GM/GM-Helmet.txt','Helmet_头盔',10,96,96);
+INSERT INTO npc_info VALUES(13,1,'GM/GM-Manager.txt','Manager_游戏管理',0,100,94);
+INSERT INTO npc_info VALUES(14,1,'GM/GM-Meat.txt','Meat_肉',11,105,99);
+INSERT INTO npc_info VALUES(15,1,'GM/GM-Mount.txt','Mount_坐骑',15,104,105);
+INSERT INTO npc_info VALUES(16,1,'GM/GM-Necklace.txt','Necklace_项链',6,91,96);
+INSERT INTO npc_info VALUES(17,1,'GM/GM-Ore.txt','Ore_矿石',16,105,105);
+INSERT INTO npc_info VALUES(18,1,'GM/GM-Potion.txt','Potion_药水',5,107,99);
+INSERT INTO npc_info VALUES(19,1,'GM/GM-Quest.txt','Quest_任务',19,96,105);
+INSERT INTO npc_info VALUES(20,1,'GM/GM-Ring.txt','Ring_戒指',4,92,96);
+INSERT INTO npc_info VALUES(21,1,'GM/GM-Script.txt','Script_卷轴',17,106,105);
+INSERT INTO npc_info VALUES(22,1,'GM/GM-Stone.txt','Stone_石头',12,92,99);
+INSERT INTO npc_info VALUES(23,1,'GM/GM-Teleporter.txt','Teleporter_传送',15,93,105);
+INSERT INTO npc_info VALUES(24,1,'GM/GM-Weapon.txt','Weapon_武器',0,90,99);
 
 CREATE TABLE `item_info` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -376,8 +398,8 @@ CREATE TABLE `respawn_info` (
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
-INSERT INTO respawn_info VALUES(1,1,1,288,611,1,1,1);
-INSERT INTO respawn_info VALUES(2,1,12,287,610,1,1,10);
+INSERT INTO respawn_info VALUES(1,1,1,87,107,1,1,1);
+INSERT INTO respawn_info VALUES(2,1,12,85,110,1,1,10);
 
 CREATE TABLE `base_stats` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,

@@ -1,0 +1,18 @@
+[@Main]
+#Say
+Hello {<$USERNAME>/KHAKI}, my name is {<$NPCNAME>/KHAKI}.
+ 
+<Look at Awakening Items/@Buy>
+
+
+[@Buy]
+#SAY
+Buy.
+ 
+<Back/@Main>
+
+
+[Types]
+35
+
+[Trade]

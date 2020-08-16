@@ -38,10 +38,19 @@ func (f *function) execute(n *npc, p *player) interface{} {
 var npcFunctionMap = map[string]func(*npc, *player, []string) interface{}{
 	"CHECKPKPOINT": CHECKPKPOINT,
 	"CHECKGOLD":    CHECKGOLD,
+	"CHECKITEM":    CHECKITEM,
 
-	"MOVE":     MOVE,
-	"GOTO":     GOTO,
-	"TAKEGOLD": TAKEGOLD,
+	"MOVE":        MOVE,
+	"GOTO":        GOTO,
+	"TAKEGOLD":    TAKEGOLD,
+	"GIVESKILL":   GIVESKILL,
+	"GIVEGOLD":    GIVEGOLD,
+	"LEVEL":       LEVEL,
+	"CHANGELEVEL": CHANGELEVEL,
+	"GIVEITEM":    GIVEITEM,
+	"CLEARPETS":   CLEARPETS,
+	"LINEMESSAGE": LINEMESSAGE,
+	"SET":         SET,
 }
 
 // CHECKPKPOINT 检查玩家善恶点数
@@ -51,6 +60,11 @@ func CHECKPKPOINT(n *npc, p *player, args []string) (res interface{}) {
 
 // CHECKGOLD 检查玩家金币
 func CHECKGOLD(n *npc, p *player, args []string) (res interface{}) {
+	return false
+}
+
+// CHECKITEM 检查是否有物品
+func CHECKITEM(n *npc, p *player, args []string) (res interface{}) {
 	return false
 }
 
@@ -68,5 +82,45 @@ func GOTO(n *npc, p *player, args []string) (res interface{}) {
 // TAKEGOLD 拿走玩家金币
 func TAKEGOLD(n *npc, p *player, args []string) (res interface{}) {
 	log.Debugf("TAKEGOLD npc: %v, player: %v, args: %v", n, p, args)
+	return
+}
+
+// GIVESKILL 给玩家添加技能
+func GIVESKILL(n *npc, p *player, args []string) (res interface{}) {
+	return
+}
+
+// GIVEGOLD 给玩家增加金币
+func GIVEGOLD(n *npc, p *player, args []string) (res interface{}) {
+	return
+}
+
+// LEVEL 升级
+func LEVEL(n *npc, p *player, args []string) (res interface{}) {
+	return
+}
+
+// CHANGELEVEL ...
+func CHANGELEVEL(n *npc, p *player, args []string) (res interface{}) {
+	return
+}
+
+// GIVEITEM 给物品
+func GIVEITEM(n *npc, p *player, args []string) (res interface{}) {
+	return
+}
+
+// CLEARPETS ..
+func CLEARPETS(n *npc, p *player, args []string) (res interface{}) {
+	return
+}
+
+// LINEMESSAGE ..
+func LINEMESSAGE(n *npc, p *player, args []string) (res interface{}) {
+	return
+}
+
+// SET ..
+func SET(n *npc, p *player, args []string) (res interface{}) {
 	return
 }

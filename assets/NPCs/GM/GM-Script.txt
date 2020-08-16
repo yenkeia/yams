@@ -1,0 +1,25 @@
+[@Main]
+#SAY
+Hello {<$USERNAME>/KHAKI}, my name is {<$NPCNAME>/KHAKI}.
+You appear to have {<$GAMEGOLD>/ORANGE} gold coins to spend.
+ 
+<Buy/@Buy> Script
+<Sell/@Sell> Script
+
+[@Sell]
+#SAY
+Sell.
+ 
+<Back/@Main>
+
+[@Buy]
+#SAY
+Buy.
+ 
+<Back/@Main>
+
+
+[Types]
+21
+
+[Trade]

@@ -1,0 +1,25 @@
+[@Main]
+#SAY
+Hello {<$USERNAME>/KHAKI}, my name is {<$NPCNAME>/KHAKI}.
+I see you're wearing: {<$STONE>/CORAL}
+ 
+<Buy/@Buy> Stone
+<Sell/@Sell> Stone
+
+[@Sell]
+#SAY
+Sell.
+ 
+<Back/@Main>
+
+[@Buy]
+#SAY
+Buy.
+ 
+<Back/@Main>
+
+
+[Types]
+11
+
+[Trade]
