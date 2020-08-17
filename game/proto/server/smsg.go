@@ -1218,9 +1218,6 @@ type BaseStats struct {
 	HPGain              float32
 	HPGainRate          float32
 	MPGainRate          float32
-	BagWeightGain       float32
-	WearWeightGain      float32
-	HandWeightGain      float32
 	MinAC               uint8
 	MaxAC               uint8
 	MinMAC              uint8
@@ -1237,6 +1234,9 @@ type BaseStats struct {
 	StartCriticalDamage uint8
 	CritialRateGain     float32
 	CriticalDamageGain  float32
+	BagWeightGain       float32
+	WearWeightGain      float32
+	HandWeightGain      float32
 }
 
 type BaseStatsInfo struct {
